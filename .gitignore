@@ -1,3 +1,14 @@
-/src/utils/other.txt
-/src/data/training/
-/src/data/testing/
+# Byte-compile / optimization files
+__pycache__/
+*.py[cod]
+*$$py.class
+
+# pyenv
+.python-version
+
+# Environments
+env/
+
+
+.vscode/
+.git/
