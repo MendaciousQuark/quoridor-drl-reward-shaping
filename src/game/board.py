@@ -14,8 +14,8 @@ class Board:
         #place the pawns
         self.placePawns()
         
-        #set the initial stae
-        self.updateState
+        #set the initial state
+        self.updateState()
         
     def placePawns(self):
         # Place black pawn
@@ -37,7 +37,7 @@ class Board:
         #return the cells that have walls
         return cells_with_walls
     
-    def placeWall(self, orientation, startCell):
+    def placeWall(self, orientation, start_cell):
         if(orientation == 'horizontal'):
             direction = [0, 1]
         elif(orientation == 'vertical'):
@@ -46,24 +46,22 @@ class Board:
             raise ValueError("Orientation must be 'horizontal' or 'vertical'")
         
         # Calculate the end cell's row and column indices
-        end_row_index = startCell.position[0] + direction[0]
-        end_col_index = startCell.position[1] + direction[1]
+        end_row_index = start_cell.position[0] + direction[0]
+        end_col_index = start_cell.position[1] + direction[1]
 
         # Check if the calculated position is valid
         if self.validLocation(end_row_index, end_col_index):
             # Access the end cell using the calculated indices
-            endCell = self.board[end_row_index][end_col_index]
-        else:
-            raise IndexError("The wall extends out of bounds.")
+            end_cell = self.board[end_row_index][end_col_index]Cell(i, j) 
         
         #if the orientation is horizontal the wall is placed along the top of the cells
         if(orientation == 'horizontal'):
-            startCell.setWalls(False, True)
-            endCell.setWalls(False, True)
+            start_cell.setWalls(start_cell.has_wall_up, True)
+            end_cell.setWalls(end_cell.has_wall_up, True)
         #otherwise the orientation is vertical and the wall is placed to the side of the cells
         else:
-            startCell.setWalls(True, False)
-            endCell.setWalls(True, False)
+            start_cell.setWalls(True, start_cell.has_wall_left)
+            end_cell.setWalls(True, end_cell.has_wall_left)
 
     
     def validLocation(self, i, j):
@@ -75,10 +73,23 @@ class Board:
         self.state = 
         {
             'board' : self.board,
-            'pieces': self.pawn_positions
+            'pieces': self.pawn_positions,
             'walled_cells': self.findWalledCells()
         }
-                
+    
+    def copy(self):
+        new_board = Board()
+        new_board.board = [[self.board[i][j].copy() for j in range(9)] for i in range(9)]
+        new_board.pawn_positions = 
+        {
+            'black': [self.pawn_positions['black'][0], self.pawn_positions['black'][1]],
+            'white': [self.pawn_positions['white'][0], self.pawn_positions['white'][1]]
+        }
+        new_board.placePawns()
+        new_board.updateState()
+        return new_board
+        
+                    
                 
                 
     
