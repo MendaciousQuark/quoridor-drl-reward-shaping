@@ -3,6 +3,7 @@ from utils.directions import UP, DOWN, LEFT, RIGHT, getDirectionIndex
 from utils.string_board import *
 from utils.utils import validLocation, joinWithNewlines
 import pdb
+import math
 
 class Board:
     def __init__(self):
@@ -10,8 +11,8 @@ class Board:
         
         #set the location of pawns to the start
         self.pawn_positions = {
-            'black': [0, 4],
-            'white': [8, 4]
+            'black': [0, len(self.board[0])//2],
+            'white': [len(self.board[0]) - 1, len(self.board[0])//2]
         }
         
         #place the pawns
@@ -50,7 +51,7 @@ class Board:
         
         # Calculate the end cell's row and column indices
         end_cell_location = getDirectionIndex(start_cell.position, direction)
-        #pdb.set_trace()
+        
         # Check if the calculated position is valid
         if validLocation(*end_cell_location):
             # Access the end cell using the calculated indices
@@ -73,7 +74,7 @@ class Board:
         }
     
     def printBoard(self):
-        #pdb.set_trace()
+        
         '''
         Example board
         # +---+---+---+---+---+---+---+---+---+
@@ -97,8 +98,6 @@ class Board:
         # +---+---+---+---+---+---+---+---+---+
         '''
         string_board = []
-        print(str(self.board[1][2]))
-        print(str(self.board[2][2]))
         for row in self.board:
             for i in range(2):
                 for cell in row:
@@ -107,7 +106,7 @@ class Board:
                     edge_right = True if cell.neighbour_right is None else False
                     edge_up = True if cell.neighbour_up is None else False
                     edge_down = True if cell.neighbour_down is None else False
-                    #pdb.set_trace()
+                    
                     #horizontal row (rows with '+')
                     if(i == 0):
                         
@@ -170,7 +169,7 @@ class Board:
                     
                     #vertical row (rows with '|')
                     elif(i == 1):
-                        #pdb.set_trace()
+                        
                         #determin if and which pawn is present
                         pawn_present = False if cell.occupant is None else True
                         white_present = True if cell.occupant is 'white' else False
@@ -209,7 +208,7 @@ class Board:
                             #if there is no wall and no pawn
                             else:
                                 string_board.append(CELL_VERTICAL)
-                        #pdb.set_trace()
+                        
                 #add the border symbols
                 if(i == 0):
                     #for horizontal lines (lines with +)
@@ -222,8 +221,7 @@ class Board:
             string_board.append(BORDER_BOTTOM)
         #need to add the edge border onelast time
         string_board.append(BORDER_HORIZONTAL)
-        print(len(string_board))
-        #print(string_board)
+        #pdb.set_trace()
         #return a joined string_board we do len(self.board[0]) + 2 to account for the length of each row and the borders
         return joinWithNewlines(string_board, len(self.board[0]) + 2)
                         

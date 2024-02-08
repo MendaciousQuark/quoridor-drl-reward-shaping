@@ -6,6 +6,7 @@ def joinWithNewlines(lst, n):
     #Divide the list into chunks of size n
     chunks = [lst[i:i + n] for i in range(0, len(lst), n)]
     #Join the chunks together with newline characters
+    
     return '\n'.join([''.join(chunk) for chunk in chunks])
 
 def joinWithoutNewlines(lst, n):
@@ -13,3 +14,24 @@ def joinWithoutNewlines(lst, n):
     chunks = [lst[i:i + n] for i in range(0, len(lst), n)]
     #Join the chunks together with newline characters
     return '\n'.join([''.join(chunk) for chunk in chunks])
+
+def moveLetterToNumber(letter):
+    # Ensure the letter is lowercase to standardize the input
+    letter = letter.lower()
+    # 'a' maps to 0, 'b' to 1, ..., 'i' to 8
+    number = ord(letter) - ord('a')
+    # Check if the conversion is in the valid range [0-8]
+    if 0 <= number <= 8:
+        return number
+    else:
+        raise ValueError(f"Invalid letter: {letter}. Must be in the range 'a' to 'i'.")
+
+def moveNumberToLetter(number):
+    # Ensure the number is within the valid range [0-8]
+    if 0 <= number <= 8:
+        # Convert the number to the corresponding lowercase letter
+        letter = chr(ord('a') + number)
+        return letter
+    else:
+        raise ValueError(f"Invalid number: {number}. Must be in the range 0 to 8.")
+
