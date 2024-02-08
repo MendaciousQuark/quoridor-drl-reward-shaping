@@ -2,6 +2,7 @@ from .cell import Cell
 from utils.directions import UP, DOWN, LEFT, RIGHT
 from utils.string_board import *
 from utils.utils import validLocation, joinWithNewlines
+import pdb
 
 class Board:
     def __init__(self):
@@ -73,6 +74,7 @@ class Board:
         }
     
     def printBoard(self):
+        #pdb.set_trace()
         '''
         Example board
         # +---+---+---+---+---+---+---+---+---+
@@ -96,17 +98,22 @@ class Board:
         # +---+---+---+---+---+---+---+---+---+
         '''
         string_board = []
+        rowCounter = 0
+        cellCounter = 0
         for row in self.board:
             for i in range(2):
+                
                 for cell in row:
+                    #print(str(cell))
                     #determine which edges the cell is touching
                     edge_left = True if cell.neighbour_left is None else False
-                    edge_right = True if cell.neighbour_left is None else False
-                    edge_up = True if cell.neighbour_left is None else False
-                    edge_down = True if cell.neighbour_left is None else False
-                    
+                    edge_right = True if cell.neighbour_right is None else False
+                    edge_up = True if cell.neighbour_up is None else False
+                    edge_down = True if cell.neighbour_down is None else False
+                    #pdb.set_trace()
                     #horizontal row (rows with '+')
                     if(i == 0):
+                        
                         #if we are in the top left corner
                         if(edge_left and edge_up):
                             #add the border for the horizontall lines and the top of the first cell
@@ -115,7 +122,7 @@ class Board:
                         #if we are in the top right corner
                         elif(edge_right and edge_up):
                             string_board.append(CELL_HORIZONTAL)
-                            string_board.append(BORDER_HORIZONTAL)
+                            
                         #if we are in the top row but not in a corner
                         elif(edge_up):
                             string_board.append(CELL_HORIZONTAL)
@@ -131,20 +138,18 @@ class Board:
                                 string_board.append(CELL_HORIZONTAL_EDGE)
                         #if we are in the last column but not in the top right
                         elif(edge_right):
-                            cell_up = self.board[cell.neighbour_up[0], cell.neighbour_up[1]]
-                            cell_left = self.board[cell.neighbour_left[0], cell.neighbour_right[1]]
+                            cell_up = self.board[cell.neighbour_up[0]][cell.neighbour_up[1]]
+                            cell_left = self.board[cell.neighbour_left[0]][cell.neighbour_left[1]]
                             
                             #if we are continuing a ceiling wall
                             if(cell_left.has_wall_up and cell.has_wall_up):
                                 string_board.append(CELL_HORIZONTAL_WALLED_CONNECTED)
                             #if we are continuing a wall on the left from the top
                             elif(cell_up.has_wall_left and cell.has_wall_left):
-                                string.append(CELL_HORIZONTAL_INTERSECTION)
+                                string_board.append(CELL_HORIZONTAL_INTERSECTION)
                             #can't have both walls from top and from left as walls are 2 cells long
                             else:
                                 string_board.append(CELL_HORIZONTAL)
-                            #add the border symbol
-                            string_board.append(BORDER_HORIZONTAL)
                         #if we are somewhere in between first and last column and/or on the last row (also in between first and last column)
                         elif((not edge_left) and (not edge_up) and (not edge_right)):
                             cell_up = self.board[cell.neighbour_up[0]][cell.neighbour_up[1]]
@@ -158,15 +163,17 @@ class Board:
                                 string_board.append(CELL_HORIZONTAL_INTERSECTION)
                             #if the cell continues a ceiling wall from the left
                             elif(cell_left.has_wall_up and cell.has_wall_up):
-                                string.append(CELL_HORIZONTAL_WALLED_CONNECTED)
+                                string_board.append(CELL_HORIZONTAL_WALLED_CONNECTED)
                             #if the cell starts a ceiling wall
                             elif(cell.has_wall_up):
                                 string_board.append(CELL_HORIZONTAL_WALLED)
                             #no walls pass the ceiling threshold
                             else:
                                 string_board.append(CELL_HORIZONTAL)
+                    
                     #vertical row (rows with '|')
-                    else:
+                    elif(i == 1):
+                        #pdb.set_trace()
                         #determin if and which pawn is present
                         pawn_present = False if cell.occupant is None else True
                         white_present = True if cell.occupant is 'white' else False
@@ -205,13 +212,23 @@ class Board:
                             #if there is no wall and no pawn
                             else:
                                 string_board.append(CELL_VERTICAL)
-                                
-                        #if we are in the lass column, we need to add the border        
-                        if(edge_right):
-                            string_board.append(BORDER_VERTICAL)
-            for j in range(len(self.board[0])):
-                string_board.append(BORDER_BOTTOM)
-            return joinWithNewlines(string_board, len(self.board[0]))
+                        #pdb.set_trace()
+                #add the border symbols
+                if(i == 0):
+                    #for horizontal lines (lines with +)
+                    string_board.append(BORDER_HORIZONTAL)
+                else:
+                    #for vertical lines (lines with |)
+                    string_board.append(BORDER_VERTICAL)
+        #iterate for the length of the board to add a bottom border
+        for j in range(len(self.board[0])):
+            string_board.append(BORDER_BOTTOM)
+        #need to add the edge border onelast time
+        string_board.append(BORDER_HORIZONTAL)
+        print(len(string_board))
+        #print(string_board)
+        #return a joined string_board we do len(self.board[0]) + 2 to account for the length of each row and the borders
+        return joinWithNewlines(string_board, len(self.board[0]) + 2)
                         
                         
         
