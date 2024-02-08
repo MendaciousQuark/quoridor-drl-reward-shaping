@@ -6,8 +6,9 @@ def main():
 
     
     # Place a wall or modify the board in some way to test the output
-    board.placeWall('horizontal', start_cell=board.board[0][0])
-    board.board[1][1].occupant = 'white'
+    board.placeWall('vertical', start_cell=board.board[1][2])
+    board.placeWall('horizontal', start_cell=board.board[2][2])
+    #board.board[1][1].occupant = 'white'
 
     
     #board.printBoard()
@@ -15,7 +16,7 @@ def main():
     #print(board.board)
     # Print the board
     
-    print(board.printBoard())  # Assuming printBoard returns a string representation of the board
+    print(board.printBoard())
 
 if __name__ == '__main__':
     main()

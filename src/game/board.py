@@ -1,5 +1,5 @@
 from .cell import Cell
-from utils.directions import UP, DOWN, LEFT, RIGHT
+from utils.directions import UP, DOWN, LEFT, RIGHT, getDirectionIndex
 from utils.string_board import *
 from utils.utils import validLocation, joinWithNewlines
 import pdb
@@ -42,29 +42,28 @@ class Board:
     
     def placeWall(self, orientation, start_cell):
         if(orientation == 'horizontal'):
-            direction = [0, 1]
+            direction = RIGHT
         elif(orientation == 'vertical'):
-            direction = [-1, 0]
+            direction = DOWN
         else:
             raise ValueError("Orientation must be 'horizontal' or 'vertical'")
         
         # Calculate the end cell's row and column indices
-        end_row_index = start_cell.position[0] + direction[0]
-        end_col_index = start_cell.position[1] + direction[1]
-
+        end_cell_location = getDirectionIndex(start_cell.position, direction)
+        #pdb.set_trace()
         # Check if the calculated position is valid
-        if validLocation(end_row_index, end_col_index):
+        if validLocation(*end_cell_location):
             # Access the end cell using the calculated indices
-            end_cell = self.board[end_row_index][end_col_index]
+            end_cell = self.board[end_cell_location[0]][end_cell_location[1]]
         
         #if the orientation is horizontal the wall is placed along the top of the cells
         if(orientation == 'horizontal'):
-            start_cell.setWalls(start_cell.has_wall_up, True)
-            end_cell.setWalls(end_cell.has_wall_up, True)
-        #otherwise the orientation is vertical and the wall is placed to the side of the cells
-        else:
             start_cell.setWalls(True, start_cell.has_wall_left)
             end_cell.setWalls(True, end_cell.has_wall_left)
+        #otherwise the orientation is vertical and the wall is placed to the side of the cells
+        else:
+            start_cell.setWalls(start_cell.has_wall_up, True)
+            end_cell.setWalls(end_cell.has_wall_up, True)
     
     def updateState(self):
         self.state = {
@@ -98,13 +97,11 @@ class Board:
         # +---+---+---+---+---+---+---+---+---+
         '''
         string_board = []
-        rowCounter = 0
-        cellCounter = 0
+        print(str(self.board[1][2]))
+        print(str(self.board[2][2]))
         for row in self.board:
             for i in range(2):
-                
                 for cell in row:
-                    #print(str(cell))
                     #determine which edges the cell is touching
                     edge_left = True if cell.neighbour_left is None else False
                     edge_right = True if cell.neighbour_right is None else False
