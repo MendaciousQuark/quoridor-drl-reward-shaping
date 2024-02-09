@@ -13,17 +13,22 @@ class Cell:
         self.has_wall_up = wall_up
         
     def updateNeighbours(self):
+        self.neighbours = []
         left_location = getDirectionIndex(self.position, LEFT)
         self.neighbour_left = left_location if validLocation(*left_location) else None
+        self.neighbours.append(self.neighbour_left)
         
         right_location = getDirectionIndex(self.position, RIGHT)
         self.neighbour_right = right_location if validLocation(*right_location) else None
+        self.neighbours.append(self.neighbour_right)
         
         up_location = getDirectionIndex(self.position, UP)
         self.neighbour_up = up_location if validLocation(*up_location) else None
+        self.neighbours.append(self.neighbour_up)
         
         down_location = getDirectionIndex(self.position, DOWN)
         self.neighbour_down = down_location if validLocation(*down_location) else None
+        self.neighbours.append(self.neighbour_down)
        
     def copy(self):
         new_cell = Cell(*self.position)

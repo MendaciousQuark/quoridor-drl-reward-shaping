@@ -47,4 +47,3 @@ def findPawn(colour, board):
                 continue
             elif(cell.occupant == pawn_to_find):
                 return cell
-

@@ -30,6 +30,6 @@ __all__ = [
     #from directions.py
     'getDirectionIndex', 'UP', 'DOWN', 'LEFT', 'RIGHT',
     #from utils.py 
-    'validLocation', 'joinWithNewlines', 'joinWithoutNewlines', 'findPawn', 'moveNumberToLetter', 'moveLetterToNumber'
+    'validLocation', 'joinWithNewlines', 'joinWithoutNewlines', 'findPawn', 'moveNumberToLetter', 'moveLetterToNumber', "boardToGraph", "cellToNode"
 ]
 
