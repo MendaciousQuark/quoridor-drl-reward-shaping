@@ -8,6 +8,7 @@ class Node:
         self.traversal_cost = 1
         #cost of the path from the start node to the current node (overriden by A* algorithm)
         self.path_cost = 0
+        self.heuristicCost = 0
         #heuristic cost is the distance from the node to the final row
         self.total_cost = 0
         
@@ -24,3 +25,4 @@ so heuristic cost for each cell can simply be the distance from node to final ro
 final row is 0 for white and 8 for black
 A* will have to check if neighbour nodes have walls that block it too
 '''
+

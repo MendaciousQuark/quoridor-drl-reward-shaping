@@ -1,4 +1,8 @@
+#graph is a 2D list of nodes, colour is a boolean, start is a tuple, end is a list of tuples
 def aStar(graph, colour, start, end):
+    #set all the heuristics based om the colour
+    setheuristicCost(graph, colour)
+    
     #Initialise the open and closed lists
     openList = []
     closedList = []
@@ -6,20 +10,20 @@ def aStar(graph, colour, start, end):
     #Initialise the start node
     startNode = graph[start[0]][start[1]]
     startNode.path_cost = 0
-    startNode.heuristicCost(colour)
-    startNode.total_cost = startNode.path_cost + startNode.heuristicCost(colour)
+    startNode.heuristic_cost
+    startNode.total_cost = startNode.path_cost + startNode.heuristic_cost
     openList.append(startNode)
     
     #While there are nodes in the open list
     while(len(openList) > 0):
-        #Get the node with the lowest f value
+        #Get the node with the lowest total_cost
         currentNode = openList[0]
         for node in openList:
             if(node.total_cost < currentNode.total_cost):
                 currentNode = node
         
         #If the current node is the end node
-        if(currentNode.position == end):
+        if(currentNode.position in end):
             #Initialise the path
             path = []
             #Reconstruct the path
@@ -52,8 +56,13 @@ def aStar(graph, colour, start, end):
             #Set the traversal_value of the neighbour
             neighbour.path_cost = traversal_value
             #Set the h value of the neighbour
-            neighbour.heuristicCost(colour)
-            #Set the f value of the neighbour
-            neighbour.total_cost = neighbour.path_cost + neighbour.heuristicCost(colour)
+            neighbour.heuristic_cost
+            #Set the total_cost of the neighbour
+            neighbour.total_cost = neighbour.path_cost + neighbour.heuristic_cost
     #If there are no nodes in the open list, return an empty path
     return []
+
+def setheuristicCost(graph, colour):
+    for row in graph:
+        for node in row:
+            node.heuristic_cost = node.calcHeuristicCost(colour)
