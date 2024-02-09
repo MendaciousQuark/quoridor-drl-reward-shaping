@@ -16,8 +16,12 @@ def joinWithoutNewlines(lst, n):
     return '\n'.join([''.join(chunk) for chunk in chunks])
 
 def moveLetterToNumber(letter):
-    # Ensure the letter is lowercase to standardize the input
-    letter = letter.lower()
+    try:
+        # Ensure the letter is lowercase to standardize the input
+        letter = letter.lower()
+    except AttributeError:
+        raise ValueError(f"Invalid letter: {letter}. Must be a single character.")
+    
     # 'a' maps to 0, 'b' to 1, ..., 'i' to 8
     number = ord(letter) - ord('a')
     # Check if the conversion is in the valid range [0-8]
