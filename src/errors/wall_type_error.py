@@ -1,5 +1,5 @@
 class WallTypeError(Exception):
-    def __init__(self, field, message="Wall tpe should be vertical or horizontal."):
+    def __init__(self, field, message="Wall type should be vertical or horizontal."):
         
         self.field = field
         self.message = message

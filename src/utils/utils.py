@@ -35,3 +35,12 @@ def moveNumberToLetter(number):
     else:
         raise ValueError(f"Invalid number: {number}. Must be in the range 0 to 8.")
 
+def findPawn(colour, board):
+    pawn_to_find = 'white' if colour else 'black'
+    for row in board:
+        for cell in row:
+            if(cell.occupant is None):
+                continue
+            elif(cell.occupant == pawn_to_find):
+                return cell
+

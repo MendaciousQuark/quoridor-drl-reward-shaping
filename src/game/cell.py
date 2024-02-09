@@ -1,5 +1,4 @@
-from utils.utils import validLocation
-from utils.directions import UP, DOWN, LEFT, RIGHT, getDirectionIndex
+from utils import UP, DOWN, LEFT, RIGHT, getDirectionIndex, validLocation
 
 class Cell:
     def __init__(self, i, j):

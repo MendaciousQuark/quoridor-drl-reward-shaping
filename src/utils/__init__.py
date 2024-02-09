@@ -1,0 +1,35 @@
+#this file defines import behavior for utils/
+
+#specifics from string_board.py (really just all constants)
+from .string_board import (
+    BORDER_HORIZONTAL, BORDER_VERTICAL, BORDER_BOTTOM,
+    CELL_HORIZONTAL, CELL_HORIZONTAL_EDGE, CELL_HORIZONTAL_EDGE_WALLED,
+    CELL_HORIZONTAL_WALLED, CELL_HORIZONTAL_WALLED_CONNECTED, CELL_HORIZONTAL_WALLED_INTERSECTION, CELL_HORIZONTAL_INTERSECTION,
+    CELL_VERTICAL, CELL_VERTICAL_EDGE, CELL_VERTICAL_WALLED,
+    CELL_VERTICAL_PAWN_WHITE, CELL_VERTICAL_EDGE_PAWN_WHITE, CELL_VERTICAL_WALLED_PAWN_WHITE,
+    CELL_VERTICAL_PAWN_BLACK, CELL_VERTICAL_EDGE_PAWN_BLACK, CELL_VERTICAL_WALLED_PAWN_BLACK,
+    PAWN_WHITE, PAWN_BLACK
+)
+
+#specifics from utils.py
+from .utils import validLocation, joinWithNewlines, findPawn, moveLetterToNumber, joinWithoutNewlines, moveNumberToLetter
+
+#specifics from directions.py
+from .directions import getDirectionIndex, UP, DOWN, LEFT, RIGHT
+
+#all from utils/
+__all__ = [
+    #from string_board.py
+    'BORDER_HORIZONTAL', 'BORDER_VERTICAL', 'BORDER_BOTTOM',
+    'CELL_HORIZONTAL', 'CELL_HORIZONTAL_EDGE', 'CELL_HORIZONTAL_EDGE_WALLED',
+    'CELL_HORIZONTAL_WALLED', 'CELL_HORIZONTAL_WALLED_CONNECTED', 'CELL_HORIZONTAL_WALLED_INTERSECTION', 'CELL_HORIZONTAL_INTERSECTION',
+    'CELL_VERTICAL', 'CELL_VERTICAL_EDGE', 'CELL_VERTICAL_WALLED',
+    'CELL_VERTICAL_PAWN_WHITE', 'CELL_VERTICAL_EDGE_PAWN_WHITE', 'CELL_VERTICAL_WALLED_PAWN_WHITE',
+    'CELL_VERTICAL_PAWN_BLACK', 'CELL_VERTICAL_EDGE_PAWN_BLACK', 'CELL_VERTICAL_WALLED_PAWN_BLACK',
+    'PAWN_WHITE', 'PAWN_BLACK', 
+    #from directions.py
+    'getDirectionIndex', 'UP', 'DOWN', 'LEFT', 'RIGHT',
+    #from utils.py 
+    'validLocation', 'joinWithNewlines', 'joinWithoutNewlines', 'findPawn', 'moveNumberToLetter', 'moveLetterToNumber'
+]
+

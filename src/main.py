@@ -1,4 +1,4 @@
-from game.board import Board
+from game import Board
 
 def main():
     # Initialize a Board instance

@@ -1,9 +1,6 @@
 from .cell import Cell
-from utils.directions import UP, DOWN, LEFT, RIGHT, getDirectionIndex
-from utils.string_board import *
-from utils.utils import validLocation, joinWithNewlines
+from utils import *
 import pdb
-import math
 
 class Board:
     def __init__(self):
