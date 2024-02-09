@@ -8,11 +8,11 @@ class Node:
         self.traversal_cost = 1
         #cost of the path from the start node to the current node (overriden by A* algorithm)
         self.path_cost = 0
-        self.heuristicCost = 0
+        self.heuristic_cost = 0
         #heuristic cost is the distance from the node to the final row
         self.total_cost = 0
         
-    def heuristicCost(self, colour):
+    def calcHeuristicCost(self, colour):
         if(colour):
             goal = (0, self.position[1])
         else:
