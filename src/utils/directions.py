@@ -15,4 +15,6 @@ def getDirectionIndex(position, direction):
     # Return a list containing the position after moving one step in 'direction'
     return [position[0] + direction[0], position[1] + direction[1]]
 
+def distance(start, end):
+    return abs(start[0] - end[0]) + abs(start[1] - end[1])
     

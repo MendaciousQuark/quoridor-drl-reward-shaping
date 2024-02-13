@@ -15,7 +15,7 @@ from .string_board import (
 from .utils import validLocation, joinWithNewlines, findPawn, moveLetterToNumber, joinWithoutNewlines, moveNumberToLetter
 
 #specifics from directions.py
-from .directions import getDirectionIndex, UP, DOWN, LEFT, RIGHT
+from .directions import getDirectionIndex, distance, UP, DOWN, LEFT, RIGHT
 
 #specifics from board_to_graph.py
 from .board_to_graph import boardToGraph, cellToNode
@@ -31,7 +31,7 @@ __all__ = [
     'CELL_VERTICAL_PAWN_BLACK', 'CELL_VERTICAL_EDGE_PAWN_BLACK', 'CELL_VERTICAL_WALLED_PAWN_BLACK',
     'PAWN_WHITE', 'PAWN_BLACK', 
     #from directions.py
-    'getDirectionIndex', 'UP', 'DOWN', 'LEFT', 'RIGHT',
+    'getDirectionIndex', "distance", 'UP', 'DOWN', 'LEFT', 'RIGHT',
     #from utils.py 
     'validLocation', 'joinWithNewlines', 'joinWithoutNewlines', 'findPawn', 'moveNumberToLetter', 'moveLetterToNumber', "cellToNode",
     #from board_to_graph.py

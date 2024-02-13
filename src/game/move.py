@@ -14,14 +14,14 @@ class Move:
         if(self.action == "jump"):
             self.direction = self.parseDirection(jumpDirection)
         elif(self.action == "place"):
-            self.direction = self.parseOrientation(orientation)
+            self.orientation = self.parseOrientation(orientation)
         
         #parse start and end positions
         self.start = self.parseLocation(start)
         if(not validLocation(self.start)):
             raise MoveLocationError("start", f"Invalid start location: {start}")
         
-        #only one location is needed for placing a wall
+        #only one location and orinetation (not direction) is needed for placing a wall
         if(self.action == "place"):
             self.end = None
             self.direction = None
