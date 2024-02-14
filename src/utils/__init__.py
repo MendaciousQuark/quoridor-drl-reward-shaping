@@ -20,6 +20,9 @@ from .directions import getDirectionIndex, distance, getCellDirection, UP, DOWN,
 #specifics from board_to_graph.py
 from .board_to_graph import boardToGraph, cellToNode
 
+#speciics .text_ouput.py
+from .text_output import HELP, HELP_JUMP, HELP_MOVE, HELP_PLACE
+
 #all from utils/
 __all__ = [
     #from string_board.py
@@ -35,6 +38,8 @@ __all__ = [
     #from utils.py 
     'validLocation', 'joinWithNewlines', 'joinWithoutNewlines', 'findPawn', 'moveNumberToLetter', 'moveLetterToNumber', "locationToCell", "opposingPawnAdjacent",
     #from board_to_graph.py
-    "boardToGraph", "cellToNode"
+    "boardToGraph", "cellToNode",
+    #from text_output.py
+    "HELP", "HELP_JUMP", "HELP_MOVE", "HELP_PLACE"
 ]
 
