@@ -1,3 +1,6 @@
+from .directions import UP, DOWN, LEFT, RIGHT, getDirectionIndex
+
+
 def validLocation(i, j):
         # Return True if the location is on the board, False if it's off the board
         return 0 <= i <= 8 and 0 <= j <= 8
@@ -47,3 +50,21 @@ def findPawn(colour, board):
                 continue
             elif(cell.occupant == pawn_to_find):
                 return cell
+
+def locationToCell(i , j , board):
+    if(validLocation(i, j)):
+        return board[i][j]
+    else:
+        raise ValueError(f"Invalid location: ({i}, {j}). Must be in the range (0, 0) to (8, 8).")
+
+def opposingPawnAdjacent(colour, board, center_cell):
+    pawn_cell = findPawn(False, board) if colour else findPawn(True, board)
+    for direction in [UP, DOWN, LEFT, RIGHT]:
+        location_to_check = getDirectionIndex(center_cell.location, direction)
+        if(validLocation(*location_to_check)):
+            if(pawn_cell.location == location_to_check):
+                return (True, locationToCell(*location_to_check, board))
+        else:
+            continue
+    return (False, None)
+    

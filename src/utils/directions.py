@@ -15,6 +15,19 @@ def getDirectionIndex(position, direction):
     # Return a list containing the position after moving one step in 'direction'
     return [position[0] + direction[0], position[1] + direction[1]]
 
+def getCellDirection(target_cell, start_cell):
+    if target_cell.location[0] == start_cell.location[0] - 1:
+        return UP
+    elif target_cell.location[0] == start_cell.location[0] + 1:
+        return DOWN
+    elif target_cell.location[1] == start_cell.location[1] - 1:
+        return LEFT
+    elif target_cell.location[1] == start_cell.location[1] + 1:
+        return RIGHT
+    else:
+        raise ValueError(f"Invalid target cell: {target_cell}. Must be adjacent to start cell: {start_cell} (can not be diagonal).")
+    
+    
 def distance(start, end):
     return abs(start[0] - end[0]) + abs(start[1] - end[1])
     

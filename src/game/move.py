@@ -11,6 +11,8 @@ class Move:
         
         #parse the action
         self.action = self.parseAction(action)
+        
+        #some actions require an orientation and or jump direction
         if(self.action == "jump"):
             self.direction = self.parseDirection(jumpDirection)
         elif(self.action == "place"):
