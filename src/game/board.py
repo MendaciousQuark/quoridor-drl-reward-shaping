@@ -1,5 +1,6 @@
 from .cell import Cell
-from utils import *
+from utils import joinWithNewlines, getDirectionIndex, validLocation, UP, DOWN, LEFT, RIGHT
+from utils.string_board import *
 import pdb
 
 class Board:
@@ -27,7 +28,16 @@ class Board:
         # Place white pawn
         i, j = self.pawn_positions['white']
         self.board[i][j].occupant = 'white'
-        
+    
+    def removePawns(self):
+        # Remove black pawn
+        i, j = self.pawn_positions['black']
+        self.board[i][j].occupant = None
+
+        # Remove white pawn
+        i, j = self.pawn_positions['white']
+        self.board[i][j].occupant = None
+    
     def findWalledCells(self):
         cells_with_walls = []
         #iterate through all cells in the board
@@ -37,6 +47,12 @@ class Board:
                     cells_with_walls.append(cell)
         #return the cells that have walls
         return cells_with_walls
+    
+    def movePawn(self, colour, end):
+        self.removePawns()
+        pawn_colour = 'white' if colour else 'black'
+        self.pawn_positions[pawn_colour] = list(end)
+        self.placePawns()
     
     def placeWall(self, orientation, start_cell):
         if(orientation == 'horizontal'):
@@ -169,8 +185,8 @@ class Board:
                         
                         #determin if and which pawn is present
                         pawn_present = False if cell.occupant is None else True
-                        white_present = True if cell.occupant is 'white' else False
-                        black_present = True if cell.occupant is 'black' else False
+                        white_present = True if cell.occupant == 'white' else False
+                        black_present = True if cell.occupant == 'black' else False
                         
                         #if we are in the first column
                         if(edge_left):

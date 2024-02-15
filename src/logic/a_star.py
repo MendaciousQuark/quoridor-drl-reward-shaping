@@ -2,7 +2,6 @@
 def aStar(graph, colour, start, end):
     #set all the heuristics based om the colour
     setheuristicCost(graph, colour)
-    
     #Initialise the open and closed lists
     openList = []
     closedList = []
@@ -31,6 +30,7 @@ def aStar(graph, colour, start, end):
                 path.append(currentNode.position)
                 currentNode = currentNode.parent
             #Return the path
+            #print("Path found: " + path)
             return path[::-1]
         
         #Remove the current node from the open list and add it to the closed list
@@ -50,7 +50,14 @@ def aStar(graph, colour, start, end):
                 openList.append(neighbour)
             #If the traversal_value of the neighbour is greater than the traversal_value of the current node
             if(traversal_value >= neighbour.path_cost):
-                continue
+                # Set the parent of the neighbour to the current node
+                neighbour.parent = currentNode
+                # Set the path_cost of the neighbour
+                neighbour.path_cost = traversal_value
+                # Optionally, recalculate the heuristic_cost if it depends on the path
+                # neighbour.heuristic_cost = calculateHeuristic(neighbour, end)
+                # Set the total_cost of the neighbour
+                neighbour.total_cost = neighbour.path_cost + neighbour.heuristic_cost
             #Set the parent of the neighbour to the current node
             neighbour.parent = currentNode
             #Set the traversal_value of the neighbour
@@ -60,6 +67,7 @@ def aStar(graph, colour, start, end):
             #Set the total_cost of the neighbour
             neighbour.total_cost = neighbour.path_cost + neighbour.heuristic_cost
     #If there are no nodes in the open list, return an empty path
+    print("No path found")
     return []
 
 def setheuristicCost(graph, colour):

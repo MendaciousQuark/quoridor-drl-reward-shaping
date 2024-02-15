@@ -1,4 +1,5 @@
 from game import Board, Pawn
+from logic import makeMove
 
 def main():
     # Initialize a Board instance
@@ -6,8 +7,8 @@ def main():
 
     
     # Place a wall or modify the board in some way to test the output
-    board.placeWall('vertical', start_cell=board.board[1][2])
-    board.placeWall('horizontal', start_cell=board.board[2][2])
+    # board.placeWall('vertical', start_cell=board.board[1][2])
+    # board.placeWall('horizontal', start_cell=board.board[2][2])
     #board.board[1][1].occupant = 'white'
 
     
@@ -18,9 +19,10 @@ def main():
     
     print(board.printBoard())
     
-    pawn = Pawn(board.copy(), True, 0, 0)
-    move = pawn.rquestMoveInput()
-    print(str(move))
+    pawn = Pawn(True, 0, 0)
+    move = pawn.decideMoveHuman(board)
+    makeMove(move, board, pawn.colour)
+    print(board.printBoard())
 
 
 if __name__ == '__main__':
