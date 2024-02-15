@@ -7,7 +7,7 @@ from errors import MoveFormatError, MoveLocationError
 class Pawn:
     #board is a copy of the game board, colour is a bool
     def __init__(self, board, colour, i, j):
-        self.colour = True if colour else False
+        self.colour = colour
         self.move_dir = 1 if colour else -1
         self.location = [i, j]
         self.walls = 10
@@ -42,7 +42,10 @@ class Pawn:
                         move = Move(self.colour, move_parts[2], None, move_parts[0], None, None, move_parts[1])
                         return move
                     elif(move_parts[0] == "jump" or move_parts[0] == "j"):
-                        pass
+                        #jump format jump start end direction
+                                    #colour, start, end, action, direction, jumpDirection=None, orientation=None
+                        move = Move(self.colour, move_parts[1], move_parts[2], move_parts[0], None, move_parts[3], None)
+                        return move
                 except (MoveFormatError, MoveLocationError) as e:
                     print(e)
         except Exception as e:

@@ -1,4 +1,4 @@
-from game import Board
+from game import Board, Pawn
 
 def main():
     # Initialize a Board instance
@@ -17,6 +17,11 @@ def main():
     # Print the board
     
     print(board.printBoard())
+    
+    pawn = Pawn(board.copy(), True, 0, 0)
+    move = pawn.rquestMoveInput()
+    print(str(move))
+
 
 if __name__ == '__main__':
     main()

@@ -12,15 +12,22 @@ class Move:
         #parse the action
         self.action = self.parseAction(action)
         
-        #some actions require an orientation and or jump direction
+        #some actions require a jump direction
         if(self.action == "jump"):
             self.jumpDirection = self.parseDirection(jumpDirection)
-        elif(self.action == "place"):
+        else:
+            self.jumpDirection = None
+            
+        #some actions require an orientation
+        if(self.action == "place"):
             self.orientation = self.parseOrientation(orientation)
+        else:
+            self.jumpDirection = None
+            self.orientation = None
         
         #parse start and end positions
         self.start = self.parseLocation(start)
-        if(not validLocation(self.start)):
+        if(not validLocation(*self.start)):
             raise MoveLocationError("start", f"Invalid start location: {start}")
         
         #only one location and orinetation (not direction) is needed for placing a wall
@@ -29,20 +36,23 @@ class Move:
             self.direction = None
         else:
             self.end = self.parseLocation(end)
-            if(not validLocation(self.end)):
+            if(not validLocation(*self.end)):
                 raise MoveLocationError("end", f"Invalid end location: {end}")
         
-        #parse the direction
-        self.direction = self.parseDirection(direction)
+        #if the action is not jump
+        if(self.action != "jump"):
+            #parse the direction
+            self.direction = self.parseDirection(direction)
+        else:
+            self.direction = jumpDirection
     
     def parseColour(self, colour):
-        colour = colour.lower()
-        if(colour == "white" or colour == 'w'):
+        if(colour):
             return "white"
-        elif(colour == "black" or colour == 'b'):
+        elif(not colour):
             return "black"
         else:
-            raise MoveFormatError("colour", f"Invalid colour: {colour}\nColour should be one of 'white' or 'black'")
+            raise MoveFormatError("colour", f"Invalid colour: {colour}\nColour should be one of 'white' (True) or 'black' (False)")
     
     def parseLocation(self, location):
         #parse the location
@@ -58,7 +68,10 @@ class Move:
     
     def parseAction(self, action):
         #format the action
-        action = action.lower()
+        if(action is not None):
+            action = action.lower()
+        else:
+            raise MoveFormatError("action", f"Invalid action: {action}\nAction should be one of 'move', 'place', or 'jump'")
         
         #parse the action
         if(action == "move" or action == 'm'):
@@ -72,7 +85,8 @@ class Move:
     
     def parseOrientation(self, orientation):
         #format the orientation
-        orientation = orientation.lower()
+        if(orientation is not None):
+            orientation = orientation.lower()
         
         #parse the orientation
         if(orientation == "vertical" or orientation == 'v'):
@@ -84,7 +98,8 @@ class Move:
     
     def parseDirection(self, direction):
         #format the direction
-        direction = direction.lower()
+        if(direction is not None):
+            direction = direction.lower()
         
         #no movement direction is needed for placing a wall
         if(self.action == "place"):
