@@ -48,7 +48,7 @@ def validateJumpAction(move, board):
         if(not validAlternateJumpDirection(start_cell, board, adjacent_pawn, move)):
             return (False, f"Invalid jump: {move.start} to {move.end}. Jump direction not valid or blocked by wall.")
         else:
-            if(distance(move.start, move.end) != 1):
+            if(distance(adjacent_pawn[1], move.end) != 1):
                 return (False, f"Invalid jump: {move.start} to {move.end}. Diagonal jump distance must be 1.")
             else:
                 return (True, "Valid jump")

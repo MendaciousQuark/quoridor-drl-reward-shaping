@@ -27,7 +27,18 @@ def getCellDirection(target_cell, start_cell):
     else:
         raise ValueError(f"Invalid target cell: {target_cell}. Must be adjacent to start cell: {start_cell} (can not be diagonal).")
     
-    
+#look over logic of function
 def distance(start, end):
+    if start == end:
+        return 0
+    
+    for i in [-1, 0, 1]:
+        for j in [-1, 0, 1]:
+            if(i == 0 and j == 0):
+                continue
+            else:
+                if(getDirectionIndex(start, (i, j)) == end):
+                    return 1
+    
     return abs(start[0] - end[0]) + abs(start[1] - end[1])
     
