@@ -17,9 +17,6 @@ from .utils import validLocation, joinWithNewlines, findPawn, moveLetterToNumber
 #specifics from directions.py
 from .directions import getDirectionIndex, distance, getCellDirection, UP, DOWN, LEFT, RIGHT
 
-#specifics from board_to_graph.py
-from .board_to_graph import boardToGraph, cellToNode
-
 #speciics .text_ouput.py
 from .text_output import HELP, HELP_JUMP, HELP_MOVE, HELP_PLACE
 
@@ -37,8 +34,6 @@ __all__ = [
     'getDirectionIndex', "distance", "getCellDirection", 'UP', 'DOWN', 'LEFT', 'RIGHT',
     #from utils.py 
     'validLocation', 'joinWithNewlines', 'joinWithoutNewlines', 'findPawn', 'moveNumberToLetter', 'moveLetterToNumber', "locationToCell", "opposingPawnAdjacent",
-    #from board_to_graph.py
-    "boardToGraph", "cellToNode",
     #from text_output.py
     "HELP", "HELP_JUMP", "HELP_MOVE", "HELP_PLACE"
 ]
