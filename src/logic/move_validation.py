@@ -15,18 +15,20 @@ def validateMove(move, board):
         raise ValueError(f"Invalid action: {move.action}. Must be one of 'move', 'jump', or 'place'.")
 
 def validateMoveAction(move, board):
-    start_cell = board[move.start[0]][move.start[1]]
-    end_cell = board[move.end[0]][move.end[1]]
+    start_cell = board.board[move.start[0]][move.start[1]]
+    end_cell = board.board[move.end[0]][move.end[1]]
     
+    if(start_cell.occupant != move.colour):
+        raise MoveValidationError("start", f"Invalid Move: {move.start} to {move.end}. Start cell is not occupied by {move.colour}.")
     if(move.direction not in [UP, DOWN, LEFT, RIGHT]):
         raise MoveValidationError("direction", f"Invalid direction: {move.direction}. Must be one of 'up', 'down', 'left', or 'right'. See ../utils/directions.py for more information.")
     if(end_cell.occupant != None):
-        raise MoveValidationError("end", f"Invalid Move: {move.start} to {move.end}. End cell is occupied by {end_cell.occupant}. Reuest jump.")
+        raise MoveValidationError("end", f"Invalid Move: {move.start} to {move.end}. End cell is occupied by {end_cell.occupant}. Request jump.")
     
     if(distance(move.start, move.end) != 1):
-            return (False, f"Invalid move: {end_cell} too far")
+            return (False, f"Invalid move: {end_cell.position} too far")
     if(directionBlocked(move.direction, start_cell, board)):
-        return (False, f"Invalid move: {end_cell} blocked by wall")
+        return (False, f"Invalid move: {end_cell.position} blocked by wall")
     
     return (True, "Valid move")
 
@@ -36,13 +38,13 @@ def validateJumpAction(move, board):
     elif(move.jumpDirection not in [UP, DOWN, LEFT, RIGHT]):
         raise MoveValidationError("jumpDirection", f"Invalid jump direction: {move.jumpDirection}. Must be one of 'up', 'down', 'left', or 'right'. See ../utils/directions.py for more information.")
     #check for adjacent opposing pawn
-    adjacent_pawn = opposingPawnAdjacent(move.colour, board, locationToCell(move.start[0], move.start[1], board))
+    adjacent_pawn = opposingPawnAdjacent(move.colour, board.board, locationToCell(move.start[0], move.start[1], board.board))
     if(adjacent_pawn[0] == False):
         return (False, f"Invalid jump: {move.start} to {move.end}. No adjacent opposing pawn.")
     
     #determine the direction of 
     base_direction = UP if move.colour == "white" else DOWN
-    start_cell = locationToCell(move.start[0], move.start[1], board)
+    start_cell = locationToCell(move.start[0], move.start[1], board.board)
     #if there is no wall behind opposing pawn in the direction of the jump but a diagonal jump is requested
     straight_jump_blocked = straightJumpBlocked(start_cell, board, adjacent_pawn, move)
     if(straight_jump_blocked):
@@ -87,7 +89,7 @@ def validAlternateJumpDirection(start_cell, board, adjacent_pawn, move):
         return False
     
     #convert the target location to a cell
-    jump_target_cell = locationToCell(*jump_target_location, board)
+    jump_target_cell = locationToCell(*jump_target_location, board.board)
     #get the direction to the target cell from the adjacent pawn cell
     jump_direction = getCellDirection(jump_target_cell, adjacent_pawn[1])
     if(directionBlocked(jump_direction, adjacent_pawn[1], board)):
@@ -97,16 +99,16 @@ def validAlternateJumpDirection(start_cell, board, adjacent_pawn, move):
 
 def directionBlocked(direction, start_cell, board):
     if(direction == UP):
-        if(start_cell.upWall):
+        if(start_cell.has_wall_up):
             return True
     elif(direction == DOWN):
-        if(board[start_cell.position[0] + 1][start_cell.position[1]].upWall):
+        if(board.board[start_cell.position[0] + 1][start_cell.position[1]].has_wall_up):
             return True
     elif(direction == LEFT):
-        if(start_cell.leftWall):
+        if(start_cell.has_wall_left):
             return True
     elif(direction == RIGHT):
-        if(board[start_cell.position[0]][start_cell.position[1] + 1].leftWall):
+        if(board.board[start_cell.position[0]][start_cell.position[1] + 1].has_wall_left):
             return True
     else:
         raise MoveValidationError("direction", f"Invalid direction: {direction}. Must be one of 'up', 'down', 'left', or 'right'. See ../utils/directions.py for more information.")
@@ -115,7 +117,7 @@ def validatePlaceAction(move, board):
     if(move.orientation not in ["vertical", "horizontal"]):
         raise MoveValidationError("orientation", f"Invalid orientation: {move.orientation}. Must be one of 'vertical' or 'horizontal'.")
     if(not spaceForWall(locationToCell(*move.start, board.board), move.orientation, board.board)):
-        return (False, f"Invalid wall placement: {move.start} {move.orientation} wall")
+        return (False, f"No space for wall placement: {move.start} {move.orientation} wall.\n\n\t(This could be due to trying to place a  wall at the edge of the board)\n")
     
     temp_board = board.copy()
     
@@ -150,10 +152,10 @@ def spaceForWall(start_cell, orientation, board):
             return False
         #if there is a cell below the start cell
         if(validLocation(start_cell.position[0] + 1, start_cell.position[1])):
-            cell_below = board[start_cell.position[0] + 1][start_cell.position[1]]
+            cell_below = board.board[start_cell.position[0] + 1][start_cell.position[1]]
         #if there is a cell below and to the left of the start cell
         if(validLocation(start_cell.position[0] + 1, start_cell.position[1] - 1)):
-            cell_below_left = board[start_cell.position[0] + 1][start_cell.position[1] - 1]
+            cell_below_left = board.board[start_cell.position[0] + 1][start_cell.position[1] - 1]
         #if the vertical wall passes through a horizontal wall
         if(cell_below.has_wall_up and cell_below_left.has_wall_up):
             return False
@@ -173,10 +175,10 @@ def spaceForWall(start_cell, orientation, board):
             return False
         #if there is a cell to the right of the start cell
         if(validLocation(start_cell.position[0], start_cell.position[1] + 1)):
-            cell_right = board[start_cell.position[0]][start_cell.position[1] + 1]
+            cell_right = board.board[start_cell.position[0]][start_cell.position[1] + 1]
         #if there is a cell above and to the right of the start cell
         if(validLocation(start_cell.position[0] - 1, start_cell.position[1] + 1)):
-            cell_above_right = board[start_cell.position[0] - 1][start_cell.position[1] + 1]
+            cell_above_right = board.board[start_cell.position[0] - 1][start_cell.position[1] + 1]
         #if the horizontal wall passes through a vertical wall
         if(cell_right.has_wall_left and cell_above_right.has_wall_left):
             return False

@@ -22,7 +22,6 @@ class Move:
         if(self.action == "place"):
             self.orientation = self.parseOrientation(orientation)
         else:
-            self.jumpDirection = None
             self.orientation = None
         
         #parse start and end positions
@@ -60,8 +59,8 @@ class Move:
         if(len(parts) != 2):
             raise MoveLocationError("location", f"Invalid location: {location}\nLocation should be a letter and a number. e.g. 'a1'")
         try:
-            i = moveLetterToNumber(parts[0])
-            j = int(parts[1]) - 1
+            i = 8 - (int(parts[1]) - 1)
+            j = moveLetterToNumber(parts[0])
         except ValueError:
             raise MoveLocationError("location", f"Invalid location: {location}\nLocation should be a letter followed by a number. e.g. 'b3'")
         return (i, j)

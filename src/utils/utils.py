@@ -60,9 +60,9 @@ def locationToCell(i , j , board):
 def opposingPawnAdjacent(colour, board, center_cell):
     pawn_cell = findPawn(False, board) if colour else findPawn(True, board)
     for direction in [UP, DOWN, LEFT, RIGHT]:
-        location_to_check = getDirectionIndex(center_cell.location, direction)
+        location_to_check = getDirectionIndex(center_cell.position, direction)
         if(validLocation(*location_to_check)):
-            if(pawn_cell.location == location_to_check):
+            if(pawn_cell.position == location_to_check):
                 return (True, locationToCell(*location_to_check, board))
         else:
             continue
