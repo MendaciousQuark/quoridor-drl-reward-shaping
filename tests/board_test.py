@@ -149,9 +149,27 @@ def test_removePawn(intialisedBoard):
     assert board.board[7][4].occupant == None
     
 
-def test_findWalledCells():
+def test_findWalledCells(intialisedBoard):
+    board = intialisedBoard
     random.seed(1716)
-    pass
+    possible_vertical_walls = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7)]
+    possible_horizontal_walls = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7)]
+    for i in range(100):
+        temp_board = board.copy()
+        vertical_walls = random.sample(possible_vertical_walls, 3)
+        horizontal_walls = random.sample(possible_horizontal_walls, 3)
+        for vertical_wall in vertical_walls:
+            temp_board.placeWall("vertical", temp_board.board[vertical_wall[0]][vertical_wall[1]])
+        for horizontal_wall in horizontal_walls:
+            temp_board.placeWall("horizontal", temp_board.board[horizontal_wall[0]][horizontal_wall[1]])
+        celled_walls_found = temp_board.findWalledCells()
+        for row in temp_board.board:
+            for cell in row:
+                if(cell in celled_walls_found):
+                    assert cell.has_wall_up or cell.has_wall_left
+                else:
+                    assert not cell.has_wall_up and not cell.has_wall_left
+    
 
 def test_copy(intialisedBoard):
     board = intialisedBoard
