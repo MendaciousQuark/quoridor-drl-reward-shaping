@@ -10,7 +10,7 @@ from .a_star import aStar
 from .move_validation import validateMove, validateMoveAction, validateJumpAction, validatePlaceAction
 
 #specifics from game_flow.py
-from .game_flow import makeMove
+from .game_flow import initGameObjects, playGame, victory, makeMove
 
 #specifics from board_to_graph.py
 from .board_to_graph import boardToGraph, cellToNode
