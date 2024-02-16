@@ -10,6 +10,7 @@ def initGameObjects():
 
 def playGame(board, white_pawn, black_pawn):
     while True:
+        # whites turn
         print(board.printBoard())
         print("White's turn\n")
         move = white_pawn.decideMoveHuman(board)
@@ -18,6 +19,8 @@ def playGame(board, white_pawn, black_pawn):
         if(victory(white_pawn)):
             print("White wins!\n")
             break
+        
+        #blacks turn
         print(board.printBoard())
         print("Black's turn\n")
         move = black_pawn.decideMoveHuman(board)

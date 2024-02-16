@@ -57,5 +57,12 @@ class Cell:
         else:
             return f"Position: {self.position}"
 
+    def __eq__(self, other_cell: object) -> bool:
+        if not isinstance(other_cell, Cell):
+            return False
+        return self.has_wall_up == other_cell.has_wall_up and \
+            self.has_wall_left == other_cell.has_wall_left and \
+            self.occupant == other_cell.occupant and \
+            self.position == other_cell.position
 
         

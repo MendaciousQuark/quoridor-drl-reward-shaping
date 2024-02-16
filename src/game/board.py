@@ -53,6 +53,7 @@ class Board:
         pawn_colour = 'white' if colour else 'black'
         self.pawn_positions[pawn_colour] = list(end)
         self.placePawns()
+        self.updateState()
     
     def placeWall(self, orientation, start_cell):
         if(orientation == 'horizontal'):
@@ -78,6 +79,8 @@ class Board:
         else:
             start_cell.setWalls(start_cell.has_wall_up, True)
             end_cell.setWalls(end_cell.has_wall_up, True)
+        
+        self.updateState()
     
     def updateState(self):
         self.state = {
@@ -96,11 +99,11 @@ class Board:
         # |   |   |   |   |   |   |   |   |   |
         # +---+---+---+---+---+---+---+---+---+
         # |   |   |   |   |   |   |   |   |   |
-        # +---#---+---+---+---+---+---+---+---+
-        # |   #   |   |   |   |   |   |   |   |
-        # +---#---+---=========---+---+---+---+
-        # |   #   |   |   |   |   |   |   |   |
-        # +---#---+---+---+---+---+---+---+---+
+        # +---+---+---+---+---+---+---+---+---+
+        # |   |   |   |   |   |   |   |   |   |
+        # +---+---+---+---+---+---+---+---+---+
+        # |   |   |   |   |   |   |   |   |   |
+        # +---+---+---+---+---+---+---+---+---+
         # |   |   |   |   |   |   |   |   |   |
         # +---+---+---+---+---+---+---+---+---+
         # |   |   |   |   |   |   |   |   |   |
@@ -238,8 +241,6 @@ class Board:
         #return a joined string_board we do len(self.board[0]) + 2 to account for the length of each row and the borders
         return joinWithNewlines(string_board, len(self.board[0]) + 2)
                         
-                        
-        
     def copy(self):
         new_board = Board()
         new_board.board = [[self.board[i][j].copy() for j in range(9)] for i in range(9)]
@@ -250,6 +251,14 @@ class Board:
         new_board.placePawns()
         new_board.updateState()
         return new_board
+    
+    def __str__(self):
+        return self.printBoard()
+    
+    def __eq__(self, other_board: object) -> bool:
+        if not isinstance(other_board, Board):
+            return False
+        return self.state == other_board.state
         
                     
                 
