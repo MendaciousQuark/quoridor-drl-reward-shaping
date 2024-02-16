@@ -48,6 +48,7 @@ def test_placeWall(intialisedBoard, capsys):
     
     #place a vertical wall
     board.placeWall("vertical", board.board[7][3])
+    print(board.printBoard())
     #capture the output
     captured = capsys.readouterr()
     #define the expected output
