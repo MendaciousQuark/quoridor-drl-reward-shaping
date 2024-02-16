@@ -1,29 +1,29 @@
 from src.game.board import Board, Cell
 from tests.test_utils import *
-import pytest
+import pytest, random
 
 @pytest.fixture(autouse=True)
-def intialiseBoard():
+def intialisedBoard():
     board = Board()
     return board
 
-def test_initBoard(intialiseBoard):
-    board = intialiseBoard
+def test_initBoard(intialisedBoard):
+    board = intialisedBoard
     start_test_board = [[Cell(i, j) for j in range(9)] for i in range(9)]
     start_test_board[0][4].occupant = "black"
     start_test_board[8][4].occupant = "white"
     assert board.board == start_test_board
     
-def test_printBoard(intialiseBoard, capsys):
-    board = intialiseBoard
+def test_printBoard(intialisedBoard, capsys):
+    board = intialisedBoard
     print(board.printBoard())
     captured = capsys.readouterr()
     expected_output = INIT_BOARD
     assert captured.out == expected_output
 
-def test_placeWall(intialiseBoard, capsys):
+def test_placeWall(intialisedBoard, capsys):
     #assign the board to a variable
-    board = intialiseBoard
+    board = intialisedBoard
     #place a wall
     board.placeWall("horizontal", board.board[8][3])
     #print the board
@@ -44,8 +44,8 @@ def test_placeWall(intialiseBoard, capsys):
     #define the expected output
     expected_output = PLACE_WALL_HORIZONTAL_THEN_VERTICAL
 
-def test_move(intialiseBoard, capsys):
-    board = intialiseBoard
+def test_move(intialisedBoard, capsys):
+    board = intialisedBoard
     
     #move the black piece to the right
     board.movePawn(False, board.board[0][5].position)
@@ -104,17 +104,57 @@ def test_move(intialiseBoard, capsys):
     assert captured_white_move_up.out == MOVE_WHITE_UP
     assert captured_white_move_down.out == MOVE_WHITE_DOWN
 
-def test_placePwan():
-    pass
+def test_placePwan(intialisedBoard):
+    board = intialisedBoard
+    board.pawn_positions["black"] = board.board[4][4].position
+    board.pawn_positions["white"] = board.board[5][5].position
+    board.placePawns()
+    
+    assert board.board[4][4].occupant == "black"
+    assert board.board[5][5].occupant == "white"
+    
+    board.pawn_positions["black"] = board.board[2][4].position
+    board.pawn_positions["white"] = board.board[3][4].position
+    board.placePawns()
+    
+    assert board.board[2][4].occupant == "black"
+    assert board.board[3][4].occupant == "white"
 
-def test_removePawn():
-    pass
+def test_removePawn(intialisedBoard):
+    board = intialisedBoard
+    #remove  initial pawns
+    board.removePawns()
+    assert board.board[0][4].occupant == None
+    assert board.board[8][4].occupant == None
+    
+    board.pawn_positions["black"] = board.board[2][4].position
+    board.pawn_positions["white"] = board.board[3][4].position
+    
+    board.removePawns()
+    assert board.board[2][4].occupant == None
+    assert board.board[3][4].occupant == None
+    
+    board.pawn_positions["black"] = board.board[5][4].position
+    board.pawn_positions["white"] = board.board[3][4].position
+    
+    board.removePawns()
+    assert board.board[5][4].occupant == None
+    assert board.board[3][4].occupant == None
+    
+    board.pawn_positions["black"] = board.board[2][4].position
+    board.pawn_positions["white"] = board.board[7][4].position
+    
+    board.removePawns()
+    assert board.board[2][4].occupant == None
+    assert board.board[7][4].occupant == None
+    
 
 def test_findWalledCells():
+    random.seed(1716)
     pass
 
-def test_copy(intialiseBoard):
-    board = intialiseBoard
+def test_copy(intialisedBoard):
+    board = intialisedBoard
     board_copy = board.copy()
     
     assert board.board == board_copy.board
