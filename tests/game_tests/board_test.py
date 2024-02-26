@@ -167,6 +167,22 @@ def test_removePawn(intialisedBoard):
     assert board.board[7][4].occupant == None
     
 
+from game.move import Move
+
+def move_init_test():
+    move = Move(True, "e1", "e2", "move", "up", None, None)
+    assert move.colour == True
+    assert move.start == "e1"
+    assert move.end == "e2"
+    assert move.action == "move"
+    assert move.direction == "up"
+    assert move.jumpDirection == None
+    assert move.orientation == None
+    
+def move_str_test():
+    move = Move(True, "e1", "e2", "move", "up", None, None)
+    assert str(move) == f"Colour: {move.colour}\nAction: {move.action}\nStart: {move.start}\nEnd: {move.end}\nDirection: {move.direction}\nOrientation: {move.orientation}, jumpDirection: {move.jumpDirection}  "
+
 def test_findWalledCells(intialisedBoard):
     # Initialize the board with the fixture
     board = intialisedBoard

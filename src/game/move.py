@@ -46,7 +46,7 @@ class Move:
             self.direction = jumpDirection
     
     def parseColour(self, colour):
-        if(colour is None):
+        if(colour is None or not isinstance(colour, bool)):
             raise MoveFormatError("colour", f"Invalid colour: {colour}\nColour should be one of 'white' (True) or 'black' (False)")
         
         if(colour):
@@ -62,6 +62,9 @@ class Move:
         if(len(parts) != 2):
             raise MoveLocationError("location", f"Invalid location: {location}\nLocation should be a letter and a number. e.g. 'a1'")
         try:
+            number_part = int(parts[1])
+            if(number_part < 1 or number_part > 9):
+                raise MoveLocationError("location", f"Invalid location: {location}\nLocation should be a letter followed by a number. e.g. 'b3' The number should be between 1 and 9")
             i = 8 - (int(parts[1]) - 1)
             j = moveLetterToNumber(parts[0])
         except ValueError:
