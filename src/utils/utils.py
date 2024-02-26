@@ -15,8 +15,8 @@ def joinWithNewlines(lst, n):
 def joinWithoutNewlines(lst, n):
     #Divide the list into chunks of size n
     chunks = [lst[i:i + n] for i in range(0, len(lst), n)]
-    #Join the chunks together with newline characters
-    return '\n'.join([''.join(chunk) for chunk in chunks])
+    #Join the chunks together without newline characters
+    return ''.join([''.join(chunk) for chunk in chunks])
 
 def moveLetterToNumber(letter):
     try:
@@ -35,13 +35,16 @@ def moveLetterToNumber(letter):
 
 def moveNumberToLetter(number):
     # Ensure the number is within the valid range [0-8]
-    if 0 <= number <= 8:
-        # Convert the number to the corresponding lowercase letter
-        letter = chr(ord('a') + number)
-        return letter
-    else:
-        raise ValueError(f"Invalid number: {number}. Must be in the range 0 to 8.")
-
+    try:
+        if 0 <= number <= 8:
+            # Convert the number to the corresponding lowercase letter
+            letter = chr(ord('a') + number)
+            return letter
+        else:
+            raise ValueError(f"Invalid number: {number}. Must be in the range 0 to 8.")
+    except TypeError:
+        raise ValueError(f"Invalid number: {number}. Must be an integer.")
+    
 def findPawn(colour, board):
     pawn_to_find = 'white' if colour else 'black'
     for row in board:
@@ -50,6 +53,7 @@ def findPawn(colour, board):
                 continue
             elif(cell.occupant == pawn_to_find):
                 return cell
+    raise ValueError(f"Could not find {pawn_to_find} pawn on the board.")
 
 def locationToCell(i , j , board):
     if(validLocation(i, j)):

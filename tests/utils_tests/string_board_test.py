@@ -1,0 +1,25 @@
+from utils.string_board import *
+
+def test_constants():
+    assert BORDER_HORIZONTAL == "+"
+    assert BORDER_VERTICAL == "|"
+    assert BORDER_BOTTOM == "+---"
+    assert CELL_HORIZONTAL == "+---"
+    assert CELL_HORIZONTAL_EDGE == "---"
+    assert CELL_HORIZONTAL_EDGE_WALLED == "==="
+    assert CELL_HORIZONTAL_WALLED == "+==="
+    assert CELL_HORIZONTAL_WALLED_CONNECTED == "===="
+    assert CELL_HORIZONTAL_WALLED_INTERSECTION == "#==="
+    assert CELL_HORIZONTAL_INTERSECTION == "#---"
+    assert CELL_VERTICAL == "|   "
+    assert CELL_VERTICAL_EDGE == "   "
+    assert CELL_VERTICAL_WALLED == "#   "
+    assert CELL_VERTICAL_PAWN_WHITE == "| * "
+    assert CELL_VERTICAL_EDGE_PAWN_WHITE == " * "
+    assert CELL_VERTICAL_WALLED_PAWN_WHITE == "# * "
+    assert CELL_VERTICAL_PAWN_BLACK == "| @ "
+    assert CELL_VERTICAL_EDGE_PAWN_BLACK == " @ "
+    assert CELL_VERTICAL_WALLED_PAWN_BLACK == "# @ "
+    assert PAWN_WHITE == "*"
+    assert PAWN_BLACK == "@"
+    
