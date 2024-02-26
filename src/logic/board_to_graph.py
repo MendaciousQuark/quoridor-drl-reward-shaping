@@ -25,21 +25,21 @@ def boardToGraph(board):
                 if neighbour_pos is not None and validLocation(*neighbour_pos):
                     can_move = True  # Flag to check if movement is possible
                     # Check each direction and validate movement based on walls
-                    if(neighbour_pos == tuple(getDirectionIndex(node.position, UP)) and node.walls[0]):
+                    if(neighbour_pos == getDirectionIndex(node.position, UP) and node.walls[0]):
                         can_move = False
-                    elif(neighbour_pos == tuple(getDirectionIndex(node.position, DOWN)) and graph[node.position[0] + 1][node.position[1]].walls[0]):
+                    elif(neighbour_pos == getDirectionIndex(node.position, DOWN) and graph[node.position[0] + 1][node.position[1]].walls[0]):
                         can_move = False
-                    elif(neighbour_pos == tuple(getDirectionIndex(node.position, LEFT)) and node.walls[1]):
+                    elif(neighbour_pos == getDirectionIndex(node.position, LEFT) and node.walls[1]):
                         can_move = False
-                    elif(neighbour_pos == tuple(getDirectionIndex(node.position, RIGHT)) and graph[node.position[0]][node.position[1] + 1].walls[1]):
+                    elif(neighbour_pos == getDirectionIndex(node.position, RIGHT) and graph[node.position[0]][node.position[1] + 1].walls[1]):
                         can_move = False
                         
                     # If movement is allowed, add the neighbor to the updated list
                     if can_move:
                         updated_neighbours.append(graph[neighbour_pos[0]][neighbour_pos[1]])
-                    # If the position is invalid (off the board), raise an error
-                    else:
-                        raise ValueError(f"Invalid neighbour position: {neighbour_pos}. Must be on the board.")
+                # If the position is invalid (off the board), raise an error
+                else:
+                    raise ValueError(f"Invalid neighbour position: {neighbour_pos}. Must be on the board.")
                         
             # Replace the node's neighbors with the updated list of valid neighbors
             node.neighbours = updated_neighbours

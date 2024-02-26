@@ -23,3 +23,7 @@ class Node:
     def __str__(self):
         return f"Node at {self.position}, \nneighbours: {self.neighbours}, \nwalls: {self.walls}, \npath_cost: {self.path_cost}, \nheuristic_cost: {self.heuristic_cost}, \ntotal_cost: {self.total_cost}"
 
+    def __eq__(self, other_node: object) -> bool:
+        return self.position == other_node.position \
+            and self.neighbours == other_node.neighbours \
+            and self.walls == other_node.walls
