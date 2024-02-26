@@ -79,5 +79,26 @@ def test_findPawn():
     board.board[0][4].occupant = None
     with pytest.raises(ValueError):
         pawn = findPawn(False, board.board)
+
+def test_locationToCell():
+    board = Board()
+    cell = locationToCell(0, 0, board.board)
     
+    assert cell == board.board[0][0]
     
+    with pytest.raises(ValueError):
+        cell = locationToCell(-1, 0, board.board)
+
+def test_opposingPawnAdjacent():
+    board = Board()
+    #at board initialisation pawns are not adjacent
+    white_pawn_adjacent = opposingPawnAdjacent(True, board.board, board.board[0][4])
+    black_pawn_adjacent = opposingPawnAdjacent(False, board.board, board.board[8][4])
+    
+    #assert that the pawns are not adjacent
+    assert white_pawn_adjacent[0] == False and white_pawn_adjacent[1] is None
+    assert black_pawn_adjacent[0] == False and black_pawn_adjacent[1] is None
+
+    board.pawn_positions["black"] = board.board[4][4].position
+    board.pawn_positions["white"] = board.board[4][5].position
+    board.placePawns()
