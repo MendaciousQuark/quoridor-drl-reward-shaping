@@ -46,6 +46,9 @@ class Move:
             self.direction = jumpDirection
     
     def parseColour(self, colour):
+        if(colour is None):
+            raise MoveFormatError("colour", f"Invalid colour: {colour}\nColour should be one of 'white' (True) or 'black' (False)")
+        
         if(colour):
             return "white"
         elif(not colour):
@@ -118,3 +121,14 @@ class Move:
         
     def __str__(self):
         return f"Colour: {self.colour}\nAction: {self.action}\nStart: {self.start}\nEnd: {self.end}\nDirection: {self.direction}\nOrientation: {self.orientation}, jumpDirection: {self.jumpDirection}  "
+    
+    def __eq__(self, other_move: object) -> bool:
+        if not isinstance(other_move, Move):
+            return False
+        return self.colour == other_move.colour and \
+            self.action == other_move.action and \
+            self.start == other_move.start and \
+            self.end == other_move.end and \
+            self.direction == other_move.direction and \
+            self.jumpDirection == other_move.jumpDirection and \
+            self.orientation == other_move.orientation

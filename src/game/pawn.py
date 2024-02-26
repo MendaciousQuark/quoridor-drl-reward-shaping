@@ -7,7 +7,7 @@ class Pawn:
     #board is a copy of the game board, colour is a bool
     def __init__(self, colour, i, j):
         self.colour = colour
-        self.move_dir = 1 if colour else -1
+        self.move_dir = -1 if colour else 1
         self.position = [i, j]
         self.walls = 10
     
@@ -57,13 +57,22 @@ class Pawn:
                 return move
             elif(move_parts[0] == "place" or move_parts[0] == "p"):
                 #place format place orientation location
+                if(len(move_parts) != 3):
+                    raise MoveFormatError("place", f"Invalid place: {move}\nPlace should be in the format 'place orientation location'.")
                             #colour, start, end, action, direction, jumpDirection=None, orientation=None
                 move = Move(self.colour, move_parts[2], None, move_parts[0], None, None, move_parts[1])
                 return move
             elif(move_parts[0] == "jump" or move_parts[0] == "j"):
                 #jump format jump start end direction
+                if(len(move_parts) != 4):
+                    raise MoveFormatError("jump", f"Invalid jump: {move}\nJump should be in the format 'jump start end direction'.")
                             #colour, start, end, action, direction, jumpDirection=None, orientation=None
                 move = Move(self.colour, move_parts[1], move_parts[2], move_parts[0], None, move_parts[3], None)
                 return move
+            else:
+                raise MoveFormatError("action", f"Invalid action: {move}\nAction should be one of 'move', 'place', or 'jump'. Alternatively, type 'help' for a list of commands.")
+        
+    def copy(self):
+        return Pawn(self.colour, self.position[0], self.position[1])
         
                 
