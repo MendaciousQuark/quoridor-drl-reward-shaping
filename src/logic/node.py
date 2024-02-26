@@ -22,10 +22,4 @@ class Node:
     
     def __str__(self):
         return f"Node at {self.position}, \nneighbours: {self.neighbours}, \nwalls: {self.walls}, \npath_cost: {self.path_cost}, \nheuristic_cost: {self.heuristic_cost}, \ntotal_cost: {self.total_cost}"
-'''
-goal is any of the opposite side of the board
-so heuristic cost for each cell can simply be the distance from node to final row
-final row is 0 for white and 8 for black
-A* will have to check if neighbour nodes have walls that block it too
-'''
 
