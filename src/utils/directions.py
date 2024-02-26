@@ -16,13 +16,13 @@ def getDirectionIndex(position, direction):
     return [position[0] + direction[0], position[1] + direction[1]]
 
 def getCellDirection(target_cell, start_cell):
-    if target_cell.position[0] == start_cell.position[0] - 1:
+    if target_cell.position[0] == start_cell.position[0] - 1 and target_cell.position[1] == start_cell.position[1]:
         return UP
-    elif target_cell.position[0] == start_cell.position[0] + 1:
+    elif target_cell.position[0] == start_cell.position[0] + 1 and target_cell.position[1] == start_cell.position[1]:
         return DOWN
-    elif target_cell.position[1] == start_cell.position[1] - 1:
+    elif target_cell.position[1] == start_cell.position[1] - 1 and target_cell.position[0] == start_cell.position[0]:
         return LEFT
-    elif target_cell.position[1] == start_cell.position[1] + 1:
+    elif target_cell.position[1] == start_cell.position[1] + 1 and target_cell.position[0] == start_cell.position[0]:
         return RIGHT
     else:
         raise ValueError(f"Invalid target cell: {target_cell}. Must be adjacent to start cell: {start_cell} (can not be diagonal).")

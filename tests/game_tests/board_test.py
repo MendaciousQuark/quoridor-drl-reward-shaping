@@ -1,5 +1,5 @@
 from src.game.board import Board, Cell
-from tests.test_utils import *
+from tests.test_constants import *
 import pytest, random
 
 #Fixture to initialize the Board before each test automatically
