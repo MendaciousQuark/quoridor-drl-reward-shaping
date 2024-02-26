@@ -12,7 +12,6 @@ def aStar(graph, colour, start, end):
     startNode.heuristic_cost
     startNode.total_cost = startNode.path_cost + startNode.heuristic_cost
     openList.append(startNode)
-    
     #While there are nodes in the open list
     while(len(openList) > 0):
         #Get the node with the lowest total_cost
@@ -20,17 +19,17 @@ def aStar(graph, colour, start, end):
         for node in openList:
             if(node.total_cost < currentNode.total_cost):
                 currentNode = node
-        
         #If the current node is the end node
         if(currentNode.position in end):
-            #Initialise the path
+            #initialise the path
             path = []
             #Reconstruct the path
             while(currentNode.parent is not None):
                 path.append(currentNode.position)
                 currentNode = currentNode.parent
-            #Return the path
-            #print("Path found: " + path)
+            #Add the start node to the path
+            path.append(startNode.position)
+            #Return the path (reverse before passing to get the correct order of the path)
             return path[::-1]
         
         #Remove the current node from the open list and add it to the closed list
@@ -67,7 +66,7 @@ def aStar(graph, colour, start, end):
             #Set the total_cost of the neighbour
             neighbour.total_cost = neighbour.path_cost + neighbour.heuristic_cost
     #If there are no nodes in the open list, return an empty path
-    print("No path found")
+    print("\nNo path found\n")
     return []
 
 def setheuristicCost(graph, colour):
