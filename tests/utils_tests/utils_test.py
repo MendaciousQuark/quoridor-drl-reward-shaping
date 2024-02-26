@@ -99,6 +99,16 @@ def test_opposingPawnAdjacent():
     assert white_pawn_adjacent[0] == False and white_pawn_adjacent[1] is None
     assert black_pawn_adjacent[0] == False and black_pawn_adjacent[1] is None
 
+    board.removePawns()
     board.pawn_positions["black"] = board.board[4][4].position
     board.pawn_positions["white"] = board.board[4][5].position
     board.placePawns()
+    
+    print(board.printBoard())
+    
+    white_pawn_adjacent = opposingPawnAdjacent(True, board.board, board.board[4][4])
+    black_pawn_adjacent = opposingPawnAdjacent(False, board.board, board.board[4][5])
+    
+    print(white_pawn_adjacent)
+    assert white_pawn_adjacent[0] == True and white_pawn_adjacent[1].position == (4, 5)
+    assert black_pawn_adjacent[0] == True and black_pawn_adjacent[1].position == (4, 4)
