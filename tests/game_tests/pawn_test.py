@@ -136,6 +136,43 @@ def test_invalid_place_request(monkeypatch):
     with pytest.raises(MoveFormatError):
         pawn.requestMoveInput()
     
-
+def test_invalid_jump_request(monkeypatch):
+    pawn = Pawn(True, 0, 0)
+    
+    # Invalid jump input (no jump direction)
+    monkeypatch.setattr('builtins.input', lambda x: "jump e1 e2")
+    with pytest.raises(MoveFormatError):
+        pawn.requestMoveInput()
+    
+    # Invalid jump input (no start/end)
+    monkeypatch.setattr('builtins.input', lambda x: "jump e1 up")
+    with pytest.raises(MoveFormatError):
+        pawn.requestMoveInput()
+        
+    # Invalid jump input (no start and end)
+    monkeypatch.setattr('builtins.input', lambda x: "jump up")
+    with pytest.raises(MoveFormatError):
+        pawn.requestMoveInput()
+        
+    # invalid jump input (wrong start and end format)
+    monkeypatch.setattr('builtins.input', lambda x: "jump 1 e2 up")
+    with pytest.raises(MoveLocationError):
+        pawn.requestMoveInput()
+        
+    # invalid jump input (wrong start and end format)
+    monkeypatch.setattr('builtins.input', lambda x: "jump e1 1 up")
+    with pytest.raises(MoveLocationError):
+        pawn.requestMoveInput()
+        
+    # Invalid jump input (no action)
+    monkeypatch.setattr('builtins.input', lambda x: "e1 e2 up")
+    with pytest.raises(MoveFormatError):
+        pawn.requestMoveInput()
+        
+    # invalid jump input (extra information)
+    monkeypatch.setattr('builtins.input', lambda x: "jump e1 e2 up extra")
+    with pytest.raises(MoveFormatError):
+        pawn.requestMoveInput()
+    
     
     
