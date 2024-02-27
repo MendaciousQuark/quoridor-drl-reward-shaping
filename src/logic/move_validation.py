@@ -65,9 +65,10 @@ def straightJumpBlocked(start_cell, board, adjacent_pawn, move):
     adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], start_cell)
 
     if(move.jumpDirection == adjacent_pawn_direction):
-        return directionBlocked(move.jumpDirection, adjacent_pawn[1], board)
+        return directionBlocked(move.jumpDirection, start_cell, board)
     else:
         return False
+    
 #assuming straight jump over opponent not possible
 def validAlternateJumpDirection(start_cell, board, adjacent_pawn, move):
     adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], start_cell)
@@ -112,6 +113,7 @@ def directionBlocked(direction, start_cell, board):
             return True
     else:
         raise MoveValidationError("direction", f"Invalid direction: {direction}. Must be one of 'up', 'down', 'left', or 'right'. See ../utils/directions.py for more information.")
+    return False
 
 def validatePlaceAction(move, board):
     if(move.orientation not in ["vertical", "horizontal"]):
@@ -162,7 +164,6 @@ def spaceForWall(start_cell, orientation, board):
         #moving into vertical wall
         if(cell_below.has_wall_left):
             return False
-        
         return True
     elif(orientation == 'horizontal'):
         last_column = 8
@@ -187,3 +188,4 @@ def spaceForWall(start_cell, orientation, board):
             return False
         
         return True
+    raise MoveValidationError("orientation", f"Invalid orientation: {orientation}. Must be one of 'vertical' or 'horizontal'.")
