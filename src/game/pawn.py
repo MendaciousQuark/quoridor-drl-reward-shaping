@@ -17,7 +17,7 @@ class Pawn:
             while True:
                 try:
                     move = self.requestMoveInput()
-                    move_valid = validateMove(move, board)
+                    move_valid = validateMove(move, board, self)
                     #if the move is valid, break the loop
                     if(move_valid[0]):
                         break
@@ -31,7 +31,9 @@ class Pawn:
             else:
                 return move
         except Exception as e:
+            print(e)
             print(f"An unexptected error occurred: {e}")
+            raise e
                
     def requestMoveInput(self):
         print("Enter the move you would like to make. Type 'help' for a list of commands.")
@@ -71,8 +73,11 @@ class Pawn:
                 return move
             else:
                 raise MoveFormatError("action", f"Invalid action: {move}\nAction should be one of 'move', 'place', or 'jump'. Alternatively, type 'help' for a list of commands.")
-        
+    
     def copy(self):
         return Pawn(self.colour, self.position[0], self.position[1])
+    
+    def __str__(self):
+        return f"Pawn: {'*' if self.colour else '@'}, {self.position}, {self.walls}"
         
                 

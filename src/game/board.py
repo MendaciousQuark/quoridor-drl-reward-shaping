@@ -114,7 +114,7 @@ class Board:
         # +---+---+---+---+---+---+---+---+---+
         '''
         string_board = []
-        for row in self.board:
+        for j, row in enumerate(self.board):
             for i in range(2):
                 for cell in row:
                     #determine which edges the cell is touching
@@ -182,7 +182,6 @@ class Board:
                             #no walls pass the ceiling threshold
                             else:
                                 string_board.append(CELL_HORIZONTAL)
-                    
                     #vertical row (rows with '|')
                     elif(i == 1):
                         
@@ -232,6 +231,7 @@ class Board:
                 else:
                     #for vertical lines (lines with |)
                     string_board.append(BORDER_VERTICAL)
+                    #string_board.append(str(9-j))
         #iterate for the length of the board to add a bottom border
         for j in range(len(self.board[0])):
             string_board.append(BORDER_BOTTOM)

@@ -38,7 +38,8 @@ def test_validateMoveAction():
     #check if validateMoveAction works as expected
     multiple_space_moves = [invalid_move_white_up_multiple, invalid_move_white_right_multiple, invalid_move_white_left_multiple, invalid_move_black_down_multiple, invalid_move_black_right_multiple, invalid_move_black_left_multiple]
     for move in multiple_space_moves:
-        assert validateMoveAction(move, board)[0] == False
+        with pytest.raises(ValueError):
+            validateMoveAction(move, board)
     
     #moving no spaces
     invalid_move_white_up_single = Move(True, 'e1', 'e1', 'move', 'up', None, None)
@@ -127,8 +128,14 @@ def test_validateJumpAction():
     
     #check if validateJumpAction works as expected
     adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
+    print(board)
     assert validateJumpAction(valid_jump_right_white, board)[0] == True
     assert validateJumpAction(valid_jump_left_black, board)[0] == True
+    
+    #indicate the wrong direction
+    invalid_jump_indicate_right_white = Move(True, 'e5', 'c5', 'jump', None, 'right', None)
+    
+    assert validateJumpAction(invalid_jump_indicate_right_white, board)[0] == False
     
     #create moves that would be invalid
     #jumping without a pawn to jump over

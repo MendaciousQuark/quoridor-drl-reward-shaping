@@ -39,7 +39,7 @@ class Move:
                 raise MoveLocationError("end", f"Invalid end location: {end}")
         
         #if the action is not jump
-        if(self.action != "jump"):
+        if(self.action != "jump" and self.action != "place"):
             #parse the direction
             self.direction = self.parseDirection(direction)
         else:

@@ -4,13 +4,15 @@ from errors import MoveLocationError, MoveValidationError
 from .a_star import aStar
 from .board_to_graph import boardToGraph
 
-def validateMove(move, board):
+def validateMove(move, board, pawn):
     if(move.action == "move"):
         return validateMoveAction(move, board)
     elif(move.action == "jump"):
         return validateJumpAction(move, board)
     elif(move.action == "place"):
-        return validatePlaceAction(move, board)
+        if(pawn.walls > 0):
+            return validatePlaceAction(move, board)
+        return (False, f"No walls remaining for {pawn.colour} pawn.")
     else:
         raise ValueError(f"Invalid action: {move.action}. Must be one of 'move', 'jump', or 'place'.")
 
@@ -24,7 +26,8 @@ def validateMoveAction(move, board):
         raise MoveValidationError("direction", f"Invalid direction: {move.direction}. Must be one of 'up', 'down', 'left', or 'right'. See ../utils/directions.py for more information.")
     if(end_cell.occupant != None):
         raise MoveValidationError("end", f"Invalid Move: {move.start} to {move.end}. End cell is occupied by {end_cell.occupant}. Request jump.")
-    
+    if(move.direction != getCellDirection(end_cell, start_cell)):
+        return (False, f"Invalid move: {move.start} to {move.end}. Direction does not match end cell.")
     if(distance(move.start, move.end) != 1):
             return (False, f"Invalid move: {end_cell.position} too far or too close.")
     if(directionBlocked(move.direction, start_cell, board)):
@@ -34,6 +37,7 @@ def validateMoveAction(move, board):
 
 def validateJumpAction(move, board):
     start_cell = board.board[move.start[0]][move.start[1]]
+    end_cell = board.board[move.end[0]][move.end[1]]
     
     if(start_cell.occupant != move.colour):
         raise MoveValidationError("start", f"Invalid Move: {move.start} to {move.end}. Start cell is not occupied by {move.colour}.")
@@ -54,16 +58,22 @@ def validateJumpAction(move, board):
         if(not validAlternateJumpDirection(start_cell, board, adjacent_pawn, move)):
             return (False, f"Invalid jump: {move.start} to {move.end}. Jump direction not valid or blocked by wall.")
         else:
-            if(distance(adjacent_pawn[1], move.end) != 1):
+            if(distance(adjacent_pawn[1].position, move.end) != 1):
                 return (False, f"Invalid jump: {move.start} to {move.end}. Diagonal jump distance must be 1.")
-            else:
-                return (True, "Valid jump")
+            #distance is 1, check for wall
+            if(directionBlocked(getCellDirection(adjacent_pawn[1], start_cell), start_cell, board)):
+                return (False, f"Invalid jump: {move.start} to {move.end}. Diagonal jump blocked by wall.")
     elif(not straight_jump_blocked):
+        if(move.jumpDirection != getCellDirection(adjacent_pawn[1], start_cell)):
+            return (False, f"Invalid jump: {move.start} to {move.end}. Jump direction does not match adjacent pawn.")
         if(distance(move.start, move.end) != 2):
             return (False, f"Invalid jump: {move.start} to {move.end}. Straight jump distance must be 2.")
         else:
             #check that the jump is in the direction of the adjacent pawn
-            if(move.jumpDirection != getCellDirection(adjacent_pawn[1], start_cell)):
+            bool_colour = True if move.colour == "white" else False
+            end_adjacent_to_opponent = opposingPawnAdjacent(bool_colour, board.board, locationToCell(move.end[0], move.end[1], board.board))
+            cell_toward_jump_direction = locationToCell(*getDirectionIndex(adjacent_pawn[1].position, move.jumpDirection), board.board)
+            if(move.jumpDirection != getCellDirection(cell_toward_jump_direction, adjacent_pawn[1]) or end_adjacent_to_opponent[0] == False):
                 return (False, f"Invalid jump: {move.start} to {move.end}. Straight jump must be in the direction of the adjacent pawn.")
             return (True, "Valid jump")
     return (True, "Valid jump")
@@ -85,8 +95,12 @@ def validatePlaceAction(move, board):
     graph_board = boardToGraph(temp_board.board)
     goal_line = temp_board.board[0] if move.colour == "white" else temp_board.board[8]
     goals = [cell.position for cell in goal_line]
-    path_to_goal = aStar(graph_board, move.colour, temp_board.pawn_positions[move.colour], goals)
-    if(len(path_to_goal) == 0):
+    passive_color = "white" if move.colour == "black" else "black"
+    active_path_to_goal = aStar(graph_board, move.colour, temp_board.pawn_positions[move.colour], goals)
+    #reinitialise graph to avoid infinite loop
+    graph_board = boardToGraph(temp_board.board)
+    passive_path_to_goal = aStar(graph_board, passive_color, temp_board.pawn_positions[passive_color], goals)
+    if(len(active_path_to_goal) == 0 or len(passive_path_to_goal) == 0):
         return (False, f"Invalid wall placement: {move.start} {move.orientation} wall blocks path")
     else:
         return (True, "Valid wall placement")
