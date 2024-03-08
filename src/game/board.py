@@ -114,6 +114,8 @@ class Board:
         # +---+---+---+---+---+---+---+---+---+
         '''
         string_board = []
+        #add column labels to top
+        string_board.append(BORDER_COLUMNS)
         for j, row in enumerate(self.board):
             for i in range(2):
                 for cell in row:
@@ -228,18 +230,25 @@ class Board:
                 if(i == 0):
                     #for horizontal lines (lines with +)
                     string_board.append(BORDER_HORIZONTAL)
+                    string_board.append(" ")
+                    string_board.append(" ")
+                    string_board.append(" ")
                 else:
                     #for vertical lines (lines with |)
                     string_board.append(BORDER_VERTICAL)
-                    #string_board.append(str(9-j))
+                    string_board.append(" ")
+                    string_board.append(str(9-j))
+                    string_board.append(" ")
         #iterate for the length of the board to add a bottom border
         for j in range(len(self.board[0])):
             string_board.append(BORDER_BOTTOM)
         #need to add the edge border onelast time
         string_board.append(BORDER_HORIZONTAL)
+        #now add the column labels again
+        string_board.append(BORDER_COLUMNS)
         #pdb.set_trace()
-        #return a joined string_board we do len(self.board[0]) + 2 to account for the length of each row and the borders
-        return joinWithNewlines(string_board, len(self.board[0]) + 2)
+        #return a joined string_board we do len(self.board[0]) + 5 to account for the length of each row and the borders (includin 9-1 a-i etc)
+        return joinWithNewlines(string_board, len(self.board[0]) + 5)
                         
     def copy(self):
         new_board = Board()

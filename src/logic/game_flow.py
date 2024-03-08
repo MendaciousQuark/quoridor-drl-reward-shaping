@@ -35,48 +35,33 @@ jump d4 d6 up
 def playGame(board, white_pawn, black_pawn):
     i = 0
     round = 0
-    some_pawn = Pawn(True, 5, 3)
-    b = Board()
-    b.placeWall('horizontal', locationToCell(5, 3, b.board))
-    b.removePawns()
-    b.pawn_positions['white'] = [5, 3]
-    b.pawn_positions['black'] = [4, 3]
-    b.placePawns()
-    print(b.printBoard())
-    validation = validateMove(some_pawn.decideMoveHuman(b), b, some_pawn)
-    print(validation)
     
-    
-    
-    # while True:
-    #     pawn = white_pawn if i % 2 == 0 else black_pawn
-    #     round = round + 1 if i % 2 == 0 else round
-        
-    #     print('  a   b   c   d   e   f   g   h   i  ')
-    #     print(board.printBoard())
-    #     print(f"Round {round}")
-    #     print("White's turn" if i % 2 == 0 else "Black's turn")
-    #     print(pawn, "\n")
-    #     while(True):
-    #         try:
-    #             move = pawn.decideMoveHuman(board)
-    #             if move is not None:
-    #                 break
-    #         except Exception as e:
-    #             print('An unexpected error occurred. Please try entering your move again.\n')
-    #             print('printing backtrace: ', e)
-    #     makeMove(move, board, pawn.colour)
-    #     pawn.position = board.pawn_positions['white' if i % 2 == 0 else 'black']
-    #     if(victory(pawn)):
-    #         print("White Wins!\n" if i % 2 == 0 else "Black Wins!\n")
-    #         break
-    #     if(move.action == 'place'):
-    #         pawn.walls -= 1
-    #     i += 1
+    while True:
+        pawn = white_pawn if i % 2 == 0 else black_pawn
+        round = round + 1 if i % 2 == 0 else round
+        print(board.printBoard())
+        print(f"Round {round}")
+        print("White's turn" if i % 2 == 0 else "Black's turn")
+        print(pawn, "\n")
+        while(True):
+            try:
+                move = pawn.decideMoveHuman(board)
+                if move is not None:
+                    break
+            except Exception as e:
+                print('An unexpected error occurred. Please try entering your move again.\n')
+                print('printing backtrace: ', e)
+        makeMove(move, board, pawn.colour)
+        pawn.position = board.pawn_positions['white' if i % 2 == 0 else 'black']
+        if(victory(pawn)):
+            print("White Wins!\n" if i % 2 == 0 else "Black Wins!\n")
+            break
+        if(move.action == 'place'):
+            pawn.walls -= 1
+        i += 1
 
 def victory(pawn):
-    goal_line = 0 if pawn.colour else 8 
-    print(goal_line)
+    goal_line = 0 if pawn.colour else 8
     if(pawn.position[0] == goal_line):
         return True
     return False

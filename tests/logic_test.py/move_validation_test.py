@@ -1,6 +1,7 @@
 from logic.move_validation import *
 from game.board import Board
 from game.move import Move
+from game.pawn import Pawn
 from utils.directions import *
 from errors.move_validation_error import MoveValidationError
 
@@ -168,6 +169,17 @@ def test_validateJumpAction():
     for move in invalid_moves:
         with pytest.raises(MoveValidationError):
             validateJumpAction(move, board)
+            
+    some_pawn = Pawn(True, 5, 3)
+    board = Board()
+    board.placeWall('horizontal', locationToCell(5, 3, board.board))
+    board.removePawns()
+    board.pawn_positions['white'] = [5, 3]
+    board.pawn_positions['black'] = [4, 3]
+    board.placePawns()
+    #jump d4 d6 up
+    jump_into_wall = Move(True, 'd4', 'd6', 'jump', None, 'up', None)
+    assert validateMove(jump_into_wall, board, some_pawn)[0] == False
     
 def test_validatePlaceAction():
     #init a board

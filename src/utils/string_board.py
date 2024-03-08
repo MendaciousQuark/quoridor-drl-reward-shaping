@@ -22,6 +22,7 @@
 BORDER_HORIZONTAL = "+"
 BORDER_VERTICAL = "|"
 BORDER_BOTTOM = "+---"
+BORDER_COLUMNS = "\n   a   b   c   d   e   f   g   h   i    \n "
 # No top as each cell draws above it and to the left of it
 
 # Horizontal cell (rows with '+')
