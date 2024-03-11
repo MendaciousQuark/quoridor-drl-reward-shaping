@@ -3,22 +3,24 @@ from utils import getDirectionIndex, opposingPawnAdjacent, validLocation, locati
 from logic import validateMove
 from game import Move
 class Model:
-    def __init__(self, colour, name='Bot', description='Bot'):
+    def __init__(self, colour, pawn, name='Bot', description='Bot'):
         self.name = name
         #'black' or 'white'
         self.colour = colour
         self.description = description
+        #the pawn representing the model
+        self.pawn = pawn
         # ... other attributes
         self.action_state = []
         
     def find_legal_moves(self, state):
         current_position = state[self.colour]
-        walls = self.find_legal_walls(state, current_position)
+        walls = self.find_legal_walls(state)
         movement = self.find_legal_movement(state, current_position)
         self.action_state.extend(walls)
         self.action_state.extend(movement)
     
-    def find_legal_walls(self, state, current_position):
+    def find_legal_walls(self, state):
         '''
         for horizontal walls:
         - check from j = 0 to j = 7, and from i = 1 to i = 8 (inclusive) (walls are two cells wide)
@@ -35,32 +37,37 @@ class Model:
         coulour_formatted = True if self.colour == 'white' else False
         for i, row in enumerate(state['board']):
             for j, cell in enumerate(row):
+                #print(f"i: {i}, j: {j}, cell: {cell}")
                 #determine if it makes sense to check for a vertical or horizontal wall
                 check_vertical = i<= 7 and (1 <= j <= 8)
                 check_horizontal = (1 <= i <= 8) and j <= 7
                 
                 #convert the current position to the move format (e.g. [1, 0] -> 'a2' (when i = 1 = 2, j = 0 = a))
-                position_formatted = moveNumberToLetter(j) + str(i + 1)
-                
+                position_formatted = moveNumberToLetter(j) + str(9 - i)
+              
                 if check_vertical:
                     #crete a move object for the vertical wall placement
                     orientation = 'vertical'
+                    cell_below = locationToCell(*getDirectionIndex([i, j], DOWN), state['board']) if validLocation(*getDirectionIndex([i, j], DOWN)) else None
                     #if the cell is already walled, skip it as it must be an illegal wall
-                    if cell in state['walled_cells'][orientation]:
-                        continue
-                    partially_legal_walls.append(Move(coulour_formatted, position_formatted, None, 'place', None, None, orientation))
+                    if not (cell in state['walled_cells'][orientation]):
+                    #if the cell is above a horizontal wall, skip it as it must be an illegal vertical wall
+                        if not (cell_below in state['walled_cells']['horizontal']):
+                            partially_legal_walls.append(Move(coulour_formatted, position_formatted, None, 'place', None, None, orientation))
                     
                 if check_horizontal:
                     #crete a move object for the horizontal wall placement
                     orientation = 'horizontal'
+                    cell_right = locationToCell(*getDirectionIndex([i, j], RIGHT), state['board']) if validLocation(*getDirectionIndex([i, j], RIGHT)) else None
                     #if the cell is already walled, skip it as it must be an illegal wall
-                    if cell in state['walled_cells'][orientation]:
-                        continue
-                    partially_legal_walls.append(Move(coulour_formatted, position_formatted, None, 'place', None, None, orientation))
+                    if not(cell in state['walled_cells'][orientation]):
+                        #if the cell is next to a vertical wall, skip it as it must be an illegal vertical wall
+                        if not(cell_right in state['walled_cells']['vertical']):
+                            partially_legal_walls.append(Move(coulour_formatted, position_formatted, None, 'place', None, None, orientation))
         
         legal_walls = []
         for wall in partially_legal_walls:
-            if validateMove(wall, state['board_object'], self):
+            if validateMove(wall, state['board_object'], self.pawn):
                 legal_walls.append(wall)
         return legal_walls
     
@@ -100,10 +107,12 @@ class Model:
         
         legal_moves = []
         for move in moves_to_check:
-            #try:
-            if validateMove(move, state['board_object'], self):
-                legal_moves.append(move)
-            # except Exception as e:
-            #     continue
+            try:
+                if validateMove(move, state['board_object'], self.pawn):
+                    legal_moves.append(move)
+            except Exception as e:
+                #move is invalid, skip it
+                print(e)
+                continue
         
         return legal_moves
