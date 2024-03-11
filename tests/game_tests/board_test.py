@@ -122,7 +122,7 @@ def test_findWalledCells(intialisedBoard):
         # Verify that each cell identified as being adjacent to a wall correctly has a wall
         for row in temp_board.board:
             for cell in row:
-                if cell in celled_walls_found:
+                if cell in celled_walls_found['vertical'] or cell in celled_walls_found['horizontal']:
                     # Cells identified must have at least one wall
                     assert cell.has_wall_up or cell.has_wall_left
                 else:

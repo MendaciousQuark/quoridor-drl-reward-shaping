@@ -89,10 +89,11 @@ class Board:
     
     def updateState(self):
         self.state = {
+            'board_object': self,
             'board' : self.board,
             'pieces': self.pawn_positions,
-            'black': self.pawn_positions['black'],
-            'white': self.pawn_positions['white'],
+            'black' : self.pawn_positions['black'],
+            'white' : self.pawn_positions['white'],
             'walled_cells': self.findWalledCells()
         }
     
