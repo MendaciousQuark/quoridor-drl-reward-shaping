@@ -39,12 +39,17 @@ class Board:
         self.board[i][j].occupant = None
     
     def findWalledCells(self):
-        cells_with_walls = []
+        cells_with_walls = {
+            'horizontal': [],
+            'vertical': []
+        }
         #iterate through all cells in the board
         for row in self.board:
             for cell in row:
-                if(cell.has_wall_up or cell.has_wall_left):
-                    cells_with_walls.append(cell)
+                if(cell.has_wall_up):
+                    cells_with_walls['horizontal'].append(cell)
+                if(cell.has_wall_left):
+                    cells_with_walls['vertical'].append(cell)
         #return the cells that have walls
         return cells_with_walls
     
@@ -86,6 +91,8 @@ class Board:
         self.state = {
             'board' : self.board,
             'pieces': self.pawn_positions,
+            'black': self.pawn_positions['black'],
+            'white': self.pawn_positions['white'],
             'walled_cells': self.findWalledCells()
         }
     
