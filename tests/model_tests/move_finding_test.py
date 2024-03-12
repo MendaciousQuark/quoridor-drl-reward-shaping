@@ -2,6 +2,8 @@ from models.model import Model
 from game.board import Board
 from game.pawn import Pawn
 import pytest
+
+import timeit
 '''
         Example board
         # +---+---+---+---+---+---+---+---+---+
@@ -34,11 +36,11 @@ import pytest
 @pytest.fixture(autouse=True)
 def initialisedModels():
     #creae a pawn object for the white and black pawns
-    white_pawn = Pawn('white', 8, 4)
-    black_pawn = Pawn('black', 0, 4)
+    pawns = [Pawn('white', 8, 4), Pawn('black', 0, 4)]
+
     #create new models
-    model_white = Model('white', white_pawn)
-    model_black = Model('black', black_pawn)
+    model_white = Model('white', pawns)
+    model_black = Model('black', pawns)
     return model_white, model_black
 
 def test_find_legal_movement(initialisedModels):
@@ -70,28 +72,32 @@ def test_find_legal_walls(initialisedModels):
     found_walls_white = white_model.find_legal_walls(board.state)
     found_walls_black = black_model.find_legal_walls(board.state)
     
-    assert len(found_walls_white) == 128 == len(found_walls_black)
+    assert len(found_walls_white) == 128 
+    assert len(found_walls_black) == 128
     
     #place a horizontal wall in the middle of the board
     board.placeWall('horizontal', board.board[4][4])
+    board.updateState()
     print(board)
     found_walls_white = white_model.find_legal_walls(board.state)
     found_walls_black = black_model.find_legal_walls(board.state)
-        
+             
     assert len(found_walls_white) == 124
     assert len(found_walls_black) == 124
     
     #place a vertical wall in the away from the middle and edge of the board
     board.placeWall('vertical', board.board[4][2])
+    board.updateState()
     print(board)
     found_walls_white = white_model.find_legal_walls(board.state)
     found_walls_black = black_model.find_legal_walls(board.state)
-    
+            
     assert len(found_walls_white) == 120
     assert len(found_walls_black) == 120
     
     #place a vertical wall opposite the previous wall
     board.placeWall('vertical', board.board[4][7])
+    board.updateState()
     print(board)
     found_walls_white = white_model.find_legal_walls(board.state)
     found_walls_black = black_model.find_legal_walls(board.state)
@@ -101,10 +107,58 @@ def test_find_legal_walls(initialisedModels):
     
     #place  vertical wall near the middle of the board
     board.placeWall('vertical', board.board[4][5])
+    board.updateState()
     print(board)
     found_walls_white = white_model.find_legal_walls(board.state)
     found_walls_black = black_model.find_legal_walls(board.state)
     
     assert len(found_walls_white) == 113
     assert len(found_walls_black) == 113
+            
+    #place horizontal board at the right edge of the board
+    board.placeWall('horizontal', board.board[4][7])
+    board.updateState()
+    print(board)
+    found_walls_white = white_model.find_legal_walls(board.state)
+    found_walls_black = black_model.find_legal_walls(board.state)
     
+    assert len(found_walls_white) == 110
+    assert len(found_walls_black) == 110
+    
+    #place horizontal to adjacent to middle horizontal wall
+    board.placeWall('horizontal', board.board[4][2])
+    board.updateState()
+    print(board)
+    found_walls_white = white_model.find_legal_walls(board.state)
+    found_walls_black = black_model.find_legal_walls(board.state)
+    
+    assert len(found_walls_white) == 106
+    assert len(found_walls_black) == 106
+
+def test_timed_find_legal_walls(initialisedModels):
+    # Assign the initialised board to a variable
+    board = Board()
+    # Assign the models to a variable
+    white_model, black_model = initialisedModels
+
+    # Prepare the context for timeit
+    context = globals().copy()  # Copy the global context
+    context.update({
+        'white_model': white_model,
+        'black_model': black_model,
+        'board': board  # Ensure 'board' is also included if it's referenced
+    })
+
+    # Define the code to test as strings
+    iterations = 1
+    time_test_1 = 'white_model.find_legal_walls(board.state)'
+    times_one = timeit.timeit(time_test_1, globals=context, number=iterations)
+    print(f"Time taken for 1000 iterations of {time_test_1}: {times_one}")
+    
+    # time_test_2 = 'black_model.find_legal_walls(board.state)'
+    # times_two = timeit.timeit(time_test_2, globals=context, number=iterations)
+    # print(f"Time taken for 1000 iterations of {time_test_2}: {times_two}")
+    
+    # Perform assertions
+    assert times_one/iterations < 0.55, f"white_model.find_legal_walls took too long: {times_one}s"
+    #assert times_two < 0.1, f"black_model.find_legal_walls took too long: {times_two}s"

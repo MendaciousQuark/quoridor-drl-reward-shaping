@@ -1,15 +1,20 @@
 from utils import UP, DOWN, LEFT, RIGHT 
 from utils import getDirectionIndex, opposingPawnAdjacent, validLocation, locationToCell, getCellDirection, moveNumberToLetter
-from logic import validateMove
+from logic import validateMove, aStar, boardToGraph
 from game import Move
+import pdb
+
 class Model:
-    def __init__(self, colour, pawn, name='Bot', description='Bot'):
+    def __init__(self, colour, pawns, name='Bot', description='Bot'):
         self.name = name
         #'black' or 'white'
         self.colour = colour
         self.description = description
-        #the pawn representing the model
-        self.pawn = pawn
+        #the pawns representing players [white_pawn, black_pawn]
+        self.pawns = {
+            'white': pawns[0],
+            'black': pawns[1]
+        }
         # ... other attributes
         self.action_state = []
         
@@ -67,7 +72,7 @@ class Model:
         
         legal_walls = []
         for wall in partially_legal_walls:
-            if validateMove(wall, state['board_object'], self.pawn):
+            if validateMove(wall, state['board_object'], self.pawns[self.colour]):
                 legal_walls.append(wall)
         return legal_walls
     
@@ -108,7 +113,7 @@ class Model:
         legal_moves = []
         for move in moves_to_check:
             try:
-                if validateMove(move, state['board_object'], self.pawn):
+                if validateMove(move, state['board_object'], self.pawns[self.colour]):
                     legal_moves.append(move)
             except Exception as e:
                 #move is invalid, skip it
@@ -116,3 +121,64 @@ class Model:
                 continue
         
         return legal_moves
+
+    def calculate_rewards(self, state):
+        #will need distance for both pawns multiple times, so calculate it once
+        white_path, black_path = self.determine_best_paths(state)
+        white_distance, black_distance = len(white_path) - 1, len(black_path) - 1 # -1 as the path includes the start position
+        #victory or defeat reward
+        victory_or_defeat_reward = self.defeat_or_victory(state)
+        
+        #the reward for the distance of the opponent from the end goal
+        opponent_distance_reward = black_distance if self.colour == 'white' else white_distance
+        print('black_distance:', black_distance, 'white_distance:', white_distance, 'opponent_distance_reward:', opponent_distance_reward)
+        #the reward for the difference in distance between the two pawns
+        path_difference_reward =  black_distance - white_distance if self.colour == 'white' else  white_distance - black_distance
+        print('path_difference_reward:', path_difference_reward)
+        #the punishment for having less walls than the opponent
+        wall_difference_penalty = self.wall_difference_penalty()
+        
+        #the punishment for being further from the end goal than the opponent
+        distance_penalty = white_distance if self.colour == 'white' else black_distance
+        distance_penalty *= -1 #negate as punishment
+        return victory_or_defeat_reward + path_difference_reward + wall_difference_penalty + opponent_distance_reward + distance_penalty
+    
+    def determine_best_paths(self, state):
+        black_end = [cell.position for cell in state['board'][8]]
+        black_start = tuple(self.pawns['black'].position)
+        black_path = aStar(boardToGraph(state['board']), 'black', black_start, black_end)
+        
+        #repeat for white (graph needs to reinitiated as a_star modifies the graph)
+        white_end = [cell.position for cell in state['board'][0]]
+        white_start = tuple(self.pawns['white'].position)
+        white_path = aStar(boardToGraph(state['board']), 'white', white_start, white_end)
+        
+        return white_path, black_path 
+    
+    def defeat_or_victory(self, state):
+        reward = 0
+        #if board is in a victory or defeat state, return the reward for that state
+        if(self.pawns['white'] == state['board'][8] and self.colour == 'white'):
+            reward += 1000
+        if(self.pawns['black'] == state['board'][0] and self.colour == 'black'):
+            reward += 1000
+        if(self.pawns['white'] == state['board'][8] and self.colour == 'black'):
+            reward -= 1000
+        if(self.pawns['black'] == state['board'][0] and self.colour == 'white'):
+            reward -= 1000
+        
+        #returns 0 if both players in winning state or neither are else -1000 for defeat and 1000 for victory
+        return reward
+    
+    def wall_difference_penalty(self):
+        #determin colour being represented
+        difference = 0
+        if(self.colour == 'white'):
+            #return the difference in walls between the two players or 0 if the player has more walls than the opponent
+            difference =  min(self.pawns['white'].walls - self.pawns['black'].walls, 0)
+        else:
+            #same as above but for black
+            difference =  min(self.pawns['black'].walls - self.pawns['white'].walls, 0)
+        
+        return difference
+    

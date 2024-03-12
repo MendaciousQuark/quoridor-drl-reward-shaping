@@ -14,8 +14,7 @@ class Node:
         
     def calcHeuristicCost(self, colour):
         #set the goal for the white player to be the first row and for the black player to be the last row
-        goal = (0, self.position[1]) if colour else (8, self.position[1])
-        
+        goal = (0, self.position[1]) if colour == 'white' else (8, self.position[1])
         #heuristic cost is the manhattan distance from the node to the final row
         return abs(self.position[0] - goal[0]) + abs(self.position[1] - goal[1])
     
