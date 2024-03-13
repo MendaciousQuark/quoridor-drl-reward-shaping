@@ -5,10 +5,8 @@ from game.pawn import Pawn
 def test_reward():
     board = Board()
     white_pawn = Pawn('white', 8, 4)
-    white_pawn.walls = 2
     black_pawn = Pawn('black', 0, 4)
     pawns = [white_pawn, black_pawn]
-    black_pawn.walls = 4
     model_white = Model('white', pawns)
     model_black = Model('black', pawns)
     
@@ -41,11 +39,11 @@ def test_reward():
     
     white_reward = model_white.calculate_rewards(board.state)
     print('white reward:', reward)
-    assert reward > neutral_reward 
+    assert white_reward > neutral_reward 
     
     black_reward = model_black.calculate_rewards(board.state)
     print('black reward:', reward)
     print(board)
     
-    assert reward < neutral_reward
+    assert black_reward < neutral_reward
     
