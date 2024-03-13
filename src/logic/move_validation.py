@@ -47,7 +47,7 @@ def validateJumpAction(move, board):
     elif(move.jumpDirection not in [UP, DOWN, LEFT, RIGHT]):
         raise MoveValidationError("jumpDirection", f"Invalid jump direction: {move.jumpDirection}. Must be one of 'up', 'down', 'left', or 'right'. See ../utils/directions.py for more information.")
     #check for adjacent opposing pawn
-    adjacent_pawn = opposingPawnAdjacent(move.colour == 'white', board.board, locationToCell(move.start[0], move.start[1], board.board))
+    adjacent_pawn = opposingPawnAdjacent(move.colour, board.board, locationToCell(move.start[0], move.start[1], board.board))
     if(adjacent_pawn[0] == False):
         return (False, f"Invalid jump: {move.start} to {move.end}. No adjacent opposing pawn.")
     
@@ -70,8 +70,7 @@ def validateJumpAction(move, board):
             return (False, f"Invalid jump: {move.start} to {move.end}. Straight jump distance must be 2.")
         else:
             #check that the jump is in the direction of the adjacent pawn
-            bool_colour = True if move.colour == "white" else False
-            end_adjacent_to_opponent = opposingPawnAdjacent(bool_colour, board.board, locationToCell(move.end[0], move.end[1], board.board))
+            end_adjacent_to_opponent = opposingPawnAdjacent(move.colour, board.board, locationToCell(move.end[0], move.end[1], board.board))
             cell_toward_jump_direction = locationToCell(*getDirectionIndex(adjacent_pawn[1].position, move.jumpDirection), board.board)
             if(move.jumpDirection != getCellDirection(cell_toward_jump_direction, adjacent_pawn[1]) or end_adjacent_to_opponent[0] == False):
                 return (False, f"Invalid jump: {move.start} to {move.end}. Straight jump must be in the direction of the adjacent pawn.")

@@ -128,7 +128,7 @@ def test_validateJumpAction():
     valid_jump_left_black = Move('black', 'f5', 'd5', 'jump', None, 'left', None)
     
     #check if validateJumpAction works as expected
-    adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
+    adjacent_pawn = opposingPawnAdjacent('white', board.board, board.board[4][4])
     print(board)
     assert validateJumpAction(valid_jump_right_white, board)[0] == True
     assert validateJumpAction(valid_jump_left_black, board)[0] == True
@@ -363,7 +363,7 @@ def test_straightJumpBlocked():
     
     #initialise a jump to the left (jump format: jump start end direction)
     start_cell = board.board[4][4]
-    adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
+    adjacent_pawn = opposingPawnAdjacent('white', board.board, board.board[4][4])
     move = Move('white', 'e4', 'g4', 'jump', None, 'right', None)
     
     #jump should be blocked
@@ -371,7 +371,7 @@ def test_straightJumpBlocked():
     
     #test from black to white this time
     start_cell = board.board[4][5]
-    adjacent_pawn = opposingPawnAdjacent(False, board.board, board.board[4][5])
+    adjacent_pawn = opposingPawnAdjacent('black', board.board, board.board[4][5])
     move = Move('black', 'f5', 'd5', 'jump', None, 'left', None)
     
     #jump should be blocked
@@ -385,7 +385,7 @@ def test_straightJumpBlocked():
     
     #test again in reverse
     start_cell = board.board[4][5]
-    adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][5])
+    adjacent_pawn = opposingPawnAdjacent('white', board.board, board.board[4][5])
     move = Move('white', 'f5', 'd5', 'jump', None, 'left', None)
     
     #jump should be blocked
@@ -393,7 +393,7 @@ def test_straightJumpBlocked():
     
     #test from black to white this time
     start_cell = board.board[4][4]
-    adjacent_pawn = opposingPawnAdjacent(False, board.board, board.board[4][4])
+    adjacent_pawn = opposingPawnAdjacent('black', board.board, board.board[4][4])
     move = Move('black', 'e4', 'g4', 'jump', None, 'right', None)
     
     #jump should be blocked
@@ -410,7 +410,7 @@ def test_straightJumpBlocked():
     
     #initialise a jump to the left for black (jump format: jump start end direction)
     start_cell = board.board[4][5]
-    adjacent_pawn = opposingPawnAdjacent(False, board.board, board.board[4][5])
+    adjacent_pawn = opposingPawnAdjacent('black', board.board, board.board[4][5])
     move = Move('black', 'f5', 'd5', 'jump', None, 'left', None)
     
     #jump should not be blocked
@@ -418,7 +418,7 @@ def test_straightJumpBlocked():
     
     #test from white to black this time
     start_cell = board.board[4][4]
-    adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
+    adjacent_pawn = opposingPawnAdjacent('white', board.board, board.board[4][4])
     move = Move('white', 'e4', 'g4', 'jump', None, 'right', None)
     
     #jump should not be blocked
@@ -432,7 +432,7 @@ def test_straightJumpBlocked():
     
     #initialise a jump up for black (jump format: jump start end direction)
     start_cell = board.board[5][4]
-    adjacent_pawn = opposingPawnAdjacent(False, board.board, board.board[5][4])
+    adjacent_pawn = opposingPawnAdjacent('black', board.board, board.board[5][4])
     move = Move('black', 'e5', 'e3', 'jump', None, 'up', None)
     
     #jump should not be blocked
@@ -440,7 +440,7 @@ def test_straightJumpBlocked():
     
     #test from white to black this time
     start_cell = board.board[4][4]
-    adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
+    adjacent_pawn = opposingPawnAdjacent('white', board.board, board.board[4][4])
     move = Move('white', 'e4', 'e6', 'jump', None, 'down', None)
     
     #jump should not be blocked
@@ -473,25 +473,25 @@ def test_validAlternateJumpDirection():
     
     # horizontal jump white to black
     start_cell_white_horizontal = horizontal_jump_board.board[4][4]
-    adjacent_pawn_white_horizontal = opposingPawnAdjacent(True, horizontal_jump_board.board, horizontal_jump_board.board[4][4])
+    adjacent_pawn_white_horizontal = opposingPawnAdjacent('white', horizontal_jump_board.board, horizontal_jump_board.board[4][4])
     jump_white_horizontal_right_and_down = Move('white', 'e4', 'f5', 'jump', None, 'down', None)
     jump_white_horizontal_right_and_up = Move('white', 'e4', 'f3', 'jump', None, 'up', None)
     
     # vertical jump white to black
     start_cell_white_vertical = vertical_jump_board.board[4][4]
-    adjacent_pawn_white_vertical = opposingPawnAdjacent(True, vertical_jump_board.board, vertical_jump_board.board[4][4])
+    adjacent_pawn_white_vertical = opposingPawnAdjacent('white', vertical_jump_board.board, vertical_jump_board.board[4][4])
     jump_white_vertical_down_and_right = Move('white', 'e4', 'f5', 'jump', None, 'right', None)
     jump_white_vertical_down_and_left = Move('white', 'e4', 'd5', 'jump', None, 'left', None)
     
     # horizontal jump black to white
     start_cell_black_horizontal = horizontal_jump_board.board[4][5]
-    adjacent_pawn_black_horizontal = opposingPawnAdjacent(False, horizontal_jump_board.board, horizontal_jump_board.board[4][5])
+    adjacent_pawn_black_horizontal = opposingPawnAdjacent('black', horizontal_jump_board.board, horizontal_jump_board.board[4][5])
     jump_black_horizontal_left_and_down = Move('black', 'f5', 'e4', 'jump', None, 'down', None)
     jump_black_horizontal_left_and_up = Move('black', 'f5', 'e6', 'jump', None, 'up', None)
     
     # vertical jump black to white
     start_cell_black_vertical = vertical_jump_board.board[5][4]
-    adjacent_pawn_black_vertical = opposingPawnAdjacent(False, vertical_jump_board.board, vertical_jump_board.board[5][4])
+    adjacent_pawn_black_vertical = opposingPawnAdjacent('black', vertical_jump_board.board, vertical_jump_board.board[5][4])
     jump_black_vertical_up_and_right = Move('black', 'e5', 'f4', 'jump', None, 'right', None)
     jump_black_vertical_up_and_left = Move('black', 'e5', 'd4', 'jump', None, 'left', None)
     

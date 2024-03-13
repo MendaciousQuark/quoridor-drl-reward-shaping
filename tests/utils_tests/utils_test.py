@@ -92,8 +92,8 @@ def test_locationToCell():
 def test_opposingPawnAdjacent():
     board = Board()
     #at board initialisation pawns are not adjacent
-    white_pawn_adjacent = opposingPawnAdjacent(False, board.board, board.board[0][4])
-    black_pawn_adjacent = opposingPawnAdjacent(False, board.board, board.board[8][4])
+    white_pawn_adjacent = opposingPawnAdjacent('black', board.board, board.board[0][4])
+    black_pawn_adjacent = opposingPawnAdjacent('white', board.board, board.board[8][4])
     
     #assert that the pawns are not adjacent
     assert white_pawn_adjacent[0] == False and white_pawn_adjacent[1] is None
@@ -106,8 +106,8 @@ def test_opposingPawnAdjacent():
     
     print(board.printBoard())
     
-    white_pawn_adjacent = opposingPawnAdjacent(False, board.board, board.board[4][4])
-    black_pawn_adjacent = opposingPawnAdjacent(True, board.board, board.board[4][5])
+    white_pawn_adjacent = opposingPawnAdjacent('black', board.board, board.board[4][4])
+    black_pawn_adjacent = opposingPawnAdjacent('white', board.board, board.board[4][5])
     
     print(white_pawn_adjacent)
     assert white_pawn_adjacent[0] == True and white_pawn_adjacent[1].position == (4, 5)
