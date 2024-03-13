@@ -12,12 +12,12 @@ def test_validateMoveAction():
     board = Board()
     
     #create moves that would be valid
-    valid_move_white_up = Move(True, 'e1', 'e2', 'move', 'up', None, None)
-    valid_move_white_right = Move(True, 'e1', 'f1', 'move', 'right', None, None)
-    valid_move_white_left = Move(True, 'e1', 'd1', 'move', 'left', None, None)
-    valid_move_black_down = Move(False, 'e9', 'e8', 'move', 'down', None, None)
-    valid_move_black_right = Move(False, 'e9', 'f9', 'move', 'right', None, None)
-    valid_move_black_left = Move(False, 'e9', 'd9', 'move', 'left', None, None)
+    valid_move_white_up = Move('white', 'e1', 'e2', 'move', 'up', None, None)
+    valid_move_white_right = Move('white', 'e1', 'f1', 'move', 'right', None, None)
+    valid_move_white_left = Move('white', 'e1', 'd1', 'move', 'left', None, None)
+    valid_move_black_down = Move('black', 'e9', 'e8', 'move', 'down', None, None)
+    valid_move_black_right = Move('black', 'e9', 'f9', 'move', 'right', None, None)
+    valid_move_black_left = Move('black', 'e9', 'd9', 'move', 'left', None, None)
     
     #check if validateMoveAction works as expected
     assert validateMoveAction(valid_move_white_up, board)[0] == True
@@ -29,12 +29,12 @@ def test_validateMoveAction():
 
     #create moves that would be invalid
     #moving multiple spaces
-    invalid_move_white_up_multiple = Move(True, 'e1', 'e3', 'move', 'up', None, None)
-    invalid_move_white_right_multiple = Move(True, 'e1', 'g1', 'move', 'right', None, None)
-    invalid_move_white_left_multiple = Move(True, 'e1', 'c1', 'move', 'left', None, None)
-    invalid_move_black_down_multiple = Move(False, 'e9', 'e6', 'move', 'down', None, None)
-    invalid_move_black_right_multiple = Move(False, 'e9', 'g9', 'move', 'right', None, None)
-    invalid_move_black_left_multiple = Move(False, 'e9', 'c9', 'move', 'left', None, None)
+    invalid_move_white_up_multiple = Move('white', 'e1', 'e3', 'move', 'up', None, None)
+    invalid_move_white_right_multiple = Move('white', 'e1', 'g1', 'move', 'right', None, None)
+    invalid_move_white_left_multiple = Move('white', 'e1', 'c1', 'move', 'left', None, None)
+    invalid_move_black_down_multiple = Move('black', 'e9', 'e6', 'move', 'down', None, None)
+    invalid_move_black_right_multiple = Move('black', 'e9', 'g9', 'move', 'right', None, None)
+    invalid_move_black_left_multiple = Move('black', 'e9', 'c9', 'move', 'left', None, None)
     
     #check if validateMoveAction works as expected
     multiple_space_moves = [invalid_move_white_up_multiple, invalid_move_white_right_multiple, invalid_move_white_left_multiple, invalid_move_black_down_multiple, invalid_move_black_right_multiple, invalid_move_black_left_multiple]
@@ -43,12 +43,12 @@ def test_validateMoveAction():
             validateMoveAction(move, board)
     
     #moving no spaces
-    invalid_move_white_up_single = Move(True, 'e1', 'e1', 'move', 'up', None, None)
-    invalid_move_white_right_single = Move(True, 'e1', 'e1', 'move', 'right', None, None)
-    invalid_move_white_left_single = Move(True, 'e1', 'e1', 'move', 'left', None, None)
-    invalid_move_black_down_single = Move(False, 'e9', 'e9', 'move', 'down', None, None)
-    invalid_move_black_right_single = Move(False, 'e9', 'e9', 'move', 'right', None, None)
-    invalid_move_black_left_single = Move(False, 'e9', 'e9', 'move', 'left', None, None)
+    invalid_move_white_up_single = Move('white', 'e1', 'e1', 'move', 'up', None, None)
+    invalid_move_white_right_single = Move('white', 'e1', 'e1', 'move', 'right', None, None)
+    invalid_move_white_left_single = Move('white', 'e1', 'e1', 'move', 'left', None, None)
+    invalid_move_black_down_single = Move('black', 'e9', 'e9', 'move', 'down', None, None)
+    invalid_move_black_right_single = Move('black', 'e9', 'e9', 'move', 'right', None, None)
+    invalid_move_black_left_single = Move('black', 'e9', 'e9', 'move', 'left', None, None)
     
     #check if validateMoveAction works as expected
     no_space_moves = [invalid_move_white_up_single, invalid_move_white_right_single, invalid_move_white_left_single, invalid_move_black_down_single, invalid_move_black_right_single, invalid_move_black_left_single]
@@ -74,10 +74,10 @@ def test_validateMoveAction():
     board.placePawns()
     
     #create moves that try to cross walls
-    invalid_move_white_up_wall = Move(True, 'e5', 'e6', 'move', 'up', None, None)
-    invalid_move_white_left_wall = Move(True, 'e5', 'd5', 'move', 'left', None, None)
-    invalid_move_black_up_wall = Move(False, 'f5', 'f6', 'move', 'up', None, None)
-    invalid_move_black_right_wall = Move(False, 'f5', 'g5', 'move', 'right', None, None)
+    invalid_move_white_up_wall = Move('white', 'e5', 'e6', 'move', 'up', None, None)
+    invalid_move_white_left_wall = Move('white', 'e5', 'd5', 'move', 'left', None, None)
+    invalid_move_black_up_wall = Move('black', 'f5', 'f6', 'move', 'up', None, None)
+    invalid_move_black_right_wall = Move('black', 'f5', 'g5', 'move', 'right', None, None)
     
     #check if validateMoveAction works as expected
     wall_crossing_moves = [invalid_move_white_up_wall, invalid_move_white_left_wall, invalid_move_black_up_wall, invalid_move_black_right_wall]
@@ -91,21 +91,21 @@ def test_validateMoveAction():
     board.placePawns()
     
     #moves that aren't moving pawns
-    invalid_move_white_up_not_pawn = Move(True, 'a1', 'a2', 'move', 'up', None, None)
-    invalid_move_black_down_not_pawn = Move(False, 'a8', 'a7', 'move', 'down', None, None)
+    invalid_move_white_up_not_pawn = Move('white', 'a1', 'a2', 'move', 'up', None, None)
+    invalid_move_black_down_not_pawn = Move('black', 'a8', 'a7', 'move', 'down', None, None)
     
     #check if validateMoveAction works as expected
     not_pawn_moves = [invalid_move_white_up_not_pawn, invalid_move_black_down_not_pawn]
     
     
     #moving one pawn into another
-    invalid_move_collision_white = Move(True, 'g6', 'g7', 'move', 'right', None, None)
-    invalid_move_collision_black = Move(False, 'g7', 'g6', 'move', 'left', None, None)
+    invalid_move_collision_white = Move('white', 'g6', 'g7', 'move', 'right', None, None)
+    invalid_move_collision_black = Move('black', 'g7', 'g6', 'move', 'left', None, None)
     collision_moves = [invalid_move_collision_white, invalid_move_collision_black]
     
     #moving pawns of wrong colour
-    invalid_move_wrong_colour_white = Move(False, 'g6', 'g7', 'move', 'right', None, None)
-    invalid_move_wrong_colour_black = Move(True, 'g7', 'g6', 'move', 'left', None, None)
+    invalid_move_wrong_colour_white = Move('black', 'g6', 'g7', 'move', 'right', None, None)
+    invalid_move_wrong_colour_black = Move('white', 'g7', 'g6', 'move', 'left', None, None)
     wrong_colour_moves = [invalid_move_wrong_colour_white, invalid_move_wrong_colour_black]
     #checking if validateMoveAction works as expected
     combined_invalid_moves = not_pawn_moves + collision_moves + wrong_colour_moves
@@ -124,8 +124,8 @@ def test_validateJumpAction():
     board.placePawns()
     
     #create moves that would be valid
-    valid_jump_right_white = Move(True, 'e5', 'g5', 'jump', None, 'right', None)
-    valid_jump_left_black = Move(False, 'f5', 'd5', 'jump', None, 'left', None)
+    valid_jump_right_white = Move('white', 'e5', 'g5', 'jump', None, 'right', None)
+    valid_jump_left_black = Move('black', 'f5', 'd5', 'jump', None, 'left', None)
     
     #check if validateJumpAction works as expected
     adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
@@ -134,14 +134,14 @@ def test_validateJumpAction():
     assert validateJumpAction(valid_jump_left_black, board)[0] == True
     
     #indicate the wrong direction
-    invalid_jump_indicate_right_white = Move(True, 'e5', 'c5', 'jump', None, 'right', None)
+    invalid_jump_indicate_right_white = Move('white', 'e5', 'c5', 'jump', None, 'right', None)
     
     assert validateJumpAction(invalid_jump_indicate_right_white, board)[0] == False
     
     #create moves that would be invalid
     #jumping without a pawn to jump over
-    invalid_jump_left_white = Move(True, 'e5', 'c5', 'jump', None, 'left', None)
-    invalid_jump_right_black = Move(False, 'f5', 'h5', 'jump', None, 'right', None)
+    invalid_jump_left_white = Move('white', 'e5', 'c5', 'jump', None, 'left', None)
+    invalid_jump_right_black = Move('black', 'f5', 'h5', 'jump', None, 'right', None)
     
     #check if validateJumpAction works as expected
     assert validateJumpAction(invalid_jump_left_white, board)[0] == False
@@ -153,16 +153,16 @@ def test_validateJumpAction():
     board.placeWall('vertical', board.board[4][6])
     
     #jumping over a wall
-    invalid_jumpe_left_white_wall = Move(True, 'e5', 'c5', 'jump', None, 'left', None)
-    invalid_jump_right_black_wall = Move(False, 'f5', 'h5', 'jump', None, 'right', None)
+    invalid_jumpe_left_white_wall = Move('white', 'e5', 'c5', 'jump', None, 'left', None)
+    invalid_jump_right_black_wall = Move('black', 'f5', 'h5', 'jump', None, 'right', None)
     
     #check if validateJumpAction works as expected
     assert validateJumpAction(invalid_jumpe_left_white_wall, board)[0] == False
     assert validateJumpAction(invalid_jump_right_black_wall, board)[0] == False
     
     #try to jump from square with no pawn
-    invalid_jump_white = Move(True, 'e2', 'c2', 'jump', None, 'left', None)
-    invalid_jump_black = Move(False, 'f3', 'h3', 'jump', None, 'right', None)
+    invalid_jump_white = Move('white', 'e2', 'c2', 'jump', None, 'left', None)
+    invalid_jump_black = Move('black', 'f3', 'h3', 'jump', None, 'right', None)
     
     #check if validateJumpAction works as expected
     invalid_moves = [invalid_jump_white, invalid_jump_black]
@@ -178,7 +178,7 @@ def test_validateJumpAction():
     board.pawn_positions['black'] = [4, 3]
     board.placePawns()
     #jump d4 d6 up
-    jump_into_wall = Move(True, 'd4', 'd6', 'jump', None, 'up', None)
+    jump_into_wall = Move('white', 'd4', 'd6', 'jump', None, 'up', None)
     assert validateMove(jump_into_wall, board, some_pawn)[0] == False
     
 def test_validatePlaceAction():
@@ -186,8 +186,8 @@ def test_validatePlaceAction():
     board = Board()
     
     #valid wall placements
-    valid_wall_horizontal = Move(True, 'e5', None, 'place', None, None, 'horizontal')
-    valid_wall_vertical = Move(False, 'f5', None, 'place', None, None, 'vertical')
+    valid_wall_horizontal = Move('white', 'e5', None, 'place', None, None, 'horizontal')
+    valid_wall_vertical = Move('black', 'f5', None, 'place', None, None, 'vertical')
     
     #check if validateWallPlacement works as expected
     assert validatePlaceAction(valid_wall_horizontal, board)[0] == True
@@ -195,8 +195,8 @@ def test_validatePlaceAction():
     
     #invalid wall placements
     #placing a wall on the edge of the board
-    invalid_wall_horizontal_edge = Move(True, 'i1', None, 'place', None, None, 'horizontal')
-    invalid_wall_vertical_edge = Move(False, 'i1', None, 'place', None, None, 'vertical')
+    invalid_wall_horizontal_edge = Move('white', 'i1', None, 'place', None, None, 'horizontal')
+    invalid_wall_vertical_edge = Move('black', 'i1', None, 'place', None, None, 'vertical')
     
     #check if validateWallPlacement works as expected
     assert validatePlaceAction(invalid_wall_horizontal_edge, board)[0] == False
@@ -216,15 +216,15 @@ def test_validatePlaceAction():
     board.placeWall('vertical', board.board[4][3])
 
     #walls ontop of eachother
-    invalid_wall_horizontal_overlap = Move(True, 'e5', None, 'place', None, None, 'horizontal')
-    invalid_wall_vertical_overlap = Move(False, 'c5', None, 'place', None, None, 'vertical')
+    invalid_wall_horizontal_overlap = Move('white', 'e5', None, 'place', None, None, 'horizontal')
+    invalid_wall_vertical_overlap = Move('black', 'c5', None, 'place', None, None, 'vertical')
     
     #check if validateWallPlacement works as expected
     assert validatePlaceAction(invalid_wall_horizontal_overlap, board)[0] == False
     assert validatePlaceAction(invalid_wall_vertical_overlap, board)[0] == False
     
     #placing this vertical wall blocks all paths
-    invalid_wall_vertical_block = Move(True, 'h7', None, 'place', None, None, 'vertical')
+    invalid_wall_vertical_block = Move('white', 'h7', None, 'place', None, None, 'vertical')
     
     #check if validateWallPlacement works as expected
     assert validatePlaceAction(invalid_wall_vertical_block, board)[0] == False
@@ -244,7 +244,7 @@ def test_validatePlaceAction():
     board.placeWall('vertical', board.board[4][3])
     
     #placing this horizontal wall blocks all paths
-    invalid_wall_horizontal_block = Move(False, 'h7', None, 'place', None, None, 'horizontal')
+    invalid_wall_horizontal_block = Move('black', 'h7', None, 'place', None, None, 'horizontal')
     
     #check if validateWallPlacement works as expected
     assert validatePlaceAction(invalid_wall_horizontal_block, board)[0] == False
@@ -364,7 +364,7 @@ def test_straightJumpBlocked():
     #initialise a jump to the left (jump format: jump start end direction)
     start_cell = board.board[4][4]
     adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
-    move = Move(True, 'e4', 'g4', 'jump', None, 'right', None)
+    move = Move('white', 'e4', 'g4', 'jump', None, 'right', None)
     
     #jump should be blocked
     assert straightJumpBlocked(start_cell, board, adjacent_pawn, move) == True
@@ -372,7 +372,7 @@ def test_straightJumpBlocked():
     #test from black to white this time
     start_cell = board.board[4][5]
     adjacent_pawn = opposingPawnAdjacent(False, board.board, board.board[4][5])
-    move = Move(False, 'f5', 'd5', 'jump', None, 'left', None)
+    move = Move('black', 'f5', 'd5', 'jump', None, 'left', None)
     
     #jump should be blocked
     assert straightJumpBlocked(start_cell, board, adjacent_pawn, move) == True
@@ -386,7 +386,7 @@ def test_straightJumpBlocked():
     #test again in reverse
     start_cell = board.board[4][5]
     adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][5])
-    move = Move(True, 'f5', 'd5', 'jump', None, 'left', None)
+    move = Move('white', 'f5', 'd5', 'jump', None, 'left', None)
     
     #jump should be blocked
     assert straightJumpBlocked(start_cell, board, adjacent_pawn, move) == True
@@ -394,7 +394,7 @@ def test_straightJumpBlocked():
     #test from black to white this time
     start_cell = board.board[4][4]
     adjacent_pawn = opposingPawnAdjacent(False, board.board, board.board[4][4])
-    move = Move(False, 'e4', 'g4', 'jump', None, 'right', None)
+    move = Move('black', 'e4', 'g4', 'jump', None, 'right', None)
     
     #jump should be blocked
     assert straightJumpBlocked(start_cell, board, adjacent_pawn, move) == True
@@ -411,7 +411,7 @@ def test_straightJumpBlocked():
     #initialise a jump to the left for black (jump format: jump start end direction)
     start_cell = board.board[4][5]
     adjacent_pawn = opposingPawnAdjacent(False, board.board, board.board[4][5])
-    move = Move(False, 'f5', 'd5', 'jump', None, 'left', None)
+    move = Move('black', 'f5', 'd5', 'jump', None, 'left', None)
     
     #jump should not be blocked
     assert straightJumpBlocked(start_cell, board, adjacent_pawn, move) == False
@@ -419,7 +419,7 @@ def test_straightJumpBlocked():
     #test from white to black this time
     start_cell = board.board[4][4]
     adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
-    move = Move(True, 'e4', 'g4', 'jump', None, 'right', None)
+    move = Move('white', 'e4', 'g4', 'jump', None, 'right', None)
     
     #jump should not be blocked
     assert straightJumpBlocked(start_cell, board, adjacent_pawn, move) == False
@@ -433,7 +433,7 @@ def test_straightJumpBlocked():
     #initialise a jump up for black (jump format: jump start end direction)
     start_cell = board.board[5][4]
     adjacent_pawn = opposingPawnAdjacent(False, board.board, board.board[5][4])
-    move = Move(False, 'e5', 'e3', 'jump', None, 'up', None)
+    move = Move('black', 'e5', 'e3', 'jump', None, 'up', None)
     
     #jump should not be blocked
     assert straightJumpBlocked(start_cell, board, adjacent_pawn, move) == False
@@ -441,7 +441,7 @@ def test_straightJumpBlocked():
     #test from white to black this time
     start_cell = board.board[4][4]
     adjacent_pawn = opposingPawnAdjacent(True, board.board, board.board[4][4])
-    move = Move(True, 'e4', 'e6', 'jump', None, 'down', None)
+    move = Move('white', 'e4', 'e6', 'jump', None, 'down', None)
     
     #jump should not be blocked
     assert straightJumpBlocked(start_cell, board, adjacent_pawn, move) == False
@@ -474,26 +474,26 @@ def test_validAlternateJumpDirection():
     # horizontal jump white to black
     start_cell_white_horizontal = horizontal_jump_board.board[4][4]
     adjacent_pawn_white_horizontal = opposingPawnAdjacent(True, horizontal_jump_board.board, horizontal_jump_board.board[4][4])
-    jump_white_horizontal_right_and_down = Move(True, 'e4', 'f5', 'jump', None, 'down', None)
-    jump_white_horizontal_right_and_up = Move(True, 'e4', 'f3', 'jump', None, 'up', None)
+    jump_white_horizontal_right_and_down = Move('white', 'e4', 'f5', 'jump', None, 'down', None)
+    jump_white_horizontal_right_and_up = Move('white', 'e4', 'f3', 'jump', None, 'up', None)
     
     # vertical jump white to black
     start_cell_white_vertical = vertical_jump_board.board[4][4]
     adjacent_pawn_white_vertical = opposingPawnAdjacent(True, vertical_jump_board.board, vertical_jump_board.board[4][4])
-    jump_white_vertical_down_and_right = Move(True, 'e4', 'f5', 'jump', None, 'right', None)
-    jump_white_vertical_down_and_left = Move(True, 'e4', 'd5', 'jump', None, 'left', None)
+    jump_white_vertical_down_and_right = Move('white', 'e4', 'f5', 'jump', None, 'right', None)
+    jump_white_vertical_down_and_left = Move('white', 'e4', 'd5', 'jump', None, 'left', None)
     
     # horizontal jump black to white
     start_cell_black_horizontal = horizontal_jump_board.board[4][5]
     adjacent_pawn_black_horizontal = opposingPawnAdjacent(False, horizontal_jump_board.board, horizontal_jump_board.board[4][5])
-    jump_black_horizontal_left_and_down = Move(False, 'f5', 'e4', 'jump', None, 'down', None)
-    jump_black_horizontal_left_and_up = Move(False, 'f5', 'e6', 'jump', None, 'up', None)
+    jump_black_horizontal_left_and_down = Move('black', 'f5', 'e4', 'jump', None, 'down', None)
+    jump_black_horizontal_left_and_up = Move('black', 'f5', 'e6', 'jump', None, 'up', None)
     
     # vertical jump black to white
     start_cell_black_vertical = vertical_jump_board.board[5][4]
     adjacent_pawn_black_vertical = opposingPawnAdjacent(False, vertical_jump_board.board, vertical_jump_board.board[5][4])
-    jump_black_vertical_up_and_right = Move(False, 'e5', 'f4', 'jump', None, 'right', None)
-    jump_black_vertical_up_and_left = Move(False, 'e5', 'd4', 'jump', None, 'left', None)
+    jump_black_vertical_up_and_right = Move('black', 'e5', 'f4', 'jump', None, 'right', None)
+    jump_black_vertical_up_and_left = Move('black', 'e5', 'd4', 'jump', None, 'left', None)
     
     #should all be valid
     assert validAlternateJumpDirection(start_cell_white_horizontal, horizontal_jump_board, adjacent_pawn_white_horizontal, jump_white_horizontal_right_and_down) == True

@@ -6,9 +6,9 @@ from errors import MoveFormatError, MoveLocationError, MoveValidationError
 class Pawn:
     #board is a copy of the game board, colour is a bool
     def __init__(self, colour, i, j):
-        #colour is a bool, True for white, False for black
+        #'white' or 'black'
         self.colour = colour
-        self.move_dir = -1 if colour else 1
+        self.move_dir = -1 if colour == 'white' else 1
         self.position = [i, j]
         self.walls = 10
     

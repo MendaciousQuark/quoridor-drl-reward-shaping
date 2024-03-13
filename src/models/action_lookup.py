@@ -346,3 +346,27 @@ action_lookup = {
     98811 : Move('black', 'i1', None, 'place', None, None, 'vertical'),
 
 }
+
+'''
+
+code for generating the ids/codes lives here:
+
+(O_O)¬
+
+for i in range(9):
+        for j in range(9):
+            for k in range(2):
+                for l in range(2):
+                    if k == 0:
+                        #def Move(self, colour, start, end, action, direction, jumpDirection=None, orientation=None):
+                        orientation = 'horizontal'
+                        colour = 'white' if l == 0 else 'black'
+                        position = moveNumberToLetter(j) + str(9 - i)
+                        print(f"9{i}{j}{k}{l} : Move('{colour}', '{position}', {None}, 'place', {None}, {None}, '{orientation}'),")
+                    else:
+                        orientation = 'vertical'
+                        colour = 'white' if l == 0 else 'black'
+                        position = moveNumberToLetter(j) + str(9 - i)
+                        print(f"9{i}{j}{k}{l} : Move('{colour}', '{position}', {None}, 'place', {None}, {None}, '{orientation}'),")
+
+'''

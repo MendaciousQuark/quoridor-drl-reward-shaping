@@ -46,13 +46,8 @@ class Move:
             self.direction = jumpDirection
     
     def parseColour(self, colour):
-        if(colour is None or not isinstance(colour, bool)):
-            raise MoveFormatError("colour", f"Invalid colour: {colour}\nColour should be one of 'white' (True) or 'black' (False)")
-        
-        if(colour):
-            return "white"
-        elif(not colour):
-            return "black"
+        if(colour == 'white' or colour == 'black'):
+            return colour
         else:
             raise MoveFormatError("colour", f"Invalid colour: {colour}\nColour should be one of 'white' (True) or 'black' (False)")
     

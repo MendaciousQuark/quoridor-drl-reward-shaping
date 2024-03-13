@@ -10,7 +10,7 @@ from .a_star import aStar
 from .move_validation import validateMove, validateMoveAction, validateJumpAction, validatePlaceAction
 
 #specifics from game_flow.py
-from .game_flow import initGameObjects, playGame, victory, makeMove
+from .game_flow import playGame, victory
 
 #specifics from board_to_graph.py
 from .board_to_graph import boardToGraph, cellToNode
@@ -23,8 +23,6 @@ __all__ = [
     "aStar",
     #from move_validation.py
     "validateMove", "validateMoveAction", "validateJumpAction", "validatePlaceAction"
-    #from game_flow.py
-    "makeMove",
     #from board_to_graph.py
     "boardToGraph", "cellToNode",
 ]

@@ -7,21 +7,21 @@ from errors.move_format_error import  MoveFormatError
 
 def test_pawn_init():
     # white pawn
-    pawn = Pawn(True, 0, 0)
-    assert pawn.colour == True
+    pawn = Pawn('white', 0, 0)
+    assert pawn.colour == 'white'
     assert pawn.move_dir == -1
     assert pawn.position == [0, 0]
     assert pawn.walls == 10
     
     #black pawn
-    pawn = Pawn(False, 0, 0)
-    assert pawn.colour == False
+    pawn = Pawn('black', 0, 0)
+    assert pawn.colour == 'black'
     assert pawn.move_dir == 1
     assert pawn.position == [0, 0]
     assert pawn.walls == 10
     
 def test_valid_requestMoveInput(monkeypatch):
-    pawn = Pawn(True, 0, 0)
+    pawn = Pawn('white', 0, 0)
     # Test move input for move
     monkeypatch.setattr('builtins.input', lambda x: "move up e1 e2")
     move1 = pawn.requestMoveInput()
@@ -35,7 +35,7 @@ def test_valid_requestMoveInput(monkeypatch):
     move3 = pawn.requestMoveInput()
     
     # repeat for black pawn
-    black_pawn = Pawn(False, 0, 0)
+    black_pawn = Pawn('black', 0, 0)
     
     # Test move input for move
     monkeypatch.setattr('builtins.input', lambda x: "move up e1 e2")
@@ -50,12 +50,12 @@ def test_valid_requestMoveInput(monkeypatch):
     move6 = black_pawn.requestMoveInput()
     
     # assert that moves are as expected
-    assert move1 == Move(True, "e1", "e2", "move", "up", None, None)
-    assert move2 == Move(True, "a1", None, "place", None, None, "vertical")
-    assert move3 == Move(True, "e1", "e3", "jump", "up", "up", None)
-    assert move4 == Move(False, "e1", "e2", "move", "up", None, None)
-    assert move5 == Move(False, "a1", None, "place", None, None, "vertical")
-    assert move6 == Move(False, "e1", "e3", "jump", "up", "up", None)
+    assert move1 == Move('white', "e1", "e2", "move", "up", None, None)
+    assert move2 == Move('white', "a1", None, "place", None, None, "vertical")
+    assert move3 == Move('white', "e1", "e3", "jump", "up", "up", None)
+    assert move4 == Move('black', "e1", "e2", "move", "up", None, None)
+    assert move5 == Move('black', "a1", None, "place", None, None, "vertical")
+    assert move6 == Move('black', "e1", "e3", "jump", "up", "up", None)
     
 def test_invalid_colour_request(monkeypatch):
     # Invalid colour (no colour)
@@ -66,7 +66,7 @@ def test_invalid_colour_request(monkeypatch):
     
 def test_invalid_move_request(monkeypatch):
     # Setup for testing invalid inputs
-    pawn = Pawn(True, 0, 0)
+    pawn = Pawn('white', 0, 0)
 
     # Invalid move input (no direction)
     monkeypatch.setattr('builtins.input', lambda x: "move e1 e2")
@@ -104,7 +104,7 @@ def test_invalid_move_request(monkeypatch):
         pawn.requestMoveInput()
     
 def test_invalid_place_request(monkeypatch):
-    pawn = Pawn(True, 0, 0)
+    pawn = Pawn('white', 0, 0)
     
     # Invallid place input (no orientation)
     monkeypatch.setattr('builtins.input', lambda x: "place a1")
@@ -137,7 +137,7 @@ def test_invalid_place_request(monkeypatch):
         pawn.requestMoveInput()
     
 def test_invalid_jump_request(monkeypatch):
-    pawn = Pawn(True, 0, 0)
+    pawn = Pawn('white', 0, 0)
     
     # Invalid jump input (no jump direction)
     monkeypatch.setattr('builtins.input', lambda x: "jump e1 e2")

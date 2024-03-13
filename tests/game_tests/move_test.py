@@ -6,8 +6,8 @@ from errors.move_format_error import MoveFormatError
 import pytest
 
 def test_init():
-    #whit move
-    move = Move(True, "e1", "e2", "move", "up", None, None)
+    #white move
+    move = Move('white', "e1", "e2", "move", "up", None, None)
     assert move.colour == 'white'
     assert move.start == (8, 4)
     assert move.end == (7, 4)
@@ -17,7 +17,7 @@ def test_init():
     assert move.orientation == None
     
     #black move
-    move = Move(False, "e1", "e2", "move", "up", None, None)
+    move = Move('black', "e1", "e2", "move", "up", None, None)
     assert move.colour == 'black'
     assert move.start == (8, 4)
     assert move.end == (7, 4)
@@ -27,9 +27,9 @@ def test_init():
     assert move.orientation == None
     
 def test_parseColour():
-    move = Move(True, "e1", "e2", "move", "up", None, None)
-    assert move.parseColour(True) == "white"
-    assert move.parseColour(False) == "black"
+    move = Move('white', "e1", "e2", "move", "up", None, None)
+    assert move.parseColour('white') == "white"
+    assert move.parseColour('black') == "black"
     
     with pytest.raises(MoveFormatError):
         move.parseColour(None)
@@ -38,7 +38,7 @@ def test_parseColour():
         move.parseColour("string")
     
 def test_parseLocation():
-    move = Move(True, "e1", "e2", "move", "up", None, None)
+    move = Move('white', "e1", "e2", "move", "up", None, None)
     assert move.parseLocation("e1") == (8, 4)
     assert move.parseLocation("e2") == (7, 4)
     
@@ -55,7 +55,7 @@ def test_parseLocation():
         move.parseLocation("e1e2")
 
 def test_parseAction():
-    move = Move(True, "e1", "e2", "move", "up", None, None)
+    move = Move('white', "e1", "e2", "move", "up", None, None)
     assert move.parseAction("move") == "move"
     assert move.parseAction("jump") == "jump"
     assert move.parseAction("place") == "place"
@@ -67,7 +67,7 @@ def test_parseAction():
         move.parseAction(None)
         
 def test_parseOrientation():
-    move = Move(True, "e1", "e2", "move", "up", None, None)
+    move = Move('white', "e1", "e2", "move", "up", None, None)
     
     assert move.parseOrientation('h') == 'horizontal'
     assert move.parseOrientation('horizontal') == 'horizontal'
@@ -81,7 +81,7 @@ def test_parseOrientation():
         move.parseOrientation(None)
     
 def test_parseDirection():
-    move = Move(True, "e1", "e2", "move", "up", None, None)
+    move = Move('white', "e1", "e2", "move", "up", None, None)
     
     assert move.parseDirection('u') == UP
     assert move.parseDirection('up') == UP
@@ -99,13 +99,13 @@ def test_parseDirection():
         move.parseDirection(None)
 
 def test_move_str():
-    move = Move(True, "e1", "e2", "move", "up", None, None)
+    move = Move('white', "e1", "e2", "move", "up", None, None)
     assert str(move) == f"Colour: {move.colour}\nAction: {move.action}\nStart: {move.start}\nEnd: {move.end}\nDirection: {move.direction}\nOrientation: {move.orientation}, jumpDirection: {move.jumpDirection}  "
     
 def test_eq():
-    move1 = Move(True, "e1", "e2", "move", "up", None, None)
-    move2 = Move(True, "e1", "e2", "move", "up", None, None)
-    move3 = Move(False, "e1", "e2", "move", "up", None, None)
+    move1 = Move('white', "e1", "e2", "move", "up", None, None)
+    move2 = Move('white', "e1", "e2", "move", "up", None, None)
+    move3 = Move('black', "e1", "e2", "move", "up", None, None)
     assert move1 == move2
     assert move1 != move3
     assert move2 != move3

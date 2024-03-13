@@ -71,7 +71,6 @@ class Model:
         check_vertical = False
         check_horizontal = False
         partially_legal_walls = []
-        coulour_formatted = True if self.colour == 'white' else False
         for i, row in enumerate(state['board']):
             for j, cell in enumerate(row):
                 #print(f"i: {i}, j: {j}, cell: {cell}")
@@ -90,7 +89,7 @@ class Model:
                     if not (cell in state['walled_cells'][orientation]):
                     #if the cell is above a horizontal wall, skip it as it must be an illegal vertical wall
                         if not (cell_below in state['walled_cells']['horizontal']):
-                            move_and_id = self.add_id_to_place(Move(coulour_formatted, position_formatted, None, 'place', None, None, orientation), i, j)
+                            move_and_id = self.add_id_to_place(Move(self.colour, position_formatted, None, 'place', None, None, orientation), i, j)
                             partially_legal_walls.append(move_and_id)
                     
                 if check_horizontal:
@@ -101,7 +100,7 @@ class Model:
                     if not(cell in state['walled_cells'][orientation]):
                         #if the cell is next to a vertical wall, skip it as it must be an illegal vertical wall
                         if not(cell_right in state['walled_cells']['vertical']):
-                            move_and_id = self.add_id_to_place(Move(coulour_formatted, position_formatted, None, 'place', None, None, orientation), i, j)
+                            move_and_id = self.add_id_to_place(Move(self.colour, position_formatted, None, 'place', None, None, orientation), i, j)
                             partially_legal_walls.append(move_and_id)
         
         legal_walls = []
@@ -112,7 +111,6 @@ class Model:
     
     def find_legal_movement(self, state, current_position):
         moves_to_check = []
-        coulour_formatted = True if self.colour == 'white' else False
         
         adjacent_opposing_pawn = opposingPawnAdjacent(self.colour, state['board'], locationToCell(*current_position, state['board']))
         #if there is an opposing pawn adjacent to the current pawn
@@ -129,7 +127,7 @@ class Model:
                     #convert the direction to a string for the move object
                     jump_direction_formatted = 'up' if direction == UP else 'down' if direction == DOWN else 'left' if direction == LEFT else 'right'
                     #create the move object and add it to the list of moves to check
-                    move_and_id = self.add_id_to_movement(Move(coulour_formatted, start_formatted, end_formatted, 'jump', None, jump_direction_formatted, None), opponent_direction, jump_direction_formatted)
+                    move_and_id = self.add_id_to_movement(Move(self.colour, start_formatted, end_formatted, 'jump', None, jump_direction_formatted, None), opponent_direction, jump_direction_formatted)
                     moves_to_check.append(move_and_id)
                 
         #create all possible moves in the four cardinal directions
@@ -143,7 +141,7 @@ class Model:
                 #convert the direction to a string for the move object
                 direction_formatted = 'up' if direction == UP else 'down' if direction == DOWN else 'left' if direction == LEFT else 'right'
                 #create the move object and add it to the list of moves to check
-                move_and_id = self.add_id_to_movement(Move(coulour_formatted, start_formatted, end_formatted, 'move', direction_formatted, None, None))
+                move_and_id = self.add_id_to_movement(Move(self.colour, start_formatted, end_formatted, 'move', direction_formatted, None, None))
                 moves_to_check.append(move_and_id)
         
         legal_moves = []

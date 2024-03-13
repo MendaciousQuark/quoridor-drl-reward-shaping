@@ -15,7 +15,7 @@ class Board:
         
         #place the pawns
         self.placePawns()
-        
+        self.turn = 0
         #set the initial state
         self.updateState()
         
@@ -52,6 +52,14 @@ class Board:
                     cells_with_walls['vertical'].append(cell)
         #return the cells that have walls
         return cells_with_walls
+    
+    
+
+    def makeMove(self, move, board, colour):
+        if(move.action == "move" or move.action == "jump"):
+            board.movePawn(colour, move.end)
+        elif(move.action == "place"):
+            board.placeWall(move.orientation, self.board[move.start[0]][move.start[1]])
     
     def movePawn(self, colour, end):
         self.removePawns()
@@ -255,7 +263,7 @@ class Board:
         #pdb.set_trace()
         #return a joined string_board we do len(self.board[0]) + 5 to account for the length of each row and the borders (includin 9-1 a-i etc)
         return joinWithNewlines(string_board, len(self.board[0]) + 5)
-                        
+    
     def copy(self):
         new_board = Board()
         new_board.board = [[self.board[i][j].copy() for j in range(9)] for i in range(9)]
