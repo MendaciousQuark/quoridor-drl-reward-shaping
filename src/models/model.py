@@ -11,18 +11,15 @@ class Model:
         self.colour = colour
         self.description = description
         #the pawns representing players [white_pawn, black_pawn]
-        self.pawns = {
-            'white': pawns[0],
-            'black': pawns[1]
-        }
+        self.pawns = pawns
         # ... other attributes
         self.action_state = []
         
     def find_legal_moves(self, state):
-        current_position = state[self.colour]
+        self.action_state = []
+        current_position = state['pieces']['white' if state['turn'] % 2 == 0 else 'black']
         walls = self.find_legal_walls(state)
         movement = self.find_legal_movement(state, current_position)
-        walls_with_id = []
         self.action_state.extend(walls)
         self.action_state.extend(movement)
     
@@ -177,6 +174,7 @@ class Model:
         #the punishment for being further from the end goal than the opponent
         distance_penalty = white_distance if self.colour == 'white' else black_distance
         distance_penalty *= -1 #negate as punishment
+        print('victory_or_defeat_reward:', victory_or_defeat_reward, 'path_difference_reward:', path_difference_reward, 'wall_difference_penalty:', wall_difference_penalty, 'opponent_distance_reward:', opponent_distance_reward, 'distance_penalty:', distance_penalty)
         return victory_or_defeat_reward + path_difference_reward + wall_difference_penalty + opponent_distance_reward + distance_penalty
     
     def determine_best_paths(self, state):

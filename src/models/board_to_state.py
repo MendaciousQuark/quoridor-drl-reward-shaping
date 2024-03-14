@@ -8,10 +8,10 @@ def boardToState(board, pawns):
     # channel 2: black position
     state[pawns['black'].position[0], pawns['black'].position[1], 1] = 1
     # channel 3: horizontal walls
-    for walled_cell in board.state['horizontal']:
+    for walled_cell in board.state['walled_cells']['horizontal']:
         state[walled_cell.position[0], walled_cell.position[1], 2] = 1
     # channel 4: vertical walls
-    for walled_cell in board.state['vertical']:
+    for walled_cell in board.state['walled_cells']['vertical']:
         state[walled_cell.position[0], walled_cell.position[1], 3] = 1
     # channel 5: white walls remaining
     state[:, :, 4] = pawns['white'].walls
