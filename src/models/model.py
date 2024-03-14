@@ -1,6 +1,8 @@
 from utils import UP, DOWN, LEFT, RIGHT 
 from utils import getDirectionIndex, opposingPawnAdjacent, validLocation, locationToCell, getCellDirection, moveNumberToLetter
-from logic import validateMove, boardToGraph, aStar
+from logic.move_validation import validateMove
+from logic.board_to_graph import boardToGraph
+from logic.a_star import aStar
 from game import Move
 import pdb
 
@@ -154,6 +156,7 @@ class Model:
         return legal_moves
 
     def calculate_rewards(self, state):
+        self.colo
         #will need distance for both pawns multiple times, so calculate it once
         white_path, black_path = self.determine_best_paths(state)
         white_distance, black_distance = len(white_path) - 1, len(black_path) - 1 # -1 as the path includes the start position

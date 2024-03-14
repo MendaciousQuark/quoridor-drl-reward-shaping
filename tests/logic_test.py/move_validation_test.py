@@ -1,9 +1,9 @@
 from logic.move_validation import *
 from game.board import Board
 from game.move import Move
-from game.pawn import Pawn
 from utils.directions import *
 from errors.move_validation_error import MoveValidationError
+from game.pawn import Pawn
 
 import pytest
 

@@ -15,7 +15,7 @@ __all__ = [
     #action_lookup.py import
     'action_lookup', 'action_id_to_q_index',
     #board_to_state
-    'boardToState'
+    'boardToState',
     #from train.py
-    'trainDQN'
+    'trainDQN', 'step', 'reset'
 ]

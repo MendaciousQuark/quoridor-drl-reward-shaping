@@ -3,8 +3,8 @@ from game.pawn import Pawn
 from logic.game_flow import *
 def test_victory():
     #place pawns in a winning positions
-    white_pawn = Pawn(True, 0, 0)
-    black_pawn = Pawn(False, 8, 8)
+    white_pawn = Pawn('white', 0, 0)
+    black_pawn = Pawn('black', 8, 8)
     
     #check if the game is won
     assert victory(white_pawn) == True

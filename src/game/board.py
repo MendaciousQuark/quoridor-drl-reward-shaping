@@ -52,18 +52,17 @@ class Board:
                     cells_with_walls['vertical'].append(cell)
         #return the cells that have walls
         return cells_with_walls
-    
-    
 
     def makeMove(self, move, board, colour):
         if(move.action == "move" or move.action == "jump"):
             board.movePawn(colour, move.end)
         elif(move.action == "place"):
             board.placeWall(move.orientation, self.board[move.start[0]][move.start[1]])
+        self.turn += 1
     
     def movePawn(self, colour, end):
         self.removePawns()
-        pawn_colour = 'white' if colour else 'black'
+        pawn_colour = 'white' if colour == 'white' else 'black'
         self.pawn_positions[pawn_colour] = list(end)
         self.placePawns()
         self.updateState()
@@ -97,6 +96,7 @@ class Board:
     
     def updateState(self):
         self.state = {
+            'turn': self.turn,
             'board_object': self,
             'board' : self.board,
             'pieces': self.pawn_positions,

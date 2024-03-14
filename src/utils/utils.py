@@ -62,7 +62,7 @@ def locationToCell(i , j , board):
         raise ValueError(f"Invalid location: ({i}, {j}). Must be in the range (0, 0) to (8, 8).")
 
 def opposingPawnAdjacent(colour, board, center_cell):
-    opposing_pawn_colour = 'black' if colour else 'white'
+    opposing_pawn_colour = 'black' if colour == 'white' else 'white'
     for direction in [UP, DOWN, LEFT, RIGHT]:
         location_to_check = getDirectionIndex(center_cell.position, direction)
         if(validLocation(*location_to_check)):

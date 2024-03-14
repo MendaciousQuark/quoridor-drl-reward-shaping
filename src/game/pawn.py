@@ -1,6 +1,7 @@
+
+from logic.move_validation import validateMove
 from utils import HELP_MOVE, HELP_PLACE, HELP_JUMP, HELP
 from .move import Move
-from logic import validateMove
 from errors import MoveFormatError, MoveLocationError, MoveValidationError
 
 class Pawn:
