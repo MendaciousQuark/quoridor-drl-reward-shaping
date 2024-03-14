@@ -5,7 +5,7 @@ from logic.board_to_graph import boardToGraph
 from logic.a_star import aStar
 from game import Move
 import pdb
-
+import random
 class Model:
     def __init__(self, colour, pawns, name='Bot', description='Bot'):
         self.name = name
@@ -18,6 +18,7 @@ class Model:
         self.action_state = []
         
     def find_legal_moves(self, state):
+        print('pawns in find_legal_moves:', self.pawns)
         self.action_state = []
         current_position = state['pieces']['white' if state['turn'] % 2 == 0 else 'black']
         walls = self.find_legal_walls(state)
@@ -30,7 +31,7 @@ class Model:
         forced_integer_part = '9'
         location_part = f'{i}{j}'
         orientation_part = '0' if place.orientation == 'horizontal' else '1'
-        colour_part = '0' if place.colour else '1'
+        colour_part = '0' if place.colour == 'white' else '1'
         id = int(forced_integer_part + location_part + orientation_part + colour_part)
         return (place, id)
     
@@ -39,21 +40,21 @@ class Model:
         
         if move.action == 'move':
             if move.direction == UP:
-                id = 1
+                id = 0
             elif move.direction == DOWN:
-                id = 2
+                id = 1
             elif move.direction == LEFT:
-                id = 3
+                id = 2
             elif move.direction == RIGHT:
-                id = 4
+                id = 3
         elif move.action == 'jump':
             if jump_direction == opponent_direction:
-                id = 7
+                id = 6
             else:
                 if jump_direction == LEFT:
-                    id = 5
+                    id = 4
                 else:
-                    id = 6
+                    id = 3
         return (move, id)
     
     def find_legal_walls(self, state):
@@ -70,6 +71,7 @@ class Model:
         check_vertical = False
         check_horizontal = False
         partially_legal_walls = []
+        colour = 'white' if state['turn'] % 2 == 0 else 'black'
         for i, row in enumerate(state['board']):
             for j, cell in enumerate(row):
                 #print(f"i: {i}, j: {j}, cell: {cell}")
@@ -87,9 +89,9 @@ class Model:
                     #if the cell is already walled, skip it as it must be an illegal wall
                     if not (cell in state['walled_cells'][orientation]):
                     #if the cell is above a horizontal wall, skip it as it must be an illegal vertical wall
-                        if not (cell_below in state['walled_cells']['horizontal']):
-                            move_and_id = self.add_id_to_place(Move(self.colour, position_formatted, None, 'place', None, None, orientation), i, j)
-                            partially_legal_walls.append(move_and_id)
+                        #if not (cell_below in state['walled_cells']['horizontal'] and cell_below is not None):
+                        move_and_id = self.add_id_to_place(Move(colour, position_formatted, None, 'place', None, None, orientation), i, j)
+                        partially_legal_walls.append(move_and_id)
                     
                 if check_horizontal:
                     #crete a move object for the horizontal wall placement
@@ -98,20 +100,22 @@ class Model:
                     #if the cell is already walled, skip it as it must be an illegal wall
                     if not(cell in state['walled_cells'][orientation]):
                         #if the cell is next to a vertical wall, skip it as it must be an illegal vertical wall
-                        if not(cell_right in state['walled_cells']['vertical']):
-                            move_and_id = self.add_id_to_place(Move(self.colour, position_formatted, None, 'place', None, None, orientation), i, j)
-                            partially_legal_walls.append(move_and_id)
+                        #if not(cell_right in state['walled_cells']['vertical'] and cell_right is not None):
+                        move_and_id = self.add_id_to_place(Move(colour, position_formatted, None, 'place', None, None, orientation), i, j)
+                        partially_legal_walls.append(move_and_id)
         
         legal_walls = []
+        
+        print('walls in find_legal_walls:', self.pawns[colour].walls)
         for move_with_id in partially_legal_walls:
-            if validateMove(move_with_id[0], state['board_object'], self.pawns[self.colour]):
+            if validateMove(move_with_id[0], state['board_object'], self.pawns[colour])[0]:
                 legal_walls.append(move_with_id)
         return legal_walls
     
     def find_legal_movement(self, state, current_position):
         moves_to_check = []
-        
-        adjacent_opposing_pawn = opposingPawnAdjacent(self.colour, state['board'], locationToCell(*current_position, state['board']))
+        colour = 'white' if state['turn'] % 2 == 0 else 'black'
+        adjacent_opposing_pawn = opposingPawnAdjacent(colour, state['board'], locationToCell(*current_position, state['board']))
         #if there is an opposing pawn adjacent to the current pawn
         if(adjacent_opposing_pawn[0]):
             # create all possible jump moves in the direction of the opposing pawn
@@ -126,7 +130,7 @@ class Model:
                     #convert the direction to a string for the move object
                     jump_direction_formatted = 'up' if direction == UP else 'down' if direction == DOWN else 'left' if direction == LEFT else 'right'
                     #create the move object and add it to the list of moves to check
-                    move_and_id = self.add_id_to_movement(Move(self.colour, start_formatted, end_formatted, 'jump', None, jump_direction_formatted, None), opponent_direction, jump_direction_formatted)
+                    move_and_id = self.add_id_to_movement(Move(colour, start_formatted, end_formatted, 'jump', None, jump_direction_formatted, None), opponent_direction, jump_direction_formatted)
                     moves_to_check.append(move_and_id)
                 
         #create all possible moves in the four cardinal directions
@@ -140,13 +144,13 @@ class Model:
                 #convert the direction to a string for the move object
                 direction_formatted = 'up' if direction == UP else 'down' if direction == DOWN else 'left' if direction == LEFT else 'right'
                 #create the move object and add it to the list of moves to check
-                move_and_id = self.add_id_to_movement(Move(self.colour, start_formatted, end_formatted, 'move', direction_formatted, None, None))
+                move_and_id = self.add_id_to_movement(Move(colour, start_formatted, end_formatted, 'move', direction_formatted, None, None))
                 moves_to_check.append(move_and_id)
         
         legal_moves = []
         for move_with_id in moves_to_check:
             try:
-                if validateMove(move_with_id[0], state['board_object'], self.pawns[self.colour]):
+                if validateMove(move_with_id[0], state['board_object'], self.pawns[colour])[0]:
                     legal_moves.append(move_with_id)
             except Exception as e:
                 #move is invalid, skip it
@@ -156,7 +160,7 @@ class Model:
         return legal_moves
 
     def calculate_rewards(self, state):
-        self.colo
+        print('white' if state['turn'] % 2 == 0 else 'black', 'turn in calculate_rewards:', state['turn'])
         #will need distance for both pawns multiple times, so calculate it once
         white_path, black_path = self.determine_best_paths(state)
         white_distance, black_distance = len(white_path) - 1, len(black_path) - 1 # -1 as the path includes the start position
@@ -164,21 +168,21 @@ class Model:
         victory_or_defeat_reward = self.defeat_or_victory(state)
         
         #the reward for the distance of the opponent from the end goal
-        opponent_distance_reward = black_distance if self.colour == 'white' else white_distance
+        opponent_distance_reward = black_distance if state['turn'] % 2 == 0 else white_distance
         
         ###print('black_distance:', black_distance, 'white_distance:', white_distance, 'opponent_distance_reward:', opponent_distance_reward)
         #the reward for the difference in distance between the two pawns
-        path_difference_reward =  black_distance - white_distance if self.colour == 'white' else  white_distance - black_distance
+        path_difference_reward =  black_distance - white_distance if state['turn'] % 2 == 0 else  white_distance - black_distance
         
         ###print('path_difference_reward:', path_difference_reward)
         #the punishment for having less walls than the opponent
         wall_difference_penalty = self.wall_difference_penalty()
         
         #the punishment for being further from the end goal than the opponent
-        distance_penalty = white_distance if self.colour == 'white' else black_distance
+        distance_penalty = white_distance if state['turn'] % 2 == 0 else black_distance
         distance_penalty *= -1 #negate as punishment
         print('victory_or_defeat_reward:', victory_or_defeat_reward, 'path_difference_reward:', path_difference_reward, 'wall_difference_penalty:', wall_difference_penalty, 'opponent_distance_reward:', opponent_distance_reward, 'distance_penalty:', distance_penalty)
-        return victory_or_defeat_reward + path_difference_reward + wall_difference_penalty + opponent_distance_reward + distance_penalty
+        return victory_or_defeat_reward + 0 + wall_difference_penalty + opponent_distance_reward + distance_penalty
     
     def determine_best_paths(self, state):
         black_end = [cell.position for cell in state['board'][8]]
@@ -194,14 +198,15 @@ class Model:
     
     def defeat_or_victory(self, state):
         reward = 0
+        colour = 'white' if state['turn'] % 2 == 0 else 'black'
         #if board is in a victory or defeat state, return the reward for that state
-        if(self.pawns['white'] == state['board'][8] and self.colour == 'white'):
+        if(self.pawns['white'] == state['board'][8] and colour == 'white'):
             reward += 1000
-        if(self.pawns['black'] == state['board'][0] and self.colour == 'black'):
+        if(self.pawns['black'] == state['board'][0] and colour == 'black'):
             reward += 1000
-        if(self.pawns['white'] == state['board'][8] and self.colour == 'black'):
+        if(self.pawns['white'] == state['board'][8] and colour == 'black'):
             reward -= 1000
-        if(self.pawns['black'] == state['board'][0] and self.colour == 'white'):
+        if(self.pawns['black'] == state['board'][0] and colour == 'white'):
             reward -= 1000
         
         #returns 0 if both players in winning state or neither are else -1000 for defeat and 1000 for victory
@@ -216,6 +221,6 @@ class Model:
         else:
             #same as above but for black
             difference =  min(self.pawns['black'].walls - self.pawns['white'].walls, 0)
-        
+        print('white walls:', self.pawns['white'].walls, 'black walls:', self.pawns['black'].walls, 'difference:', difference)
         return difference
     

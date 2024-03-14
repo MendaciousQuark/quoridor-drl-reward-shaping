@@ -59,6 +59,7 @@ class Board:
         elif(move.action == "place"):
             board.placeWall(move.orientation, self.board[move.start[0]][move.start[1]])
         self.turn += 1
+        self.updateState()
     
     def movePawn(self, colour, end):
         self.removePawns()

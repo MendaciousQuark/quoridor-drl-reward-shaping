@@ -33,7 +33,6 @@ def main():
     next_board, reward, _ = step(board, agent.act(boardToState(board, pawns)), agent)
     print(next_board)
     print('reward:', reward)
-    
 
 if __name__ == '__main__':
     main()

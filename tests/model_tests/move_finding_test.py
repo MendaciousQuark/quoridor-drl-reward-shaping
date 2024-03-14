@@ -51,17 +51,27 @@ def test_find_legal_movement(initialisedModels):
     
     #for the initial board find the legal moves for the white and black pawns
     found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
+    board.turn = 1
+    board.updateState()
     found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
     print(found_moves_white)
     #assert that the white pawn has 3 legal moves and the black pawn has 3 legal moves (white: up, left, right and black:down, left, right) 
     assert len(found_moves_white) == 3 == len(found_moves_black)
-
+    #codes for up, down, left, right : 0, 1, 2, 3
+    for move in found_moves_white:
+        assert move[1] == 0 or move[1] == 2 or move[1] == 3
+    for move in found_moves_black:
+        assert move[1] == 1 or move[1] == 2 or move[1] == 3
+    
+    for move in found_moves_white:
+        #jumps should be impossible (4-6 are the ids for jumping)
+        assert move[1] != 4 and move[1] != 5 and move[1] != 6
 def test_find_legal_walls(initialisedModels):
     '''
     diff checker lives here :)
     for wall in found_walls_white:
         if wall not in found_walls_white2:
-            print(wall.start, wall.orientation)
+            print(wall[1], wall[0].start, wall[0].orientation)
             
     '''
     #assign the intialised board to a variable
@@ -81,7 +91,7 @@ def test_find_legal_walls(initialisedModels):
     print(board)
     found_walls_white = white_model.find_legal_walls(board.state)
     found_walls_black = black_model.find_legal_walls(board.state)
-             
+      
     assert len(found_walls_white) == 124
     assert len(found_walls_black) == 124
     
@@ -89,10 +99,14 @@ def test_find_legal_walls(initialisedModels):
     board.placeWall('vertical', board.board[4][2])
     board.updateState()
     print(board)
-    found_walls_white = white_model.find_legal_walls(board.state)
+    found_walls_white2 = white_model.find_legal_walls(board.state)
     found_walls_black = black_model.find_legal_walls(board.state)
-            
-    assert len(found_walls_white) == 120
+    
+    for wall in found_walls_white:
+        if wall not in found_walls_white2:
+            print(wall[1], wall[0].start, wall[0].orientation)
+    
+    assert len(found_walls_white2) == 120
     assert len(found_walls_black) == 120
     
     #place a vertical wall opposite the previous wall

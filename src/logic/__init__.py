@@ -12,7 +12,6 @@ from .game_flow import playGame, victory
 #specifics from board_to_graph.py
 from .board_to_graph import boardToGraph, cellToNode
 
-
 #specifics from a_star.py
 from .a_star import aStar
 

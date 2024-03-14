@@ -68,7 +68,6 @@ def aStar(graph, colour, start, end):
             #Set the total_cost of the neighbour
             neighbour.total_cost = neighbour.path_cost + neighbour.heuristic_cost
     #If there are no nodes in the open list, return an empty path
-    print("\nNo path found\n")
     return []
 
 def setheuristicCost(graph, colour):

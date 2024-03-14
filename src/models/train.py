@@ -4,56 +4,76 @@ from utils import UP, DOWN, LEFT, RIGHT, getDirectionIndex, getCellDirection, mo
 from .board_to_state import boardToState
 from .action_lookup import action_lookup
 
+import pdb
+
 def trainDQN(agent, episodes, original_board):
+        original_numbuer_of_walls_white = agent.pawns['white'].walls
+        original_numbuer_of_walls_black = agent.pawns['black'].walls
         for e in range(episodes):
-            state = reset(original_board, agent.pawns)
+            state = reset(original_board, agent.pawns, original_numbuer_of_walls_white, original_numbuer_of_walls_black)
             agent.find_legal_moves(original_board.state)
             state = np.reshape(state, [1, *agent.state_shape])
-            
+            next_board = original_board.copy()
             while True:
                 action = agent.act(state)
-                next_state, reward, next_board, done= step(original_board.copy(), action, agent)
+                next_state, reward, next_board, done = step(next_board, action, agent)
+                print('pawns in training:', agent.pawns)
+                print('white walls:', agent.pawns['white'].walls, 'black walls:', agent.pawns['black'].walls)
                 next_state = np.reshape(next_state, [1, *agent.state_shape])
                 agent.remember(state, action, reward, next_state, done)
                 state = next_state
                 
+                print('turn before determining legal moves:', next_board.turn)
                 agent.find_legal_moves(next_board.state)
+                print('number of legal moves:', len(agent.action_state))
+                
                 print(next_board)
                 print('reward:', reward)
+                print('turn:', next_board.turn)
                 if done:
                     break
                     
-            # # Train with replay
-            # if len(agent.memory) > agent.batch_size:
-            #     agent.replay(agent.batch_size)
+            # Train with replay
+            if len(agent.memory) > agent.batch_size:
+                agent.replay(agent.batch_size)
                 
-def reset(board, pawns):
+def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_walls_black):
+        pawns['white'].position = board.pawn_positions['white']
+        pawns['black'].position = board.pawn_positions['black']
+        pawns['white'].walls = original_numbuer_of_walls_white
+        pawns['black'].walls = original_numbuer_of_walls_black
         return boardToState(board, pawns)
     
-def step(board, action, agent):
-    next_board = board.copy()
-    if(action == 4):
-        print(board)
-        for action in agent.action_state:
-            if(action[0].action != 'place'):
-                print('id:', action[1], 'action:', action[0].action)
+def step(next_board, action, agent):
+    print('turn in step:', next_board.turn)
+    print('white' if next_board.turn % 2 == 0 else 'black', 'turn')
     move = action_lookup[action]
+    for legal_action in agent.action_state:
+        if(legal_action[1] == action):
+            print('legal')
     #if the action is mapped to a place move
-    if(isinstance(move, Move)):
+    if((90000 <= action <= 98811)):
         #move is already a move object
-        move = move
+        colour = move[0]
+        start = move[1]
+        orientation = move[2]
+        move = Move(colour, start, None, 'place', None, None, orientation)
+        agent.pawns[colour].walls -= 1
     #if the action is mapped to a movement
     else:
+        #pdb.set_trace()
         colour = 'white' if next_board.turn % 2 == 0 else 'black'
         start = agent.pawns[colour].position
         #e1 e = j i = 1
         start_formatted = moveNumberToLetter(agent.pawns[colour].position[1]) + str(9 - agent.pawns[colour].position[0])
         adjacent_pawn = opposingPawnAdjacent(colour, next_board.board, next_board.board[start[0]][start[1]])
         jump_direction = None
-        if(adjacent_pawn[0]):
+        #if the adjacent pawn is not None and the action is a jump
+        if(adjacent_pawn[0] and action in [4, 5, 6]):
             adjacent_pawn_direction = getCellDirection(start, adjacent_pawn[1].position)
         else:
             adjacent_pawn_direction = None
+        #pdb.set_trace()
         #def __init__(self, colour, start, end, action, direction, jumpDirection=None, orientation=None):
         if(move == 'up'):
             end = getDirectionIndex(start, UP)
@@ -105,17 +125,18 @@ def step(board, action, agent):
         
     #finally make the move
     next_board.makeMove(move, next_board, move.colour)
-    
+    print('move colour:', move.colour)
     #update the pawn position
     agent.pawns[move.colour].position = next_board.pawn_positions[move.colour]
     reward = agent.calculate_rewards(next_board.state)
     passive_colour = 'black' if move.colour == 'white' else 'white'
     done = True if (victory(agent.pawns[move.colour]) or victory(agent.pawns[passive_colour])) else False
-    
+    next_board.updateState()
+    print('turn at the end of step:', next_board.turn)
     return boardToState(next_board, agent.pawns), reward, next_board, done
 
 def victory(pawn):
     if(pawn.colour == 'white'):
-        return pawn.position[0] == 8
-    else:
         return pawn.position[0] == 0
+    else:
+        return pawn.position[0] == 8

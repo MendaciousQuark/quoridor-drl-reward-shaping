@@ -19,7 +19,7 @@ class DQNAgent (Model):
         self.pawns = pawns
         
         # Exploration parameters
-        self.epsilon = 1#0.23  # Exploration rate (arbitrarily chosen)
+        self.epsilon = 0.23  # Exploration rate (arbitrarily chosen)
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
         
@@ -27,13 +27,13 @@ class DQNAgent (Model):
         self.model = create_q_model(state_shape, action_size)
         self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def remember(self, state, action_id, reward, next_state, done):
+        self.memory.append((state, action_id, reward, next_state, done))
 
     def act(self, state):
         if np.random.rand() <= self.epsilon:
             random_action = random.choice(self.action_state)
-            print('Random action:', random_action)#random_action[1])
+            print('Random action:', random_action[1])
             return random_action[1] #return the action id
         # Predict Q-values for all actions
         all_q_values = self.model.predict(state)
@@ -51,12 +51,12 @@ class DQNAgent (Model):
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
-        for state, action, reward, next_state, done in minibatch:
+        for state, action_id, reward, next_state, done in minibatch:
             target = reward
             if not done:
                 target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
             target_f = self.model.predict(state)
-            target_f[0][action] = target
+            target_f[0][0][0][action_id_to_q_index[action_id]] = target
             self.model.fit(state, target_f, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
