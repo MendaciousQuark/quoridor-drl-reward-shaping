@@ -6,7 +6,7 @@ def test_reward():
     board = Board()
     white_pawn = Pawn('white', 8, 4)
     black_pawn = Pawn('black', 0, 4)
-    pawns = [white_pawn, black_pawn]
+    pawns = {'white' : white_pawn, 'black': black_pawn}
     model_white = Model('white', pawns)
     model_black = Model('black', pawns)
     
@@ -37,9 +37,14 @@ def test_reward():
     board.placeWall('vertical', board.board[4][8])
     board.updateState()
     
+    print(board)
+    
     white_reward = model_white.calculate_rewards(board.state)
     print('white reward:', reward)
     assert white_reward > neutral_reward 
+    
+    board.turn = 1
+    board.updateState()
     
     black_reward = model_black.calculate_rewards(board.state)
     print('black reward:', reward)
