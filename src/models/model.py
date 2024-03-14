@@ -1,4 +1,4 @@
-from utils import UP, DOWN, LEFT, RIGHT 
+from utils import UP, DOWN, LEFT, RIGHT, distance
 from utils import getDirectionIndex, opposingPawnAdjacent, validLocation, locationToCell, getCellDirection, moveNumberToLetter
 from logic.move_validation import validateMove
 from logic.board_to_graph import boardToGraph
@@ -16,9 +16,10 @@ class Model:
         self.pawns = pawns
         # ... other attributes
         self.action_state = []
+        self.white_position_memory = []
+        self.black_position_memory = []
         
     def find_legal_moves(self, state):
-        print('pawns in find_legal_moves:', self.pawns)
         self.action_state = []
         current_position = state['pieces']['white' if state['turn'] % 2 == 0 else 'black']
         walls = self.find_legal_walls(state)
@@ -74,7 +75,6 @@ class Model:
         colour = 'white' if state['turn'] % 2 == 0 else 'black'
         for i, row in enumerate(state['board']):
             for j, cell in enumerate(row):
-                #print(f"i: {i}, j: {j}, cell: {cell}")
                 #determine if it makes sense to check for a vertical or horizontal wall
                 check_vertical = i<= 7 and (1 <= j <= 8)
                 check_horizontal = (1 <= i <= 8) and j <= 7
@@ -105,11 +105,12 @@ class Model:
                         partially_legal_walls.append(move_and_id)
         
         legal_walls = []
-        
-        print('walls in find_legal_walls:', self.pawns[colour].walls)
         for move_with_id in partially_legal_walls:
-            if validateMove(move_with_id[0], state['board_object'], self.pawns[colour])[0]:
-                legal_walls.append(move_with_id)
+            try:
+                if validateMove(move_with_id[0], state['board_object'], self.pawns[colour])[0]:
+                    legal_walls.append(move_with_id)
+            except Exception as e:
+                continue
         return legal_walls
     
     def find_legal_movement(self, state, current_position):
@@ -153,36 +154,100 @@ class Model:
                 if validateMove(move_with_id[0], state['board_object'], self.pawns[colour])[0]:
                     legal_moves.append(move_with_id)
             except Exception as e:
-                #move is invalid, skip it
-                print(e)
                 continue
         
         return legal_moves
 
     def calculate_rewards(self, state):
-        print('white' if state['turn'] % 2 == 0 else 'black', 'turn in calculate_rewards:', state['turn'])
+        #add position to memory
+        self.white_position_memory.append(self.pawns['white'].position) if state['turn'] % 2 == 0 else self.black_position_memory.append(self.pawns['black'].position)
+        #if more than 10 moves rememberd, remove the oldest
+        if len(self.white_position_memory) > 50:
+            self.white_position_memory.pop(0)
+        changed_memory_reward = 0
+        counter = 0
+       
+        changed_memory_reward = 0
+        counter = 0
+        if (state['turn'] % 2 == 0) and len(self.white_position_memory) > 1:
+            unique_positions = set(tuple(position) for position in self.white_position_memory)
+            for unique_position in unique_positions:
+                # count how often the position has occurred
+                for position in self.white_position_memory:
+                    if tuple(position) == unique_position:
+                        counter += 1
+        elif (state['turn'] % 2 != 0) and len(self.black_position_memory) > 1:
+            unique_positions = set(tuple(position) for position in self.black_position_memory)
+            for unique_position in unique_positions:
+                # count how often the position has occurred
+                for position in self.black_position_memory:
+                    if tuple(position) == unique_position:
+                        counter += 1
+                    # if the position has occurred more than once, punish the agent
+        if counter > 1:
+            changed_memory_reward = counter*0.1      
+        #if the position has occured more than once, punish the agent
+        if counter > 1:
+            changed_memory_reward = -1*counter
+        #rewards for moving up the board
+        distance_from_goal_row = 0
+        if state['turn'] % 2 == 0:
+            if self.pawns['white'].position[0] > 6:
+                distance_from_goal_row += -10
+            elif self.pawns['white'].position[0] > 4:
+                distance_from_goal_row += -5
+            elif self.pawns['white'].position[0] > 2:
+                distance_from_goal_row += -2
+            elif self.pawns['white'].position[0] > 0:
+                distance_from_goal_row += -1
+            else:
+                distance_from_goal_row += 10
+        else:
+            if self.pawns['black'].position[0] < 2:
+                distance_from_goal_row += -10
+            elif self.pawns['black'].position[0] < 4:
+                distance_from_goal_row += -5
+            elif self.pawns['black'].position[0] < 6:
+                distance_from_goal_row += -2
+            elif self.pawns['black'].position[0] < 8:
+                distance_from_goal_row += -1
+            else:
+                distance_from_goal_row += 10
+        
+        # abs diff sum of distance from goal
         #will need distance for both pawns multiple times, so calculate it once
         white_path, black_path = self.determine_best_paths(state)
-        white_distance, black_distance = len(white_path) - 1, len(black_path) - 1 # -1 as the path includes the start position
-        #victory or defeat reward
-        victory_or_defeat_reward = self.defeat_or_victory(state)
+        white_manhattan_sum = 0
+        black_manhattan_sum = 0
+        for colour in ['white', 'black']:
+            #determine the manhattan distance of the pawn from the end goal
+            for cell in state['board'][8 if colour == 'white' else 0]:
+                if colour == 'white':
+                    white_manhattan_sum += distance(cell.position, self.pawns[colour].position)
+                else:
+                    black_manhattan_sum += distance(cell.position, self.pawns[colour].position)
+        actual_distance_penalty = len(white_path) - 1 if state['turn'] % 2 == 0 else len(black_path) -1
+        opponent_distance_reward = len(black_path) - 1 if state['turn'] % 2 == 0 else len(white_path) - 1
+        return - actual_distance_penalty + opponent_distance_reward + distance_from_goal_row + changed_memory_reward
         
-        #the reward for the distance of the opponent from the end goal
-        opponent_distance_reward = black_distance if state['turn'] % 2 == 0 else white_distance
+        # white_distance, black_distance = len(white_path) - 1, len(black_path) - 1 # -1 as the path includes the start position
+        # #victory or defeat reward
+        # victory_or_defeat_reward = self.defeat_or_victory(state)
         
-        ###print('black_distance:', black_distance, 'white_distance:', white_distance, 'opponent_distance_reward:', opponent_distance_reward)
-        #the reward for the difference in distance between the two pawns
-        path_difference_reward =  black_distance - white_distance if state['turn'] % 2 == 0 else  white_distance - black_distance
+        # #the reward for the distance of the opponent from the end goal
+        # opponent_distance_reward = black_distance if state['turn'] % 2 == 0 else white_distance
         
-        ###print('path_difference_reward:', path_difference_reward)
-        #the punishment for having less walls than the opponent
-        wall_difference_penalty = self.wall_difference_penalty()
+        # #the reward for the difference in distance between the two pawns
+        # path_difference_reward =  black_distance - white_distance if state['turn'] % 2 == 0 else  white_distance - black_distance
         
-        #the punishment for being further from the end goal than the opponent
-        distance_penalty = white_distance if state['turn'] % 2 == 0 else black_distance
-        distance_penalty *= -1 #negate as punishment
-        print('victory_or_defeat_reward:', victory_or_defeat_reward, 'path_difference_reward:', path_difference_reward, 'wall_difference_penalty:', wall_difference_penalty, 'opponent_distance_reward:', opponent_distance_reward, 'distance_penalty:', distance_penalty)
-        return victory_or_defeat_reward + 0 + wall_difference_penalty + opponent_distance_reward + distance_penalty
+        # #the punishment for having less walls than the opponent
+        # wall_difference_penalty = self.wall_difference_penalty()
+        
+        # #the punishment for being further from the end goal than the opponent
+        # distance_penalty = white_distance if state['turn'] % 2 == 0 else black_distance
+        # distance_penalty *= -1 #negate as punishment
+        # #print('victory_or_defeat_reward:', victory_or_defeat_reward, 'path_difference_reward:', path_difference_reward, 'wall_difference_penalty:', wall_difference_penalty, 'opponent_distance_reward:', opponent_distance_reward, 'distance_penalty:', distance_penalty)
+        # return victory_or_defeat_reward + path_difference_reward + wall_difference_penalty + opponent_distance_reward + distance_penalty
     
     def determine_best_paths(self, state):
         black_end = [cell.position for cell in state['board'][8]]
@@ -221,6 +286,5 @@ class Model:
         else:
             #same as above but for black
             difference =  min(self.pawns['black'].walls - self.pawns['white'].walls, 0)
-        print('white walls:', self.pawns['white'].walls, 'black walls:', self.pawns['black'].walls, 'difference:', difference)
         return difference
     

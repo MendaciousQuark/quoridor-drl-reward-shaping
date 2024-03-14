@@ -3,36 +3,49 @@ from game import Move
 from utils import UP, DOWN, LEFT, RIGHT, getDirectionIndex, getCellDirection, moveNumberToLetter, opposingPawnAdjacent
 from .board_to_state import boardToState
 from .action_lookup import action_lookup
-
+import time
 import pdb
 
-def trainDQN(agent, episodes, original_board):
+def trainDQN(agent, episodes, original_board, human=False, observe_from=None, observe_until=None, verbose=False):
         original_numbuer_of_walls_white = agent.pawns['white'].walls
         original_numbuer_of_walls_black = agent.pawns['black'].walls
+        max_moves = 1000
         for e in range(episodes):
+            start_time = time.time()  # Start tracking time
+
             state = reset(original_board, agent.pawns, original_numbuer_of_walls_white, original_numbuer_of_walls_black)
             agent.find_legal_moves(original_board.state)
             state = np.reshape(state, [1, *agent.state_shape])
             next_board = original_board.copy()
             while True:
-                action = agent.act(state)
+                action = agent.act(state, verbose)
                 next_state, reward, next_board, done = step(next_board, action, agent)
-                print('pawns in training:', agent.pawns)
-                print('white walls:', agent.pawns['white'].walls, 'black walls:', agent.pawns['black'].walls)
                 next_state = np.reshape(next_state, [1, *agent.state_shape])
                 agent.remember(state, action, reward, next_state, done)
                 state = next_state
-                
-                print('turn before determining legal moves:', next_board.turn)
+
                 agent.find_legal_moves(next_board.state)
-                print('number of legal moves:', len(agent.action_state))
-                
-                print(next_board)
-                print('reward:', reward)
-                print('turn:', next_board.turn)
-                if done:
+
+                if(human):
+                    if(observe_from is not None and observe_until is not None and observe_from <= e <= observe_until):
+                        print(next_board)
+                        print('reward:', reward)
+                        print('turn:', next_board.turn)
+                        time.sleep(1)
+                    else:
+                        print(next_board)
+                        print('reward:', reward)
+                        print('turn:', next_board.turn)
+
+                # Calculate and print elapsed time
+                end_time = time.time()  # Stop tracking time
+                elapsed_time = end_time - start_time  # Calculate elapsed time
+                print(f'\rElapsed time: {elapsed_time} seconds', end='', flush=True)
+
+                if done or next_board.turn/2 > max_moves:
+                    print(f'\rEpisode {e+1}/{episodes}, reward: {reward}')
                     break
-                    
+
             # Train with replay
             if len(agent.memory) > agent.batch_size:
                 agent.replay(agent.batch_size)
@@ -45,12 +58,7 @@ def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_wal
         return boardToState(board, pawns)
     
 def step(next_board, action, agent):
-    print('turn in step:', next_board.turn)
-    print('white' if next_board.turn % 2 == 0 else 'black', 'turn')
     move = action_lookup[action]
-    for legal_action in agent.action_state:
-        if(legal_action[1] == action):
-            print('legal')
     #if the action is mapped to a place move
     if((90000 <= action <= 98811)):
         #move is already a move object
@@ -125,14 +133,15 @@ def step(next_board, action, agent):
         
     #finally make the move
     next_board.makeMove(move, next_board, move.colour)
-    print('move colour:', move.colour)
     #update the pawn position
     agent.pawns[move.colour].position = next_board.pawn_positions[move.colour]
     reward = agent.calculate_rewards(next_board.state)
+    #give a bonus for jumping over the opponent
+    if(action in [4, 5, 6] and adjacent_pawn[0]):
+        reward += 10
     passive_colour = 'black' if move.colour == 'white' else 'white'
     done = True if (victory(agent.pawns[move.colour]) or victory(agent.pawns[passive_colour])) else False
     next_board.updateState()
-    print('turn at the end of step:', next_board.turn)
     return boardToState(next_board, agent.pawns), reward, next_board, done
 
 def victory(pawn):

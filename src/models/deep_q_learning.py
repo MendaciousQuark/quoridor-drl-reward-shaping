@@ -30,10 +30,11 @@ class DQNAgent (Model):
     def remember(self, state, action_id, reward, next_state, done):
         self.memory.append((state, action_id, reward, next_state, done))
 
-    def act(self, state):
+    def act(self, state, verbose=False):
         if np.random.rand() <= self.epsilon:
             random_action = random.choice(self.action_state)
-            print('Random action:', random_action[1])
+            if verbose:
+                print('Random action:', random_action[1])
             return random_action[1] #return the action id
         # Predict Q-values for all actions
         all_q_values = self.model.predict(state)
@@ -46,7 +47,8 @@ class DQNAgent (Model):
             if q_value > best_q_value:
                 best_action = action[1]
                 best_q_value = q_value
-        print('Decided on best action:', best_action)
+        if verbose:
+            print('Decided on best action:', best_action)
         return best_action
 
     def replay(self, batch_size):

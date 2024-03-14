@@ -174,5 +174,5 @@ def test_timed_find_legal_walls(initialisedModels):
     # print(f"Time taken for 1000 iterations of {time_test_2}: {times_two}")
     
     # Perform assertions
-    assert times_one/iterations < 0.55, f"white_model.find_legal_walls took too long: {times_one}s"
+    assert times_one/iterations < 0.5, f"white_model.find_legal_walls took too long: {times_one}s"
     #assert times_two < 0.1, f"black_model.find_legal_walls took too long: {times_two}s"
