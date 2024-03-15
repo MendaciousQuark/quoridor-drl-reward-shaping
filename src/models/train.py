@@ -1,63 +1,109 @@
 import numpy as np
 from game import Move
 from utils import UP, DOWN, LEFT, RIGHT, getDirectionIndex, getCellDirection, moveNumberToLetter, opposingPawnAdjacent
-from .board_to_state import boardToState
+from .board_to_state import BoardToStateConverter
 from .action_lookup import action_lookup
 import time
 import pdb
 
-def trainDQN(agent, episodes, original_board, human=False, observe_from=None, observe_until=None, verbose=False):
-        original_numbuer_of_walls_white = agent.pawns['white'].walls
-        original_numbuer_of_walls_black = agent.pawns['black'].walls
+def trainDQN(agents, episodes, original_board, human=False, observe_from=None, observe_until=None, verbose=False):
+        original_numbuer_of_walls_white = [agent.pawns['white'].walls for _, agent in enumerate(agents)]
+        original_numbuer_of_walls_black = [agent.pawns['black'].walls for _, agent in enumerate(agents)]
+        board_state_converter = BoardToStateConverter()
+        states = [None for _ in range(len(agents))]
+        next_boards = [original_board.copy() for _ in range(len(agents))]
+        rewards = [0 for _ in range(len(agents))]
+        done = [False for _ in range(len(agents))]
         max_moves = 1000
         for e in range(episodes):
             start_time = time.time()  # Start tracking time
-
-            state = reset(original_board, agent.pawns, original_numbuer_of_walls_white, original_numbuer_of_walls_black)
-            agent.find_legal_moves(original_board.state)
-            state = np.reshape(state, [1, *agent.state_shape])
-            next_board = original_board.copy()
+            for i, agent in enumerate(agents):
+                states[i] = reset(original_board, agent.pawns, original_numbuer_of_walls_white[i], original_numbuer_of_walls_black[i], board_state_converter)
+                states[i] = np.reshape(states[i], [1, *agent.state_shape])
+                agent.find_legal_moves(original_board.state)
+                rewards[i] = 0
+                next_boards[i] = original_board.copy()
+                done[i] = False
             while True:
-                action = agent.act(state, verbose)
-                next_state, reward, next_board, done = step(next_board, action, agent)
-                next_state = np.reshape(next_state, [1, *agent.state_shape])
-                agent.remember(state, action, reward, next_state, done)
-                state = next_state
-
-                agent.find_legal_moves(next_board.state)
-
+                #every two agents play on one board
+                if(len(agents) > 1):
+                    for i, agent in enumerate(agents):
+                        turn_colour = 'white' if next_boards[i].turn % 2 == 0 else 'black'
+                        if turn_colour == agent.colour == 'white':
+                            action = agent.act(states[i], verbose)
+                            next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i], action, agent, board_state_converter, max_moves)
+                            next_state = np.reshape(states[i], [1, *agent.state_shape])
+                            states[i] = next_state
+                            #update the board for black agent
+                            states[i+1] = board_state_converter.copyState(states[i])
+                            next_boards[i+1] = next_boards[i]
+                            #find legal moves for the next agent
+                            agent.find_legal_moves(next_boards[i].state)
+                            agents[i+1].find_legal_moves(next_boards[i+1].state)
+                            #remember the state
+                            agent.remember(states[i], action, rewards[i], next_state, done[i])
+                            done[i+1] = done[i]
+                        elif turn_colour == agent.colour == 'black':
+                            action = agent.act(states[i], verbose)
+                            next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i], action, agent, board_state_converter, max_moves)
+                            next_state = np.reshape(states[i], [1, *agent.state_shape])
+                            states[i] = next_state
+                            #update the board for white agent
+                            states[i-1] = board_state_converter.copyState(states[i])
+                            next_boards[i-1] = next_boards[i]
+                            #find legal moves for the agents
+                            agent.find_legal_moves(next_boards[i].state)
+                            agents[i-1].find_legal_moves(next_boards[i-1].state)
+                            #remember the state
+                            agent.remember(states[i], action, rewards[i], next_state, done[i])
+                            done[i-1] = done[i]
                 if(human):
                     if(observe_from is not None and observe_until is not None and observe_from <= e <= observe_until):
-                        print(next_board)
-                        print('reward:', reward)
-                        print('turn:', next_board.turn)
+                        print(next_boards[0])
+                        print('reward:', rewards[0])
+                        print('turn:', next_boards[0].turn)
                         time.sleep(1)
                     else:
-                        print(next_board)
-                        print('reward:', reward)
-                        print('turn:', next_board.turn)
+                        print(next_boards[0])
+                        print('reward:', rewards[0])
+                        print('turn:', next_boards[0].turn)
 
                 # Calculate and print elapsed time
+                # Calculate and print elapsed time
                 end_time = time.time()  # Stop tracking time
-                elapsed_time = end_time - start_time  # Calculate elapsed time
-                print(f'\rElapsed time: {elapsed_time} seconds', end='', flush=True)
+                elapsed_time = end_time - start_time  # Calculate elapsed time in seconds
+                minutes, seconds = divmod(elapsed_time, 60)  # Convert elapsed time to minutes and seconds
+                print(f'\rElapsed time: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
 
-                if done or next_board.turn/2 > max_moves:
-                    print(f'\rEpisode {e+1}/{episodes}, reward: {reward}')
+                all_done = True
+                # Check if all agents are done
+                for i, agent in enumerate(agents):
+                    agent_done = done[i] or (next_boards[i].turn/2 > max_moves)
+                    if agent_done:
+                        #pdb.set_trace()
+                        print(f'\nAgent {i+1} done, episode {e+1}/{episodes}, reward: {rewards[i]}')
+                    all_done = agent_done and all_done
+                if all_done:
+                    print(f'\nEpisode {e+1}/{episodes}')
                     break
 
             # Train with replay
-            if len(agent.memory) > agent.batch_size:
-                agent.replay(agent.batch_size)
+            print('Training with replay...')
+            for i, agent in enumerate(agents):
+                if len(agent.memory) > agent.batch_size:
+                    print(f'\rAgent {i} replaying...', end='', flush=True)
+                    agent.replay(agent.batch_size)
+            print('\nDone training with replay')
+                    
                 
-def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_walls_black):
+def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_walls_black, board_state_converter):
         pawns['white'].position = board.pawn_positions['white']
         pawns['black'].position = board.pawn_positions['black']
         pawns['white'].walls = original_numbuer_of_walls_white
         pawns['black'].walls = original_numbuer_of_walls_black
-        return boardToState(board, pawns)
+        return board_state_converter.boardToState(board, pawns)
     
-def step(next_board, action, agent):
+def step(next_board, action, agent, board_state_converter, max_moves=100):
     move = action_lookup[action]
     #if the action is mapped to a place move
     if((90000 <= action <= 98811)):
@@ -140,9 +186,9 @@ def step(next_board, action, agent):
     if(action in [4, 5, 6] and adjacent_pawn[0]):
         reward += 10
     passive_colour = 'black' if move.colour == 'white' else 'white'
-    done = True if (victory(agent.pawns[move.colour]) or victory(agent.pawns[passive_colour])) else False
+    done = True if (victory(agent.pawns[move.colour]) or victory(agent.pawns[passive_colour])) else False or (next_board.turn/2 > max_moves)
     next_board.updateState()
-    return boardToState(next_board, agent.pawns), reward, next_board, done
+    return board_state_converter.boardToState(next_board, agent.pawns), reward, next_board, done
 
 def victory(pawn):
     if(pawn.colour == 'white'):

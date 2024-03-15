@@ -1,9 +1,10 @@
 from models.train import step
-from models.board_to_state import boardToState
+from models.board_to_state import BoardToStateConverter
 
 def playGame(board, white_pawn, black_pawn, human=True, agent=None):
     i = 0
     round = 0
+    board_state_converter = BoardToStateConverter()
     pawns = {
         'white': white_pawn,
         'black': black_pawn
@@ -43,7 +44,7 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
             print(pawn, "\n")
             while(True):
                 if(i % 2 == 0):
-                    action = pawn.act(boardToState(board, pawns))
+                    action = pawn.act(board_state_converter.boardToState(board, pawns))
                     break
                 else:
                     try:

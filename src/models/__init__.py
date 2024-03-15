@@ -4,7 +4,7 @@
 from .model import Model
 from .deep_q_learning import DQNAgent, create_q_model
 from .action_lookup import action_lookup, action_id_to_q_index
-from .board_to_state import boardToState
+from .board_to_state import BoardToStateConverter
 from .train import trainDQN, step, reset
 #import all
 __all__ = [

@@ -9,17 +9,18 @@ from .model import Model
 from game import Move
 
 class DQNAgent (Model):
-    def __init__(self, state_shape, action_size, colour, pawns, name='DQNAgent', description='A Deep Q-Learning agent.'):
+    def __init__(self, state_shape, action_size, colour, pawns, epsilon=0.5, name='DQNAgent', description='A Deep Q-Learning agent.', trained_model_path=None):
         super().__init__(colour, pawns, name, description)
         self.state_shape = state_shape
-        self.batch_size = 32 #arbitrarilly chosen
+        self.batch_size = 5000 #arbitrarilly chosen
         self.action_size = action_size
         self.memory = deque(maxlen=10000)  # Experience replay buffer
         self.gamma = 0.95  # Discount factor
         self.pawns = pawns
+        self.trained_model_path = trained_model_path
         
         # Exploration parameters
-        self.epsilon = 0.23  # Exploration rate (arbitrarily chosen)
+        self.epsilon = epsilon  # Exploration rate (arbitrarily chosen)
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
         

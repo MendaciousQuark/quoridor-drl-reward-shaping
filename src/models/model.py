@@ -6,6 +6,7 @@ from logic.a_star import aStar
 from game import Move
 import pdb
 import random
+
 class Model:
     def __init__(self, colour, pawns, name='Bot', description='Bot'):
         self.name = name
@@ -26,7 +27,7 @@ class Model:
         movement = self.find_legal_movement(state, current_position)
         self.action_state.extend(walls)
         self.action_state.extend(movement)
-    
+
     def add_id_to_place(self, place, i, j):
         id =  None
         forced_integer_part = '9'
@@ -35,7 +36,7 @@ class Model:
         colour_part = '0' if place.colour == 'white' else '1'
         id = int(forced_integer_part + location_part + orientation_part + colour_part)
         return (place, id)
-    
+
     def add_id_to_movement(self, move, opponent_direction=None, jump_direction=None):
         id =  None
         
@@ -57,7 +58,7 @@ class Model:
                 else:
                     id = 3
         return (move, id)
-    
+
     def find_legal_walls(self, state):
         '''
         for horizontal walls:
@@ -81,7 +82,7 @@ class Model:
                 
                 #convert the current position to the move format (e.g. [1, 0] -> 'a2' (when i = 1 = 2, j = 0 = a))
                 position_formatted = moveNumberToLetter(j) + str(9 - i)
-              
+                
                 if check_vertical:
                     #crete a move object for the vertical wall placement
                     orientation = 'vertical'
@@ -112,7 +113,7 @@ class Model:
             except Exception as e:
                 continue
         return legal_walls
-    
+
     def find_legal_movement(self, state, current_position):
         moves_to_check = []
         colour = 'white' if state['turn'] % 2 == 0 else 'black'
@@ -164,31 +165,24 @@ class Model:
         #if more than 10 moves rememberd, remove the oldest
         if len(self.white_position_memory) > 50:
             self.white_position_memory.pop(0)
+        
         changed_memory_reward = 0
         counter = 0
-       
-        changed_memory_reward = 0
-        counter = 0
+        unique_positions = set(tuple(position) for position in self.white_position_memory) if state['turn'] % 2 == 0 else set(tuple(position) for position in self.black_position_memory)   
         if (state['turn'] % 2 == 0) and len(self.white_position_memory) > 1:
-            unique_positions = set(tuple(position) for position in self.white_position_memory)
             for unique_position in unique_positions:
                 # count how often the position has occurred
                 for position in self.white_position_memory:
                     if tuple(position) == unique_position:
                         counter += 1
         elif (state['turn'] % 2 != 0) and len(self.black_position_memory) > 1:
-            unique_positions = set(tuple(position) for position in self.black_position_memory)
             for unique_position in unique_positions:
                 # count how often the position has occurred
                 for position in self.black_position_memory:
                     if tuple(position) == unique_position:
                         counter += 1
-                    # if the position has occurred more than once, punish the agent
-        if counter > 1:
-            changed_memory_reward = counter*0.1      
-        #if the position has occured more than once, punish the agent
-        if counter > 1:
-            changed_memory_reward = -1*counter
+        changed_memory_reward += counter/len(unique_positions)
+        
         #rewards for moving up the board
         distance_from_goal_row = 0
         if state['turn'] % 2 == 0:
@@ -229,26 +223,8 @@ class Model:
         actual_distance_penalty = len(white_path) - 1 if state['turn'] % 2 == 0 else len(black_path) -1
         opponent_distance_reward = len(black_path) - 1 if state['turn'] % 2 == 0 else len(white_path) - 1
         return - actual_distance_penalty + opponent_distance_reward + distance_from_goal_row + changed_memory_reward
-        
-        # white_distance, black_distance = len(white_path) - 1, len(black_path) - 1 # -1 as the path includes the start position
-        # #victory or defeat reward
-        # victory_or_defeat_reward = self.defeat_or_victory(state)
-        
-        # #the reward for the distance of the opponent from the end goal
-        # opponent_distance_reward = black_distance if state['turn'] % 2 == 0 else white_distance
-        
-        # #the reward for the difference in distance between the two pawns
-        # path_difference_reward =  black_distance - white_distance if state['turn'] % 2 == 0 else  white_distance - black_distance
-        
-        # #the punishment for having less walls than the opponent
-        # wall_difference_penalty = self.wall_difference_penalty()
-        
-        # #the punishment for being further from the end goal than the opponent
-        # distance_penalty = white_distance if state['turn'] % 2 == 0 else black_distance
-        # distance_penalty *= -1 #negate as punishment
-        # #print('victory_or_defeat_reward:', victory_or_defeat_reward, 'path_difference_reward:', path_difference_reward, 'wall_difference_penalty:', wall_difference_penalty, 'opponent_distance_reward:', opponent_distance_reward, 'distance_penalty:', distance_penalty)
         # return victory_or_defeat_reward + path_difference_reward + wall_difference_penalty + opponent_distance_reward + distance_penalty
-    
+
     def determine_best_paths(self, state):
         black_end = [cell.position for cell in state['board'][8]]
         black_start = tuple(self.pawns['black'].position)
@@ -260,7 +236,7 @@ class Model:
         white_path = aStar(boardToGraph(state['board']), 'white', white_start, white_end)
         
         return white_path, black_path 
-    
+
     def defeat_or_victory(self, state):
         reward = 0
         colour = 'white' if state['turn'] % 2 == 0 else 'black'
@@ -276,7 +252,7 @@ class Model:
         
         #returns 0 if both players in winning state or neither are else -1000 for defeat and 1000 for victory
         return reward
-    
+
     def wall_difference_penalty(self):
         #determin colour being represented
         difference = 0
