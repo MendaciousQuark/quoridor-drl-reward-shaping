@@ -119,7 +119,8 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
         jump_direction = None
         #if the adjacent pawn is not None and the action is a jump
         if(adjacent_pawn[0] and action in [4, 5, 6]):
-            adjacent_pawn_direction = getCellDirection(start, adjacent_pawn[1].position)
+            #pdb.set_trace()
+            adjacent_pawn_direction = getCellDirection(next_board.board[start[0]][start[1]], adjacent_pawn[1])
         else:
             adjacent_pawn_direction = None
         #pdb.set_trace()
@@ -165,12 +166,21 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
         elif(move == 'jump straight'):
             #if the jump is sttraight end is two steps in the direction of the adjacent pawn
             end = getDirectionIndex(adjacent_pawn[1].position, adjacent_pawn_direction)
+            if(adjacent_pawn_direction == UP):
+                jump_direction = 'up'
+            elif(adjacent_pawn_direction == DOWN):
+                jump_direction = 'down'
+            elif(adjacent_pawn_direction == LEFT):
+                jump_direction = 'left'
+            elif(adjacent_pawn_direction == RIGHT):
+                jump_direction = 'right'
         
         end_formatted = moveNumberToLetter(end[1]) + str(9 - end[0])
         if(action == 'move'):
             move = Move(colour, start_formatted, end_formatted, action, direction, None, None)
         else:
             action = 'jump'
+            #pdb.set_trace()
             move = Move(colour, start_formatted, end_formatted, action, None, jump_direction, None)
         
     #finally make the move

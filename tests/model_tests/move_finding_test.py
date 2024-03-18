@@ -2,7 +2,7 @@ from models.model import Model
 from game.board import Board
 from game.pawn import Pawn
 import pytest
-
+import pdb
 import timeit
 '''
         Example board
@@ -54,7 +54,7 @@ def test_find_legal_movement(initialisedModels):
     board.turn = 1
     board.updateState()
     found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
-    print(found_moves_white)
+    
     #assert that the white pawn has 3 legal moves and the black pawn has 3 legal moves (white: up, left, right and black:down, left, right) 
     assert len(found_moves_white) == 3 == len(found_moves_black)
     #codes for up, down, left, right : 0, 1, 2, 3
@@ -66,6 +66,31 @@ def test_find_legal_movement(initialisedModels):
     for move in found_moves_white:
         #jumps should be impossible (4-6 are the ids for jumping)
         assert move[1] != 4 and move[1] != 5 and move[1] != 6
+        
+    #use a new board
+    board = Board()
+    
+    #place pawns next to each other
+    board.removePawns()
+    board.pawn_positions['white'] = [4, 4]
+    board.pawn_positions['black'] = [4, 5]
+    board.placePawns()
+    board.updateState()
+    
+    #find the legal moves for the white and black pawns
+    #pdb.set_trace()
+    found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
+    found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
+    
+    #white should have m,oves 0, 1, 2, 6
+    print(board)
+        
+    for move in found_moves_white:
+        assert move[1] == 0 or move[1] == 1 or move[1] == 2 or move[1] == 6
+    #black should have moves 0, 1, 3, 6
+    for move in found_moves_black:
+        assert move[1] == 0 or move[1] == 1 or move[1] == 3 or move[1] == 6
+    
 def test_find_legal_walls(initialisedModels):
     '''
     diff checker lives here :)

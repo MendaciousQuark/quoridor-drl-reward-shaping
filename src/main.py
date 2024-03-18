@@ -32,11 +32,11 @@ def train(board, pawns):
     # finally:
     agent.find_legal_moves(board.state)
     batch_episodes = 1000
-    batch_length = 10
+    batch_length = 50
     observe_from =  [0, 11, 21, 31, 41, 51, 61, 71, 81, 91]
     observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
     slow = False
-    use_pretrained = False
+    use_pretrained = True
     index = 0
     for i in range(batch_episodes):
         print(f'Batch Episode {i+1}')

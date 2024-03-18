@@ -16,7 +16,7 @@ class DQNAgent (Model):
         self.state_shape = state_shape
         self.batch_size = 100 #arbitrarilly chosen
         self.action_size = action_size
-        self.memory = deque(maxlen=10000)  # Experience replay buffer
+        self.memory = deque(maxlen=1000)  # Experience replay buffer
         self.gamma = 0.95  # Discount factor
         self.pawns = pawns
         self.trained_model_path = trained_model_path

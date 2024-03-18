@@ -1,4 +1,5 @@
 import pdb
+from logic.priority_queue import PriorityQueue
 
 #graph is a 2D list of nodes, colour is a boolean, start is a tuple, end is a list of tuples
 def aStar(graph, colour, start, end):

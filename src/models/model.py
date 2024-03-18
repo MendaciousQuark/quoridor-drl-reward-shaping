@@ -54,11 +54,10 @@ class Model:
         elif move.action == 'jump':
             if jump_direction == opponent_direction:
                 id = 6
-            else:
-                if jump_direction == LEFT:
+            elif jump_direction == LEFT:
                     id = 4
-                else:
-                    id = 3
+            elif jump_direction == RIGHT:
+                id = 5
         return (move, id)
 
     def find_legal_walls(self, state):
@@ -112,23 +111,34 @@ class Model:
 
     def find_legal_movement(self, state, current_position):
         moves_to_check = []
-        colour = 'white' if state['turn'] % 2 == 0 else 'black'
+        colour = self.colour
         adjacent_opposing_pawn = opposingPawnAdjacent(colour, state['board'], locationToCell(*current_position, state['board']))
         #if there is an opposing pawn adjacent to the current pawn
         if(adjacent_opposing_pawn[0]):
             # create all possible jump moves in the direction of the opposing pawn
             opponent_direction = getCellDirection(adjacent_opposing_pawn[1], locationToCell(*current_position, state['board']))
-            for direction in [opponent_direction, LEFT, RIGHT]:
+            
+            directions_to_visit = []
+            if(opponent_direction == UP):
+                directions_to_visit = [UP, LEFT, RIGHT]
+            elif(opponent_direction == DOWN):
+                directions_to_visit = [DOWN, LEFT, RIGHT]
+            elif(opponent_direction == LEFT):
+                directions_to_visit = [LEFT, UP, DOWN]
+            elif(opponent_direction == RIGHT):
+                directions_to_visit = [RIGHT, UP, DOWN]
+            
+            for direction in directions_to_visit:
                 #convert the current position to the move format (e.g. [1, 0] -> 'a2' (when i = 1 = 2, j = 0 = a))
                 start_formatted = moveNumberToLetter(current_position[1]) + str(9 - current_position[0])
                 #determine the end position of the jump move and format it
-                end_position = getDirectionIndex(current_position, direction)
+                end_position = getDirectionIndex(adjacent_opposing_pawn[1].position, direction)
                 if(validLocation(*end_position)):
                     end_formatted = moveNumberToLetter(end_position[1]) + str(9 - end_position[0])
                     #convert the direction to a string for the move object
                     jump_direction_formatted = 'up' if direction == UP else 'down' if direction == DOWN else 'left' if direction == LEFT else 'right'
                     #create the move object and add it to the list of moves to check
-                    move_and_id = self.add_id_to_movement(Move(colour, start_formatted, end_formatted, 'jump', None, jump_direction_formatted, None), opponent_direction, jump_direction_formatted)
+                    move_and_id = self.add_id_to_movement(Move(colour, start_formatted, end_formatted, 'jump', None, jump_direction_formatted, None), opponent_direction, direction)
                     moves_to_check.append(move_and_id)
                 
         #create all possible moves in the four cardinal directions
@@ -253,7 +263,7 @@ class Model:
         #add position to memory
         self.white_position_memory.append(self.pawns['white'].position) if state['turn'] % 2 == 0 else self.black_position_memory.append(self.pawns['black'].position)
         #if more than 10 moves rememberd, remove the oldest
-        if len(self.white_position_memory) > 15:
+        if len(self.white_position_memory) > 50:
             self.white_position_memory.pop(0)
         
         changed_memory_reward = 0
