@@ -49,6 +49,7 @@ def train(board, pawns):
                 for agent in agents:
                     agent.pawns = pawns_copy
                     agent.load_model(agent.trained_model_path)
+                    agent.epsilon = 0.5
             else:
                 agents = []
                 agents.append(DQNAgent((9, 9, 6), 330, 'white', pawns_copy, 0.6))

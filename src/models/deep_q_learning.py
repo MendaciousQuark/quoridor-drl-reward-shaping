@@ -35,10 +35,15 @@ class DQNAgent (Model):
 
     def act(self, state, board, verbose=False):
         if np.random.rand() <= self.epsilon:
-            # chose a random action but try to move first
+            # chose a random action but try to move more than placing
             while True:
                 try:
-                    random_action = random.choice(self.action_state_movements)
+                    if np.random.rand() > 0.5:
+                        #choose a random action from the movement actions
+                        random_action = random.choice(self.action_state_movements)
+                    else:
+                        #choose a random action from the placement and movement actions
+                        np.random.choice(self.action_state)
                 except:
                     random_action = random.choice(self.action_state)
                 if verbose:
