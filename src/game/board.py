@@ -272,6 +272,7 @@ class Board:
             'black': [self.pawn_positions['black'][0], self.pawn_positions['black'][1]],
             'white': [self.pawn_positions['white'][0], self.pawn_positions['white'][1]]
         }
+        new_board.turn = self.turn
         new_board.placePawns()
         new_board.updateState()
         return new_board

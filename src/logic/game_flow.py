@@ -1,5 +1,6 @@
 from models.train import step
 from models.board_to_state import BoardToStateConverter
+import numpy as np
 
 def playGame(board, white_pawn, black_pawn, human=True, agent=None):
     i = 0
@@ -9,6 +10,8 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
         'white': white_pawn,
         'black': black_pawn
     }
+    state = board_state_converter.boardToState(board, pawns)
+    print(state.shape)
     if human:
         while True:
             board.turn = i
@@ -36,6 +39,7 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
             i += 1
     else:
         while True:
+            agent.find_legal_moves(board.state)
             pawn = agent if i % 2 == 0 else black_pawn
             round = round + 1 if i % 2 == 0 else round
             print(board.printBoard())
@@ -44,7 +48,8 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
             print(pawn, "\n")
             while(True):
                 if(i % 2 == 0):
-                    action = pawn.act(board_state_converter.boardToState(board, pawns))
+                    state = np.reshape(state, [1, *agent.state_shape])
+                    action = pawn.act(state, board)
                     break
                 else:
                     try:
@@ -55,7 +60,7 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                         print('An unexpected error occurred. Please try entering your move again.\n')
                         print('printing backtrace: ', e)
             if(i % 2 == 0):
-                _, _, board, _ = step(board, action, agent)
+                state, _, board, _ = step(board, action, agent, board_state_converter)
                 if (90000 <= action <= 98811):
                     white_pawn.walls -1
             else:

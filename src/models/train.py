@@ -3,12 +3,15 @@ from game import Move
 from utils import UP, DOWN, LEFT, RIGHT, getDirectionIndex, getCellDirection, moveNumberToLetter, opposingPawnAdjacent
 from .board_to_state import BoardToStateConverter
 from .action_lookup import action_lookup
+from logic.board_to_graph import boardToGraph
+from logic.a_star import aStar
 import time
 import pdb
 
 def trainDQN(agents, episodes, original_board, human=False, observe_from=None, observe_until=None, verbose=False):
         original_numbuer_of_walls_white = [agent.pawns['white'].walls for _, agent in enumerate(agents)]
         original_numbuer_of_walls_black = [agent.pawns['black'].walls for _, agent in enumerate(agents)]
+        replay_queue = [[] for _ in range(len(agents))]
         board_state_converter = BoardToStateConverter()
         states = [None for _ in range(len(agents))]
         next_boards = [original_board.copy() for _ in range(len(agents))]
@@ -18,6 +21,9 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
         for e in range(episodes):
             start_time = time.time()  # Start tracking time
             for i, agent in enumerate(agents):
+                agent.white_position_memory = []
+                agent.black_position_memory = []
+                agent.rewards_memory = []
                 states[i] = reset(original_board, agent.pawns, original_numbuer_of_walls_white[i], original_numbuer_of_walls_black[i], board_state_converter)
                 states[i] = np.reshape(states[i], [1, *agent.state_shape])
                 agent.find_legal_moves(original_board.state)
@@ -25,38 +31,36 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                 next_boards[i] = original_board.copy()
                 done[i] = False
             while True:
+                #print(f'\rEpisode {e+1}/{episodes}, turn {next_boards[0].turn}', end='', flush=True)
                 #every two agents play on one board
                 if(len(agents) > 1):
                     for i, agent in enumerate(agents):
-                        turn_colour = 'white' if next_boards[i].turn % 2 == 0 else 'black'
-                        if turn_colour == agent.colour == 'white':
-                            action = agent.act(states[i], verbose)
-                            next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i], action, agent, board_state_converter, max_moves)
-                            next_state = np.reshape(states[i], [1, *agent.state_shape])
-                            states[i] = next_state
-                            #update the board for black agent
-                            states[i+1] = board_state_converter.copyState(states[i])
-                            next_boards[i+1] = next_boards[i]
-                            #find legal moves for the next agent
-                            agent.find_legal_moves(next_boards[i].state)
-                            agents[i+1].find_legal_moves(next_boards[i+1].state)
+                        if not done[i]:
+                            turn_colour = 'white' if next_boards[i].turn % 2 == 0 else 'black'
+                            if turn_colour == agent.colour == 'white':
+                                #find legal moves:
+                                agent.find_legal_moves(next_boards[i].state)
+                                action = agent.act(states[i], next_boards[i], verbose)
+                                next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i].copy(), action, agent, board_state_converter, max_moves)
+                                next_state = np.reshape(states[i], [1, *agent.state_shape])
+                                states[i] = next_state
+                                #update the board for black agent
+                                states[i+1] = board_state_converter.copyState(states[i])
+                                next_boards[i+1] = next_boards[i]
+                                done[i+1] = done[i]
+                            elif turn_colour == agent.colour == 'black':
+                                #find legal moves:
+                                agent.find_legal_moves(next_boards[i].state)
+                                action = agent.act(next_state, next_boards[i], verbose)
+                                next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i].copy(), action, agent, board_state_converter, max_moves)
+                                next_state = np.reshape(next_state, [1, *agent.state_shape])
+                                states[i] = next_state
+                                #update the board for white agent
+                                states[i-1] = board_state_converter.copyState(states[i])
+                                next_boards[i-1] = next_boards[i]
+                                done[i-1] = done[i]
                             #remember the state
-                            agent.remember(states[i], action, rewards[i], next_state, done[i])
-                            done[i+1] = done[i]
-                        elif turn_colour == agent.colour == 'black':
-                            action = agent.act(states[i], verbose)
-                            next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i], action, agent, board_state_converter, max_moves)
-                            next_state = np.reshape(states[i], [1, *agent.state_shape])
-                            states[i] = next_state
-                            #update the board for white agent
-                            states[i-1] = board_state_converter.copyState(states[i])
-                            next_boards[i-1] = next_boards[i]
-                            #find legal moves for the agents
-                            agent.find_legal_moves(next_boards[i].state)
-                            agents[i-1].find_legal_moves(next_boards[i-1].state)
-                            #remember the state
-                            agent.remember(states[i], action, rewards[i], next_state, done[i])
-                            done[i-1] = done[i]
+                            replay_queue[i].append((states[i], action, rewards[i], next_state, done[i]))
                 if(human):
                     if(observe_from is not None and observe_until is not None and observe_from <= e <= observe_until):
                         print(next_boards[0])
@@ -75,15 +79,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                 minutes, seconds = divmod(elapsed_time, 60)  # Convert elapsed time to minutes and seconds
                 print(f'\rElapsed time: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
 
-                all_done = True
-                # Check if all agents are done
-                for i, agent in enumerate(agents):
-                    agent_done = done[i] or (next_boards[i].turn/2 > max_moves)
-                    if agent_done:
-                        #pdb.set_trace()
-                        print(f'\nAgent {i+1} done, episode {e+1}/{episodes}, reward: {rewards[i]}')
-                    all_done = agent_done and all_done
-                if all_done:
+                if agentsDone(agents, next_boards, done, rewards, replay_queue, max_moves, e, episodes):
                     print(f'\nEpisode {e+1}/{episodes}')
                     break
 
@@ -107,7 +103,6 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
     move = action_lookup[action]
     #if the action is mapped to a place move
     if((90000 <= action <= 98811)):
-        #move is already a move object
         colour = move[0]
         start = move[1]
         orientation = move[2]
@@ -116,7 +111,7 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
     #if the action is mapped to a movement
     else:
         #pdb.set_trace()
-        colour = 'white' if next_board.turn % 2 == 0 else 'black'
+        colour = agent.colour
         start = agent.pawns[colour].position
         #e1 e = j i = 1
         start_formatted = moveNumberToLetter(agent.pawns[colour].position[1]) + str(9 - agent.pawns[colour].position[0])
@@ -175,6 +170,7 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
         if(action == 'move'):
             move = Move(colour, start_formatted, end_formatted, action, direction, None, None)
         else:
+            action = 'jump'
             move = Move(colour, start_formatted, end_formatted, action, None, jump_direction, None)
         
     #finally make the move
@@ -188,10 +184,32 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
     passive_colour = 'black' if move.colour == 'white' else 'white'
     done = True if (victory(agent.pawns[move.colour]) or victory(agent.pawns[passive_colour])) else False or (next_board.turn/2 > max_moves)
     next_board.updateState()
-    return board_state_converter.boardToState(next_board, agent.pawns), reward, next_board, done
+    return board_state_converter.boardToState(next_board, agent.pawns), reward, next_board.copy(), done
 
 def victory(pawn):
     if(pawn.colour == 'white'):
         return pawn.position[0] == 0
     else:
         return pawn.position[0] == 8
+
+def agentsDone(agents, next_boards, done, rewards, replay_queue, max_moves, e, episodes):
+    all_done = True
+    # Check if all agents are done
+    for i, agent in enumerate(agents):
+        no_path = False
+        if(aStar(boardToGraph(next_boards[i].board), 'white', agent.pawns['white'].position, [cell.position for cell in next_boards[i].board[0]]) == []):
+            no_path = True
+        if(aStar(boardToGraph(next_boards[i].board), 'black', agent.pawns['black'].position, [cell.position for cell in next_boards[i].board[0]]) == []):
+            no_path = True
+        agent_done = done[i] or (next_boards[i].turn/2 > max_moves) or no_path
+        if agent_done:
+            #pdb.set_trace()
+            print(f'Agent {i+1} done, episode {e+1}/{episodes}, \nname: {agent.name} \ncolour: {agent.colour} \nreward: {rewards[i]}\n')
+            if len(replay_queue[i]) < 101 and not no_path and done[i]:
+                print(f'Agent {i+1} remembering episode {e+1}/{episodes}...')
+                for memory in replay_queue[i]:
+                    agent.remember(*memory)
+                replay_queue[i] = []
+        all_done = agent_done and all_done
+    
+    return all_done
