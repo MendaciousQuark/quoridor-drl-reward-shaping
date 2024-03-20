@@ -36,7 +36,8 @@ def train(board, pawns):
     observe_from =  [0, 11, 21, 31, 41, 51, 61, 71, 81, 91]
     observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
     slow = False
-    use_pretrained = True
+    use_pretrained = False
+    verbose = False
     index = 0
     for i in range(batch_episodes):
         print(f'Batch Episode {i+1}')
@@ -62,12 +63,12 @@ def train(board, pawns):
             if(not slow):
                 trainDQN(agents, batch_length, board, True)
             else:
-                trainDQN(agents, batch_length, board, True, observe_from, observe_until)
+                trainDQN(agents, batch_length, board, True, observe_from[index], observe_until[index])
             observed = True
         elif i == observe_until[index]:
             index += 1
         if(not observed):
-            trainDQN(agents, batch_length, board)
+            trainDQN(agents, batch_length, board, verbose=verbose)
         for i, agent in enumerate(agents):
             agent.trained_model_path = f'src/trained_models/DQNagents/agent_{i}/'
             directory_path = Path(agent.trained_model_path)
@@ -96,6 +97,7 @@ def main():
     }
     
     train(board, pawns)
+    
     #play(board, pawns, False)
 
 if __name__ == '__main__':

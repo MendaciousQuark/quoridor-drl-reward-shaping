@@ -79,17 +79,48 @@ def test_find_legal_movement(initialisedModels):
     
     #find the legal moves for the white and black pawns
     #pdb.set_trace()
+    # found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
+    # found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
+    
+    # #white should have m,oves 0, 1, 2, 6
+    # print(board)
+        
+    # for move in found_moves_white:
+    #     assert move[1] == 0 or move[1] == 1 or move[1] == 2 or move[1] == 6
+    # #black should have moves 0, 1, 3, 6
+    # for move in found_moves_black:
+    #     assert move[1] == 0 or move[1] == 1 or move[1] == 3 or move[1] == 6
+        
+    #use a new board
+    board = Board()
+    
+    #place pawns next to each other
+    board.removePawns()
+    board.pawn_positions['white'] = [4, 4]
+    board.pawn_positions['black'] = [4, 5]
+    board.placePawns()
+    
+    #place a vertical wall behind each pawn
+    board.placeWall('vertical', board.board[4][4])
+    board.placeWall('vertical', board.board[4][6])
+    
+    board.updateState()
+    
+    #find the legal moves for the white and black pawns
+    # pdb.set_trace()
     found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
     found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
     
-    #white should have m,oves 0, 1, 2, 6
     print(board)
-        
+    
+    #legal moves for white up down jump right and jump left = 0, 1, 3, 4
     for move in found_moves_white:
-        assert move[1] == 0 or move[1] == 1 or move[1] == 2 or move[1] == 6
-    #black should have moves 0, 1, 3, 6
+        print('moveID:', move[1])
+        print('move:', move[0])
+        assert move[1] == 0 or move[1] == 1 or move[1] == 3 or move[1] == 4
+    #legal moves for black up down jump right and jump left = 0, 1, 2, 5
     for move in found_moves_black:
-        assert move[1] == 0 or move[1] == 1 or move[1] == 3 or move[1] == 6
+        assert move[1] == 0 or move[1] == 1 or move[1] == 2 or move[1] == 5
     
 def test_find_legal_walls(initialisedModels):
     '''

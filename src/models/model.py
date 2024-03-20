@@ -4,7 +4,7 @@ from logic.move_validation import validateMove
 from logic.board_to_graph import boardToGraph
 from logic.a_star import aStar
 from game import Move
-import math
+import pdb
 
 class Model:
     def __init__(self, colour, pawns, name='Bot', description='Bot'):
@@ -55,7 +55,7 @@ class Model:
             if jump_direction == opponent_direction:
                 id = 6
             elif jump_direction == LEFT:
-                    id = 4
+                id = 4
             elif jump_direction == RIGHT:
                 id = 5
         return (move, id)
@@ -158,6 +158,8 @@ class Model:
         legal_moves = []
         for move_with_id in moves_to_check:
             try:
+                # if(move_with_id[0].action == 'jump'):
+                #     pdb.set_trace()
                 if validateMove(move_with_id[0], state['board_object'], self.pawns[colour])[0]:
                     legal_moves.append(move_with_id)
             except Exception as e:

@@ -178,6 +178,7 @@ def test_validateJumpAction():
     board.pawn_positions['black'] = [4, 3]
     board.placePawns()
     #jump d4 d6 up
+    print(board)
     jump_into_wall = Move('white', 'd4', 'd6', 'jump', None, 'up', None)
     assert validateMove(jump_into_wall, board, some_pawn)[0] == False
     

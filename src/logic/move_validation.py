@@ -3,6 +3,7 @@ from utils.directions import *
 from errors import MoveLocationError, MoveValidationError
 from .a_star import aStar
 from .board_to_graph import boardToGraph
+import pdb
 
 def validateMove(move, board, pawn):
     if(move.action == "move"):
@@ -29,7 +30,7 @@ def validateMoveAction(move, board):
     if(move.direction != getCellDirection(end_cell, start_cell)):
         return (False, f"Invalid move: {move.start} to {move.end}. Direction does not match end cell.")
     if(distance(move.start, move.end) != 1):
-            return (False, f"Invalid move: {end_cell.position} too far or too close.")
+        return (False, f"Invalid move: {end_cell.position} too far or too close.")
     if(directionBlocked(move.direction, start_cell, board)):
         return (False, f"Invalid move: {end_cell.position} blocked by wall")
     
@@ -55,6 +56,7 @@ def validateJumpAction(move, board):
     #if there is no wall behind opposing pawn in the direction of the jump but a diagonal jump is requested
     straight_jump_blocked = straightJumpBlocked(start_cell, board, adjacent_pawn, move)
     if(straight_jump_blocked):
+        # pdb.set_trace()
         if(not validAlternateJumpDirection(start_cell, board, adjacent_pawn, move)):
             return (False, f"Invalid jump: {move.start} to {move.end}. Jump direction not valid or blocked by wall.")
         else:
@@ -106,14 +108,17 @@ def validatePlaceAction(move, board):
            
 def straightJumpBlocked(start_cell, board, adjacent_pawn, move):
     adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], start_cell)
-
+    # pdb.set_trace()
     if(move.jumpDirection == adjacent_pawn_direction):
-        return directionBlocked(move.jumpDirection, start_cell, board)
+        return directionBlocked(adjacent_pawn_direction, start_cell, board) or directionBlocked(move.jumpDirection, adjacent_pawn[1], board)
     else:
         return False   
 #assuming straight jump over opponent not possible
 def validAlternateJumpDirection(start_cell, board, adjacent_pawn, move):
     adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], start_cell)
+    #already check if a straight jump is blocked so return false
+    if(adjacent_pawn_direction == move.jumpDirection):
+        return False
     jump_target_location = None
     #determine the jump target location (adjusting for orientation of adjacent pawn)
     if (adjacent_pawn_direction == UP):
