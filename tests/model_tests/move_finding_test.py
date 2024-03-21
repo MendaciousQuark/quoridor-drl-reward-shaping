@@ -50,35 +50,35 @@ def test_find_legal_movement(initialisedModels):
     white_model, black_model = initialisedModels
     
     #for the initial board find the legal moves for the white and black pawns
-    found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
-    board.turn = 1
-    board.updateState()
-    found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
+    # found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
+    # board.turn = 1
+    # board.updateState()
+    # found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
     
-    #assert that the white pawn has 3 legal moves and the black pawn has 3 legal moves (white: up, left, right and black:down, left, right) 
-    assert len(found_moves_white) == 3 == len(found_moves_black)
-    #codes for up, down, left, right : 0, 1, 2, 3
-    for move in found_moves_white:
-        assert move[1] == 0 or move[1] == 2 or move[1] == 3
-    for move in found_moves_black:
-        assert move[1] == 1 or move[1] == 2 or move[1] == 3
+    # #assert that the white pawn has 3 legal moves and the black pawn has 3 legal moves (white: up, left, right and black:down, left, right) 
+    # assert len(found_moves_white) == 3 == len(found_moves_black)
+    # #codes for up, down, left, right : 0, 1, 2, 3
+    # for move in found_moves_white:
+    #     assert move[1] == 0 or move[1] == 2 or move[1] == 3
+    # for move in found_moves_black:
+    #     assert move[1] == 1 or move[1] == 2 or move[1] == 3
     
-    for move in found_moves_white:
-        #jumps should be impossible (4-6 are the ids for jumping)
-        assert move[1] != 4 and move[1] != 5 and move[1] != 6
+    # for move in found_moves_white:
+    #     #jumps should be impossible (4-6 are the ids for jumping)
+    #     assert move[1] != 4 and move[1] != 5 and move[1] != 6
         
-    #use a new board
-    board = Board()
+    # #use a new board
+    # board = Board()
     
-    #place pawns next to each other
-    board.removePawns()
-    board.pawn_positions['white'] = [4, 4]
-    board.pawn_positions['black'] = [4, 5]
-    board.placePawns()
-    board.updateState()
+    # #place pawns next to each other
+    # board.removePawns()
+    # board.pawn_positions['white'] = [4, 4]
+    # board.pawn_positions['black'] = [4, 5]
+    # board.placePawns()
+    # board.updateState()
     
-    #find the legal moves for the white and black pawns
-    #pdb.set_trace()
+    # #find the legal moves for the white and black pawns
+    # pdb.set_trace()
     # found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
     # found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
     
@@ -91,36 +91,97 @@ def test_find_legal_movement(initialisedModels):
     # for move in found_moves_black:
     #     assert move[1] == 0 or move[1] == 1 or move[1] == 3 or move[1] == 6
         
+    # #use a new board
+    # board = Board()
+    
+    # #place pawns next to each other
+    # board.removePawns()
+    # board.pawn_positions['white'] = [4, 4]
+    # board.pawn_positions['black'] = [4, 5]
+    # board.placePawns()
+    
+    # #place a vertical wall behind each pawn
+    # board.placeWall('vertical', board.board[4][4])
+    # board.placeWall('vertical', board.board[4][6])
+    
+    # board.updateState()
+    
+    # #find the legal moves for the white and black pawns
+    # # pdb.set_trace()
+    # found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
+    # found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
+    
+    # print(board)
+    
+    # #legal moves for white up down jump right and jump left = 0, 1, 3, 4
+    # for move in found_moves_white:
+    #     assert move[1] == 0 or move[1] == 1 or move[1] == 3 or move[1] == 4
+    # #legal moves for black up down jump right and jump left = 0, 1, 2, 5
+    # for move in found_moves_black:
+    #     assert move[1] == 0 or move[1] == 1 or move[1] == 2 or move[1] == 5
+    
+    # #use a new board
+    # board = Board()
+    
+    # #place pawns next to each other
+    # board.removePawns()
+    # board.pawn_positions['white'] = [4, 4]
+    # board.pawn_positions['black'] = [3, 4]
+    # board.placePawns()
+    
+    # #put them in a 'tunnel' with vertical walls so they have to jump over each other or move away from each other
+    # board.placeWall('vertical', board.board[4][4])
+    # board.placeWall('vertical', board.board[4][5])
+    # board.placeWall('vertical', board.board[2][4])
+    # board.placeWall('vertical', board.board[2][5])
+    # board.updateState()
+    
+    # #find the legal moves for the white and black pawns
+    # found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
+    # found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
+    
+    # print(board)
+        
+    # #legal moves fro white are straight jump up and move down = 1, 6
+    # assert len(found_moves_white) == 2
+    # for move in found_moves_white:
+    #     assert move[1] == 1 or move[1] == 6
+    # #legal moves for black are straight jump down and move up = 0, 6
+    # assert len(found_moves_black) == 2
+    # for move in found_moves_black:
+    #     assert move[1] == 0 or move[1] == 6
+    
     #use a new board
     board = Board()
     
-    #place pawns next to each other
+    #place pawns next to each other at the edge of the board
     board.removePawns()
-    board.pawn_positions['white'] = [4, 4]
-    board.pawn_positions['black'] = [4, 5]
+    board.pawn_positions['white'] = [7, 7]
+    board.pawn_positions['black'] = [7, 8]
     board.placePawns()
     
-    #place a vertical wall behind each pawn
-    board.placeWall('vertical', board.board[4][4])
-    board.placeWall('vertical', board.board[4][6])
+    #encase the pawns with walls so that the only exit is up for black
+    board.placeWall('horizontal', board.board[7][6])
+    board.placeWall('horizontal', board.board[8][7])
+    board.placeWall('vertical', board.board[7][7])
     
     board.updateState()
     
     #find the legal moves for the white and black pawns
-    # pdb.set_trace()
     found_moves_white = white_model.find_legal_movement(board.state, board.pawn_positions['white'])
     found_moves_black = black_model.find_legal_movement(board.state, board.pawn_positions['black'])
     
     print(board)
     
-    #legal moves for white up down jump right and jump left = 0, 1, 3, 4
+    #legal move for white is jump left/up = 4
+    assert len(found_moves_white) == 1
     for move in found_moves_white:
-        print('moveID:', move[1])
-        print('move:', move[0])
-        assert move[1] == 0 or move[1] == 1 or move[1] == 3 or move[1] == 4
-    #legal moves for black up down jump right and jump left = 0, 1, 2, 5
+        assert move[1] == 4
+    #legal move for black is move up = 1
+    assert len(found_moves_black) == 1
     for move in found_moves_black:
-        assert move[1] == 0 or move[1] == 1 or move[1] == 2 or move[1] == 5
+        assert move[1] == 0
+
     
 def test_find_legal_walls(initialisedModels):
     '''

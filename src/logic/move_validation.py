@@ -54,9 +54,10 @@ def validateJumpAction(move, board):
     
     start_cell = locationToCell(move.start[0], move.start[1], board.board)
     #if there is no wall behind opposing pawn in the direction of the jump but a diagonal jump is requested
+    #pdb.set_trace()
     straight_jump_blocked = straightJumpBlocked(start_cell, board, adjacent_pawn, move)
     if(straight_jump_blocked):
-        # pdb.set_trace()
+        #pdb.set_trace()
         if(not validAlternateJumpDirection(start_cell, board, adjacent_pawn, move)):
             return (False, f"Invalid jump: {move.start} to {move.end}. Jump direction not valid or blocked by wall.")
         else:
@@ -108,11 +109,14 @@ def validatePlaceAction(move, board):
            
 def straightJumpBlocked(start_cell, board, adjacent_pawn, move):
     adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], start_cell)
+    straightJumpBlocked = directionBlocked(adjacent_pawn_direction, start_cell, board)
+    straightJumpBlocked = straightJumpBlocked or directionBlocked(adjacent_pawn_direction, adjacent_pawn[1], board)
+    return straightJumpBlocked
     # pdb.set_trace()
-    if(move.jumpDirection == adjacent_pawn_direction):
-        return directionBlocked(adjacent_pawn_direction, start_cell, board) or directionBlocked(move.jumpDirection, adjacent_pawn[1], board)
-    else:
-        return False   
+    # if(move.jumpDirection == adjacent_pawn_direction):
+    #     return directionBlocked(adjacent_pawn_direction, start_cell, board) or directionBlocked(move.jumpDirection, adjacent_pawn[1], board)
+    # else:
+    #     return False   
 #assuming straight jump over opponent not possible
 def validAlternateJumpDirection(start_cell, board, adjacent_pawn, move):
     adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], start_cell)
@@ -146,6 +150,8 @@ def validAlternateJumpDirection(start_cell, board, adjacent_pawn, move):
     return True
 
 def directionBlocked(direction, start_cell, board):
+    if(movingOutOfBounds(start_cell.position, direction)):
+        return True
     if(direction == UP):
         if(start_cell.has_wall_up):
             return True
@@ -161,6 +167,10 @@ def directionBlocked(direction, start_cell, board):
     else:
         raise MoveValidationError("direction", f"Invalid direction: {direction}. Must be one of 'up', 'down', 'left', or 'right'. See ../utils/directions.py for more information.")
     return False
+
+def movingOutOfBounds(start, direction):
+    if(not validLocation(*getDirectionIndex(start, direction))):
+        return True
 
 def spaceForWall(start_cell, orientation, board):
     #if the starting location already has a wall in it return false

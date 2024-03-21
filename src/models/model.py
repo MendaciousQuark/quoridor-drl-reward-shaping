@@ -23,7 +23,7 @@ class Model:
         
     def find_legal_moves(self, state):
         self.action_state = []
-        current_position = state['pieces']['white' if state['turn'] % 2 == 0 else 'black']
+        current_position = state['board_object'].pawn_positions[self.colour]
         walls = self.find_legal_walls(state)
         movement = self.find_legal_movement(state, current_position)
         self.action_state.extend(walls)
@@ -51,13 +51,17 @@ class Model:
                 id = 2
             elif move.direction == RIGHT:
                 id = 3
+            else:
+                id = -1
         elif move.action == 'jump':
             if jump_direction == opponent_direction:
                 id = 6
-            elif jump_direction == LEFT:
+            elif jump_direction == LEFT or jump_direction == UP:
                 id = 4
-            elif jump_direction == RIGHT:
+            elif jump_direction == RIGHT or jump_direction == DOWN:
                 id = 5
+            else:
+                id = -1
         return (move, id)
 
     def find_legal_walls(self, state):
@@ -164,7 +168,7 @@ class Model:
                     legal_moves.append(move_with_id)
             except Exception as e:
                 continue
-        
+        #pdb.set_trace()
         return legal_moves
 
     def calculate_rewards(self, state):
