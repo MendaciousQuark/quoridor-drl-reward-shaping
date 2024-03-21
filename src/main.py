@@ -116,12 +116,25 @@ def updateBoardAndPawns(board, pawns):
 def play(board, pawns, colour, human=False, agent=None):
     agent = DQNAgent((9, 9, 6), 330, colour, pawns, 0)
     agent.find_legal_moves(board.state)
+    model_path = None
     if(colour == 'white'):
-        agent.load_model('src/trained_models/DQNagents/agent_0')
+        model_path = 'src/trained_models/DQNagents/agent_0'
     else:
-        agent.load_model('src/trained_models/DQNagents/agent_1')
+        model_path = 'src/trained_models/DQNagents/agent_1'
+    agent.load_model(model_path)
     playGame(board, pawns['white'], pawns['black'], False, agent)
-
+    
+    #save the model after playing with it
+    directory_path = Path(model_path)
+    if not directory_path.exists():
+        # If it doesn't exist, create it
+        directory_path.mkdir(parents=True)
+        print(f"Directory '{directory_path}' does not exist. Creating it.")
+    else:
+        # If it exists, you can proceed with your operations
+        print(f"Directory '{directory_path}' already exists. Using it.")
+    agent.save_model(model_path)
+    
 def creatRandomBoard():
     #remove all pawns
     board = Board()
@@ -163,7 +176,7 @@ def main():
     if(training):
         train(board, pawns)
     else:
-        play(board, pawns, 'black', False,)
+        play(board, pawns, 'white', False,)
 
 if __name__ == '__main__':
     main()

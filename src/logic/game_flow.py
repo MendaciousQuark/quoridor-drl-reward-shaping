@@ -76,7 +76,12 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                     print(board)
                     break
             else:
-                state, _, board, _ = step(board, action, agent, board_state_converter)
+                next_state, reward, board, done = step(board, action, agent, board_state_converter)
+                
+                next_state = np.reshape(next_state, [1, *agent.state_shape])
+                #states[i], action, rewards[i], next_state, done[i]
+                pawn.remember(state, action, reward,  next_state, done)
+                state = next_state
                 if (90000 <= action <= 98811):
                     white_pawn.walls -1
                 if(non_human_victory(pawn)):
@@ -84,7 +89,12 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                     print(board)
                     break 
             i += 1
-
+        # use played game as training
+        
+def replayGame(agent):
+    agent.batach_size = len(agent.memory)
+    agent.replay(agent.batch_size)
+    
 def non_human_victory(agent):
     goal_line = 0 if agent.colour == 'white' else 8
     if(agent.pawns[agent.colour].position[0] == goal_line):
