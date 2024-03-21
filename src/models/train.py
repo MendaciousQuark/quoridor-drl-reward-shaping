@@ -7,6 +7,7 @@ from logic.board_to_graph import boardToGraph
 from logic.a_star import aStar
 import time
 import pdb
+import random
 
 def trainDQN(agents, episodes, original_board, human=False, observe_from=None, observe_until=None, verbose=False):
         original_numbuer_of_walls_white = [agent.pawns['white'].walls for _, agent in enumerate(agents)]
@@ -35,11 +36,10 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                 #every two agents play on one board
                 if(len(agents) > 1):
                     for i, agent in enumerate(agents):
+                        #find legal moves:
+                        agent.find_legal_moves(next_boards[i].state)
                         if not done[i]:
-                            turn_colour = 'white' if next_boards[i].turn % 2 == 0 else 'black'
-                            if turn_colour == agent.colour == 'white':
-                                #find legal moves:
-                                agent.find_legal_moves(next_boards[i].state)
+                            if agent.colour == 'white':
                                 action = agent.act(states[i], next_boards[i], verbose)
                                 next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i].copy(), action, agent, board_state_converter, max_moves)
                                 next_state = np.reshape(states[i], [1, *agent.state_shape])
@@ -48,9 +48,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                                 states[i+1] = board_state_converter.copyState(states[i])
                                 next_boards[i+1] = next_boards[i]
                                 done[i+1] = done[i]
-                            elif turn_colour == agent.colour == 'black':
-                                #find legal moves:
-                                agent.find_legal_moves(next_boards[i].state)
+                            elif agent.colour == 'black':
                                 action = agent.act(next_state, next_boards[i], verbose)
                                 next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i].copy(), action, agent, board_state_converter, max_moves)
                                 next_state = np.reshape(next_state, [1, *agent.state_shape])
@@ -80,6 +78,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                 print(f'\rElapsed time: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
 
                 if agentsDone(agents, next_boards, done, rewards, replay_queue, max_moves, e, episodes):
+                    print(f'\n Time taken for episode {e+1}/{episodes}: {int(minutes)} minutes {int(seconds)} seconds')
                     print(f'\nEpisode {e+1}/{episodes}')
                     break
 

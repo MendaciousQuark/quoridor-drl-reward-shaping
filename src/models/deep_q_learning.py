@@ -9,6 +9,7 @@ from .model import Model
 from game import Move
 from logic import validateMove
 import time
+import pdb
 
 class DQNAgent (Model):
     def __init__(self, state_shape, action_size, colour, pawns, epsilon=0.5, name='DQNAgent', description='A Deep Q-Learning agent.', trained_model_path=None):
@@ -35,20 +36,32 @@ class DQNAgent (Model):
 
     def act(self, state, board, verbose=False):
         if np.random.rand() <= self.epsilon:
+            if(self.action_state == None):
+                pdb.set_trace()
             # chose a random action but try to move more than placing
             while True:
                 try:
-                    if np.random.rand() > 0.5:
+                    movement_prob = 0.5 if len(self.action_state_movements) > 0 else 0
+                    if np.random.rand() > 1 - movement_prob:
                         #choose a random action from the movement actions
-                        random_action = random.choice(self.action_state_movements)
+                        random_action_index = random.randint(0, len(self.action_state_movements) - 1)
+                        random_action = self.action_state_movements[random_action_index]
                     else:
                         #choose a random action from the placement and movement actions
-                        np.random.choice(self.action_state)
-                except:
-                    random_action = random.choice(self.action_state)
+                        random_action_index = random.randint(0, len(self.action_state) - 1)
+                        random_action = self.action_state[random_action_index]
+                except Exception as e:
+                    if(len(self.action_state) > 0):
+                        continue
+                    else:
+                        print('No legal moves found. Attempting random action.')
+                        pdb.set_trace()
+                        break
                 if verbose:
                     print('Random action:', random_action[1])
-                if validateMove(random_action[0], board, self.pawns[self.colour])[0] and random_action[1] != None:
+                if random_action[1] == None:
+                    pdb.set_trace()
+                else:
                     break
             return random_action[1] #return the action id
         # Predict Q-values for all actions
@@ -58,13 +71,13 @@ class DQNAgent (Model):
         best_action = None
         best_q_value = -np.inf  # Start with a very low Q-value
         for action in self.action_state:
-            if validateMove(action[0], board, self.pawns[self.colour])[0] and action[1] != None:
                 q_value = self.get_q_value_for_action(all_q_values, action[1])
                 if q_value > best_q_value:
                     best_action = action[1]
                     best_q_value = q_value
         if best_action == None:
             print('\nNo legal moves found. Attempting random action.')
+            pdb.set_trace()
             return random.choice(self.action_state)[1]
         if verbose:
             print('Decided on best action:', best_action)

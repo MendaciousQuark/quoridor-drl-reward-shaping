@@ -1,5 +1,6 @@
 from models.train import step
 from models.board_to_state import BoardToStateConverter
+from game import Pawn
 import numpy as np
 
 def playGame(board, white_pawn, black_pawn, human=True, agent=None):
@@ -10,6 +11,8 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
         'white': white_pawn,
         'black': black_pawn
     }
+        
+        
     state = board_state_converter.boardToState(board, pawns)
     print(state.shape)
     if human:
@@ -38,20 +41,20 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                 pawn.walls -= 1
             i += 1
     else:
+        human_pawn = black_pawn if agent.colour == 'white' else white_pawn
         while True:
             agent.find_legal_moves(board.state)
-            pawn = agent if i % 2 == 0 else black_pawn
+            if(i % 2 == 0):
+                pawn = agent if agent.colour == 'white' else human_pawn
+            else:
+                pawn = agent if agent.colour == 'black' else human_pawn
             round = round + 1 if i % 2 == 0 else round
             print(board.printBoard())
             print(f"Round {round}")
             print("White's turn" if i % 2 == 0 else "Black's turn")
             print(pawn, "\n")
             while(True):
-                if(i % 2 == 0):
-                    state = np.reshape(state, [1, *agent.state_shape])
-                    action = pawn.act(state, board)
-                    break
-                else:
+                if(isinstance(pawn, Pawn)):
                     try:
                         move = pawn.decideMoveHuman(board)
                         if move is not None:
@@ -59,23 +62,27 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                     except Exception as e:
                         print('An unexpected error occurred. Please try entering your move again.\n')
                         print('printing backtrace: ', e)
-            if(i % 2 == 0):
-                state, _, board, _ = step(board, action, agent, board_state_converter)
-                if (90000 <= action <= 98811):
-                    white_pawn.walls -1
-            else:
+                else:
+                    state = np.reshape(state, [1, *agent.state_shape])
+                    action = pawn.act(state, board)
+                    break
+            if(isinstance(pawn, Pawn)):
                 board.makeMove(move, board, pawn.colour)
                 pawn.position = board.pawn_positions['white' if i % 2 == 0 else 'black']
                 if(move.action == 'place'):
                     pawn.walls -= 1
-            if(i % 2 == 0):
-                if(non_human_victory(pawn)):
-                    print("White Wins!\n" if i % 2 == 0 else "Black Wins!\n")
-                    break
-            else:   
                 if(victory(pawn)):
                     print("White Wins!\n" if i % 2 == 0 else "Black Wins!\n")
+                    print(board)
                     break
+            else:
+                state, _, board, _ = step(board, action, agent, board_state_converter)
+                if (90000 <= action <= 98811):
+                    white_pawn.walls -1
+                if(non_human_victory(pawn)):
+                    print("White Wins!\n" if i % 2 == 0 else "Black Wins!\n")
+                    print(board)
+                    break 
             i += 1
 
 def non_human_victory(agent):
