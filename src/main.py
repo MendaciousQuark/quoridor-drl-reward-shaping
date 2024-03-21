@@ -159,7 +159,7 @@ def main():
         'black': black_pawn
     }
     
-    training = True
+    training = False
     if(training):
         train(board, pawns)
     else:

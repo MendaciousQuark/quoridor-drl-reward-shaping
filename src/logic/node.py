@@ -25,3 +25,22 @@ class Node:
         return self.position == other_node.position \
             and self.neighbours == other_node.neighbours \
             and self.walls == other_node.walls
+    def __hash__(self) -> int:
+        return hash(self.position)
+    
+    def __lt__(self, other_node: object) -> bool:
+        return self.total_cost < other_node.total_cost
+    
+    def __le__(self, other_node: object) -> bool:
+        return self.total_cost <= other_node.total_cost
+    
+    def __gt__(self, other_node: object) -> bool:
+        return self.total_cost > other_node.total_cost
+    
+    def __ge__(self, other_node: object) -> bool:
+        return self.total_cost >= other_node.total_cost
+    
+    def __ne__(self, other_node: object) -> bool:
+        return self.position != other_node.position \
+            or self.neighbours != other_node.neighbours \
+            or self.walls != other_node.walls

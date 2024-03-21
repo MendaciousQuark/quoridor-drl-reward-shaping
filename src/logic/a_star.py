@@ -3,6 +3,68 @@ from logic.priority_queue import PriorityQueue
 
 #graph is a 2D list of nodes, colour is a boolean, start is a tuple, end is a list of tuples
 def aStar(graph, colour, start, end):
+    # Set all the heuristics based on the colour
+    setheuristicCost(graph, colour)
+    
+    # Initialize the open list as a PriorityQueue and the closed list as a set for efficient look-up
+    openList = PriorityQueue()
+    openSet = set()  # A set to keep track of nodes currently in the open list
+    closedList = set()
+    
+    # Initialize the start node
+    startNode = graph[start[0]][start[1]]
+    startNode.path_cost = 0
+    startNode.heuristic_cost
+    startNode.total_cost = startNode.path_cost + startNode.heuristic_cost
+    openList.put(startNode, startNode.total_cost)
+    openSet.add(startNode)  # Add start node to the open set as well
+    
+    # While there are nodes in the open list
+    while not openList.is_empty():
+        # Get the node with the lowest total_cost
+        currentNode = openList.get()
+        openSet.remove(currentNode)  # Remove the current node from the open set
+        
+        # If the current node is a goal node
+        if currentNode.position in end:
+            # Initialize the path
+            path = []
+            # Reconstruct the path
+            while currentNode.parent is not None:
+                path.append(currentNode.position)
+                currentNode = currentNode.parent
+            # Add the start node to the path
+            path.append(startNode.position)
+            # Return the path (reverse it to get the correct order)
+            return path[::-1]
+        
+        # Add the current node to the closed list
+        closedList.add(currentNode)
+        
+        # For each neighbour of the current node
+        for neighbour in currentNode.neighbours:
+            # If the neighbour is in the closed list, skip it
+            if neighbour in closedList:
+                continue
+            
+            # Calculate the path cost for the neighbour
+            traversal_value = currentNode.path_cost + 1
+            
+            # If this path to the neighbour is better, or the neighbour is not in open list
+            if traversal_value < neighbour.path_cost or not neighbour in openSet:
+                neighbour.parent = currentNode
+                neighbour.path_cost = traversal_value
+                neighbour.total_cost = neighbour.path_cost + neighbour.heuristic_cost
+                
+                # Add the neighbour to the open list if it's not already there
+                if not neighbour in openSet:
+                    openList.put(neighbour, neighbour.total_cost)
+                    openSet.add(neighbour)  # Add the neighbour to the open set
+    
+    # If there are no nodes in the open list, return an empty path
+    return []
+
+def aStar_without_priority_queue(graph, colour, start, end):
     #set all the heuristics based om the colour
     setheuristicCost(graph, colour)
     #Initialise the open and closed lists
