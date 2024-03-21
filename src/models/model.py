@@ -20,14 +20,19 @@ class Model:
         self.white_position_memory = []
         self.black_position_memory = []
         self.reward_memory = []
+        self.last_action = None
         
     def find_legal_moves(self, state):
         self.action_state = []
         current_position = state['board_object'].pawn_positions[self.colour]
-        walls = self.find_legal_walls(state)
+        walls = []
+        if(90000 <= self.last_action < 98812):
+            walls = self.find_legal_walls(state)
         movement = self.find_legal_movement(state, current_position)
-        self.action_state.extend(walls)
-        self.action_state.extend(movement)
+        if(len(walls) > 0):
+            self.action_state.extend(walls)
+        if(len(movement) > 0):
+            self.action_state.extend(movement)
         self.action_state_movements = movement
 
     def add_id_to_place(self, place, i, j):

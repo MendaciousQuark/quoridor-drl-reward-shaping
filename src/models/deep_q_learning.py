@@ -63,6 +63,7 @@ class DQNAgent (Model):
                     pdb.set_trace()
                 else:
                     break
+            self.last_action = random_action[1]
             return random_action[1] #return the action id
         # Predict Q-values for all actions
         all_q_values = self.model.predict(state)
@@ -78,9 +79,11 @@ class DQNAgent (Model):
         if best_action == None:
             print('\nNo legal moves found. Attempting random action.')
             pdb.set_trace()
+            self.last_action = random.choice(self.action_state)[1]
             return random.choice(self.action_state)[1]
         if verbose:
             print('Decided on best action:', best_action)
+        self.last_action = best_action
         return best_action
 
     def replay(self, batch_size):
