@@ -3,6 +3,7 @@ from logic.board_to_graph import boardToGraph
 from game.board import Board
 import time
 import random
+import pytest
 
 def test_aStar():
     graph = boardToGraph(Board().board)
@@ -96,6 +97,7 @@ def test_setHeuristicCost():
         for j, node in enumerate(row):
             assert node.heuristic_cost == 8 - node.position[0]
 
+@pytest.mark.slow
 def test_performance():
     # Initialize variables to store execution times
     execution_time_with_pq = 0

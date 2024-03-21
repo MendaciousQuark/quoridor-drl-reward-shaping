@@ -266,6 +266,7 @@ def test_find_legal_walls(initialisedModels):
     assert len(found_walls_white) == 106
     assert len(found_walls_black) == 106
 
+@pytest.mark.slow
 def test_timed_find_legal_walls(initialisedModels):
     # Assign the initialised board to a variable
     board = Board()
