@@ -25,11 +25,12 @@ class Model:
     def find_legal_moves(self, state):
         self.action_state = []
         current_position = state['board_object'].pawn_positions[self.colour]
-        walls = []
-        if(self.last_action == None):
-            walls = self.find_legal_walls(state)
-        elif(90000 <= self.last_action < 100000):
-            walls = self.find_legal_walls(state)
+        # walls = []
+        # if(self.last_action == None):
+        #     walls = self.find_legal_walls(state)
+        # elif(90000 <= self.last_action < 100000):
+        #     walls = self.find_legal_walls(state)
+        walls = self.find_legal_walls(state)
         movement = self.find_legal_movement(state, current_position)
         if(len(walls) > 0):
             self.action_state.extend(walls)
