@@ -36,7 +36,7 @@ def train(board, pawns):
     # finally:
     agent.find_legal_moves(board.state)
     batch_episodes = 1000
-    batch_length = 50
+    batch_length = 25
     observe = False
     observe_from =  [0, 11, 21, 31, 41, 51, 61, 71, 81, 91]
     observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
@@ -46,7 +46,7 @@ def train(board, pawns):
     index = 0
     for i in range(batch_episodes):
         print(f'Batch Episode {i+1}')
-        if(i % batch_length == 0):
+        if(i > 0):
             board, pawns_copy = updateBoardAndPawns(board, pawns_copy)
             board.updateState()
         else:
@@ -103,8 +103,10 @@ def train(board, pawns):
 
 def updateBoardAndPawns(board, pawns):
     board, number_of_walls = creatRandomBoard()
-    pawns['white'].position = board.pawn_positions['white']
-    pawns['black'].position = board.pawn_positions['black']
+    #creat a black pawn and a white pawn
+    pawns['white'] = Pawn('white', *board.pawn_positions['white'])
+    pawns['black'] = Pawn('black', *board.pawn_positions['black'])
+    
     #randomly assign 'walls used' to the pawns
     white_walls_used = random.randint(0, number_of_walls)
     black_walls_used = number_of_walls - white_walls_used
@@ -172,7 +174,7 @@ def main():
         'black': black_pawn
     }
     
-    training = False
+    training = True
     if(training):
         train(board, pawns)
     else:
