@@ -1,6 +1,5 @@
 from models.train import step
 from models.board_to_state import BoardToStateConverter
-from game import Pawn
 import numpy as np
 
 def playGame(board, white_pawn, black_pawn, human=True, agent=None):
@@ -54,7 +53,7 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
             print("White's turn" if i % 2 == 0 else "Black's turn")
             print(pawn, "\n")
             while(True):
-                if(isinstance(pawn, Pawn)):
+                if(hasattr(pawn, 'decideMoveHuman')):
                     try:
                         move = pawn.decideMoveHuman(board)
                         if move is not None:
@@ -66,7 +65,7 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                     state = np.reshape(state, [1, *agent.state_shape])
                     action = pawn.act(state, board)
                     break
-            if(isinstance(pawn, Pawn)):
+            if(hasattr(pawn, 'decideMoveHuman')):
                 board.makeMove(move, board, pawn.colour)
                 pawn.position = board.pawn_positions['white' if i % 2 == 0 else 'black']
                 if(move.action == 'place'):
@@ -90,7 +89,8 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                     break 
             i += 1
         # use played game as training
-        
+        replayGame(agent)
+
 def replayGame(agent):
     agent.batach_size = len(agent.memory)
     agent.replay(agent.batch_size)
