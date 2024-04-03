@@ -175,24 +175,12 @@ def main():
         'black': black_pawn
     }
     
-    # training = True
-    # if(training):
-    #     train(board, pawns)
-    # else:
-    #     play(board, pawns, 'white', False,)
+    training = True
+    if(training):
+        train(board, pawns)
+    else:
+        play(board, pawns, 'white', False,)
 
-    board, _ = creatRandomBoard()
-    pawns['white'].position = board.pawn_positions['white']
-    pawns['black'].position = board.pawn_positions['black']
-    
-    print(board)
-    saveBoard(board, 0, pawns, 'src/models/ground_truth/ground_truth_0.txt')
-    board, white_pawn, black_pawn, _ = loadBoard('src/models/ground_truth/ground_truth_0.txt')
-    print(board)
-    print(board.pawn_positions)
-    print(board.turn)
-    print(white_pawn)
-    print(black_pawn)
 
 if __name__ == '__main__':
     main()
