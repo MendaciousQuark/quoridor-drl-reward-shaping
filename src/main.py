@@ -1,5 +1,6 @@
 
-from utils import moveNumberToLetter
+from utils.save_board import saveBoard
+from utils.load_board import loadBoard
 from models import DQNAgent, trainDQN
 from logic import playGame
 from game import Board, Pawn
@@ -37,11 +38,11 @@ def train(board, pawns):
     agent.find_legal_moves(board.state)
     batch_episodes = 1000
     batch_length = 25
-    observe = False
+    observe = True
     observe_from =  [0, 11, 21, 31, 41, 51, 61, 71, 81, 91]
     observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
     slow = False
-    use_pretrained = True
+    use_pretrained = False
     verbose = False
     index = 0
     for i in range(batch_episodes):
@@ -174,11 +175,24 @@ def main():
         'black': black_pawn
     }
     
-    training = True
-    if(training):
-        train(board, pawns)
-    else:
-        play(board, pawns, 'white', False,)
+    # training = True
+    # if(training):
+    #     train(board, pawns)
+    # else:
+    #     play(board, pawns, 'white', False,)
+
+    board, _ = creatRandomBoard()
+    pawns['white'].position = board.pawn_positions['white']
+    pawns['black'].position = board.pawn_positions['black']
+    
+    print(board)
+    saveBoard(board, 0, pawns, 'src/models/ground_truth/ground_truth_0.txt')
+    board, white_pawn, black_pawn, _ = loadBoard('src/models/ground_truth/ground_truth_0.txt')
+    print(board)
+    print(board.pawn_positions)
+    print(board.turn)
+    print(white_pawn)
+    print(black_pawn)
 
 if __name__ == '__main__':
     main()

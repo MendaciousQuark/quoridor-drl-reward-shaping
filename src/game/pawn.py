@@ -80,6 +80,6 @@ class Pawn:
         return Pawn(self.colour, self.position[0], self.position[1])
     
     def __str__(self):
-        return f"Pawn: {'*' if self.colour else '@'}, {self.position}, {self.walls}"
+        return f"Pawn: {'*' if self.colour == 'white' else '@'}, {self.position}, {self.walls}"
         
                 

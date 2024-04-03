@@ -71,4 +71,3 @@ def opposingPawnAdjacent(colour, board, center_cell):
         else:
             continue
     return (False, None)
-    

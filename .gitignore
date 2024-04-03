@@ -8,6 +8,7 @@ __pycache__/
 
 # Environments
 env/
+venv/
 
 #trained models
 trained_models/

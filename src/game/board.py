@@ -264,7 +264,7 @@ class Board:
         #pdb.set_trace()
         #return a joined string_board we do len(self.board[0]) + 5 to account for the length of each row and the borders (includin 9-1 a-i etc)
         return joinWithNewlines(string_board, len(self.board[0]) + 5)
-    
+
     def copy(self):
         new_board = Board()
         new_board.board = [[self.board[i][j].copy() for j in range(9)] for i in range(9)]
