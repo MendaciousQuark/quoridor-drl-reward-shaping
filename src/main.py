@@ -1,11 +1,13 @@
 
-from utils.save_board import saveBoard
-from utils.load_board import loadBoard
-from models import DQNAgent, trainDQN
+from models import DQNAgent, trainDQN, Model
 from logic import playGame
 from game import Board, Pawn
+from utils.save_board import saveBoard
 from pathlib import Path
+import os
+import re
 import random
+
 def initGameObjects():
     print("\n\tWelcome to Quoridor!\n")
     board = Board()
@@ -137,7 +139,58 @@ def play(board, pawns, colour, human=False, agent=None):
         # If it exists, you can proceed with your operations
         print(f"Directory '{directory_path}' already exists. Using it.")
     agent.save_model(model_path)
+
+def creatGroundTruths():
+    action_ID  = None
+    board, number_of_walls = creatRandomBoard()
+    pawns = {
+        'white': Pawn('white', *board.pawn_positions['white']),
+        'black': Pawn('black', *board.pawn_positions['black'])
+    }
+
+    white_walls_used = random.randint(0, number_of_walls)
+    black_walls_used = number_of_walls - white_walls_used
+    pawns['white'].walls = max(10 - white_walls_used, 0)
+    pawns['black'].walls = max(10 - black_walls_used, 0)
+
+    colour = 'white' if board.turn % 2 == 0 else 'black'
+
+    pawn = pawns[colour]
     
+    model = Model(colour, pawns)
+
+    #request a move (should be the best in the situation but dependant on user)
+    print(board)
+    print(f"White's turn" if colour == 'white' else "Black's turn")
+    print(f"walls remaining = {pawns[colour].walls}")
+
+    #save the move
+    move = pawn.decideMoveHuman(board)
+    
+    #determine the action of the move and then get the id of the move based on that
+    if(move.action == 'move' or move.action == 'jump'):
+        action_ID = model.add_id_to_movement(move)[1]
+    elif(move.action == 'place'):
+        action_ID = model.add_id_to_place(move, *move.start)[1]
+    else:
+        raise ValueError("Invalid move action")
+    
+    #save the ground_truth
+    ground_truth_number = get_next_file_number('src/models/ground_truths', 'ground_truth_')
+    saveBoard(board, action_ID, pawns, f'src/models/ground_truths/ground_truth_{ground_truth_number}.txt')
+
+
+def get_next_file_number(directory_path, common_name_prefix):
+    file_pattern = re.compile(rf'^{common_name_prefix}(\d+)')
+    max_number = 0
+    for filename in os.listdir(directory_path):
+        match = file_pattern.match(filename)
+        if match:
+            current_number = int(match.group(1))
+            if current_number > max_number:
+                max_number = current_number
+    return max_number + 1
+
 def creatRandomBoard():
     #remove all pawns
     board = Board()
@@ -169,18 +222,19 @@ def creatRandomBoard():
     return board.copy(), number_of_walls
 
 def main():
-    board, white_pawn, black_pawn = initGameObjects()
-    pawns = {
-        'white': white_pawn,
-        'black': black_pawn
-    }
+    # board, white_pawn, black_pawn = initGameObjects()
+    # pawns = {
+    #     'white': white_pawn,
+    #     'black': black_pawn
+    # }
     
-    training = True
-    if(training):
-        train(board, pawns)
-    else:
-        play(board, pawns, 'white', False,)
-
+    # training = True
+    # if(training):
+    #     train(board, pawns)
+    # else:
+    #     play(board, pawns, 'white', False,)
+    while True:
+        creatGroundTruths()
 
 if __name__ == '__main__':
     main()

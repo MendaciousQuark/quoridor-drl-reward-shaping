@@ -1,11 +1,14 @@
 import numpy as np
 from game import Move
 from utils import UP, DOWN, LEFT, RIGHT, getDirectionIndex, getCellDirection, moveNumberToLetter, opposingPawnAdjacent
+from utils.load_board import loadBoard
 from .board_to_state import BoardToStateConverter
 from .action_lookup import action_lookup
 from logic.board_to_graph import boardToGraph
 from logic.a_star import aStar
 import time
+import os
+import re
 import pdb
 import random
 
@@ -90,7 +93,6 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                     agent.replay(agent.batch_size)
             print('\nDone training with replay')
                     
-                
 def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_walls_black, board_state_converter):
         pawns['white'].position = board.pawn_positions['white']
         pawns['black'].position = board.pawn_positions['black']
@@ -222,3 +224,29 @@ def agentsDone(agents, next_boards, done, rewards, replay_queue, max_moves, e, e
         all_done = agent_done and all_done
     
     return all_done
+
+def trainWithGroundTruths(directory_path, common_name_prefix, agents):
+    '''
+    for all ground truths:
+        load it
+        parse it
+        put it in a list
+    for all ground truths in the list:
+        let the agent determine the bes move and then compare it to the ground truth
+        if it is the same reward the agent else punish it
+    '''
+    boards = []
+    pawn_dicts = []
+    game_infos = []
+
+    file_pattern = re.compile(rf'^{common_name_prefix}(\d+)')
+    for filename in os.listdir(directory_path):
+        match = file_pattern.match(filename)
+        if match:
+            current_board, current_white_pawn, current_black_pawn, current_info = loadBoard(f'{directory_path}/{filename}')
+            boards.append(current_board)
+            pawn_dicts.append({'white': current_white_pawn, 'black': current_black_pawn})
+            game_infos.append(current_info)
+    
+
+

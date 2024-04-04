@@ -1,4 +1,4 @@
-def saveBoard(board, action_ID, pawns, file_path='src\models\ground_truth\ground_truth_0.txt'):
+def saveBoard(board, action_ID, pawns, file_path='src\models\ground_truths\ground_truth_0.txt'):
         '''for every cell need to save location, walls up and left, and occupant
         can just write to file in row so locatin information is not needed since we can enumarte when loading
         seperate cells by ',' and rows by '\n'
@@ -7,10 +7,6 @@ def saveBoard(board, action_ID, pawns, file_path='src\models\ground_truth\ground
 
         so the file would look something like this:
         U_1L_1P1,U_2L_2P2,U_3L_3P3 ... U_9L_9P9
-        .
-        .
-        .
-        .
         .
         .
         .
