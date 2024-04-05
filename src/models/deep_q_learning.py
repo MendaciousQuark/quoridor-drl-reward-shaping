@@ -110,7 +110,10 @@ class DQNAgent (Model):
         # Ensure the directory_path is a Path object for consistency
         directory_path = Path(directory_path)
         
-        # Specify the model filename. You can customize this as needed.
+        # Create the directory if it doesn't exist, including any necessary parent directories
+        directory_path.mkdir(parents=True, exist_ok=True)
+
+        # Specify the model filename.
         model_filename = 'model.keras'
         
         # Combine the directory path and model filename to form the full path
@@ -118,13 +121,15 @@ class DQNAgent (Model):
 
         # Save the model at the full path
         self.model.save(str(full_model_path))
-        
+    
         print(f"Model saved to {full_model_path}")
+
         
     def load_model(self, directory_path='src/trained_models/DQNagents/agent_0/'):
+        # Ensure the directory_path is a Path object for consistency
         directory_path = Path(directory_path)
-        
-        # Specify the model filename. You can customize this as needed.
+
+        # Specify the model filename.
         model_filename = 'model.keras'
         
         # Combine the directory path and model filename to form the full path
@@ -151,3 +156,6 @@ def create_q_model(state_shape, action_size=len(action_lookup)):
     model = tf.keras.Model(inputs=inputs, outputs=action)
     print('Model summary:', model.summary())
     return model
+
+def __str__(self):
+    return f"{self.name} - {self.description},\n state_shape: {self.state_shape},\n batch_size: {self.batch_size},\n action_size: {self.action_size},\n memory: {self.memory},\n gamma: {self.gamma},\n pawns: {self.pawns},\n trained_model_path: {self.trained_model_path},\n epsilon: {self.epsilon},\n epsilon_min: {self.epsilon_min},\n epsilon_decay: {self.epsilon_decay},\n learning_rate: {self.learning_rate},\n model: {self.model}"

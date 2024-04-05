@@ -16,8 +16,11 @@ def initGameObjects():
     black_pawn = Pawn('black', *board.pawn_positions['black'])
     return board, white_pawn, black_pawn
 
-def train(board, pawns, with_ground_truths = False):
-    
+def train(board, pawns, with_ground_truths = False, 
+          use_pretrained = False, slow = False, verbose = False, 
+          observe = True, observe_from = [0, 11, 21, 31, 41, 51, 61, 71, 81, 91], 
+          observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95], batch_episodes = 1000, batch_length = 15):
+
     pawns_copy = {
         'white': pawns['white'].copy(),
         'black': pawns['black'].copy()
@@ -38,23 +41,26 @@ def train(board, pawns, with_ground_truths = False):
         agent.trained_model_path = f'src/trained_models/DQNagents/agent_{i}/'
         agents.append(agent)
     
-    # #train the agents with groundtruth if requested via parameter
-    # if(with_ground_truths):
-    #     for agent in agents:
-    #         trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
-    #         #save the model after training
-    #         agent.save_model(agent.trained_model_path)
+    #train the agents with groundtruth if requested via parameter
+    if(with_ground_truths):
+        #if we are using pre-trained models, load them before training
+        if use_pretrained:
+            for agent in agents:
+                try:
+                    # Load the model if it exists
+                    agent.load_model(agent.trained_model_path)
+                except:
+                    # If the model doesn't exist, create it
+                    agent.save_model(agent.trained_model_path)
+                    agent.load_model(agent.trained_model_path)
+                finally:
+                    # set exploration rate to 0.5
+                    agent.epsilon = 0.5
+        for agent in agents:
+            trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
+            #save the model after training
+            agent.save_model(agent.trained_model_path)
 
-    # finally:
-    agent.find_legal_moves(board.state)
-    batch_episodes = 1000
-    batch_length = 1
-    observe = True
-    observe_from =  [0, 11, 21, 31, 41, 51, 61, 71, 81, 91]
-    observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
-    slow = False
-    use_pretrained = False
-    verbose = False
     index = 0
     for i in range(batch_episodes):
         print(f'Batch Episode {i+1}')
@@ -101,15 +107,6 @@ def train(board, pawns, with_ground_truths = False):
             trainDQN(agents, batch_length, board, verbose=verbose)
         for i, agent in enumerate(agents):
             agent.trained_model_path = f'src/trained_models/DQNagents/agent_{i}/'
-            directory_path = Path(agent.trained_model_path)
-            if not directory_path.exists():
-                # If it doesn't exist, create it
-                directory_path.mkdir(parents=True)
-                print(f"Directory '{directory_path}' does not exist. Creating it.")
-            else:
-                # If it exists, you can proceed with your operations
-                print(f"Directory '{directory_path}' already exists. Using it.")
-            
             agent.save_model(agent.trained_model_path)
         use_pretrained = True
 
@@ -240,7 +237,7 @@ def main():
     training = True
     with_ground_truths = True
     if(training):
-        train(board, pawns, with_ground_truths)
+        train(board, pawns, with_ground_truths=with_ground_truths, use_pretrained=True, observe=False, batch_episodes=1000, batch_length=15)
     else:
         play(board, pawns, 'white', False,)
     # while True:

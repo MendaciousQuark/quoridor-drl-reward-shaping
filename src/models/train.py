@@ -21,6 +21,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
         next_boards = [original_board.copy() for _ in range(len(agents))]
         rewards = [0 for _ in range(len(agents))]
         done = [False for _ in range(len(agents))]
+        remembered = [False for _ in range(len(agents))]
         max_moves = 1000
         for e in range(episodes):
             start_time = time.time()  # Start tracking time
@@ -41,6 +42,11 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                     for i, agent in enumerate(agents):
                         #find legal moves:
                         agent.find_legal_moves(next_boards[i].state)
+
+                        #ensure pawns for agent are the same as the pawns on the board
+                        agent.pawns['white'].position = next_boards[i].pawn_positions['white']
+                        agent.pawns['black'].position = next_boards[i].pawn_positions['black']
+
                         if not done[i]:
                             if agent.colour == 'white':
                                 action = agent.act(states[i], verbose)
@@ -80,7 +86,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                 minutes, seconds = divmod(elapsed_time, 60)  # Convert elapsed time to minutes and seconds
                 print(f'\rElapsed time: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
 
-                if agentsDone(agents, next_boards, done, rewards, replay_queue, max_moves, e, episodes):
+                if agentsDone(agents, next_boards, done, rewards, replay_queue, remembered, max_moves, e, episodes):
                     print(f'\n Time taken for episode {e+1}/{episodes}: {int(minutes)} minutes {int(seconds)} seconds')
                     print(f'\nEpisode {e+1}/{episodes}')
                     break
@@ -175,10 +181,15 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
                 jump_direction = 'left'
             elif(adjacent_pawn_direction == RIGHT):
                 jump_direction = 'right'
-        
-        end_formatted = moveNumberToLetter(end[1]) + str(9 - end[0])
+        try:        
+            end_formatted = moveNumberToLetter(end[1]) + str(9 - end[0])
+        except:
+            pdb.set_trace()
         if(action == 'move'):
-            move = Move(colour, start_formatted, end_formatted, action, direction, None, None)
+            try:
+                move = Move(colour, start_formatted, end_formatted, action, direction, None, None)
+            except:
+                pdb.set_trace()
         else:
             action = 'jump'
             #pdb.set_trace()
@@ -194,7 +205,12 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
         reward += 10
     passive_colour = 'black' if move.colour == 'white' else 'white'
     done = True if (victory(agent.pawns[move.colour]) or victory(agent.pawns[passive_colour])) else False or (next_board.turn/2 > max_moves)
+    
+    #update the board and the agent's pawn positions
     next_board.updateState()
+    agent.pawns['white'].position = next_board.pawn_positions['white']
+    agent.pawns['black'].position = next_board.pawn_positions['black']
+
     return board_state_converter.boardToState(next_board, agent.pawns), reward, next_board.copy(), done
 
 def victory(pawn):
@@ -203,7 +219,7 @@ def victory(pawn):
     else:
         return pawn.position[0] == 8
 
-def agentsDone(agents, next_boards, done, rewards, replay_queue, max_moves, e, episodes):
+def agentsDone(agents, next_boards, done, rewards, replay_queue, remembered, max_moves, e, episodes):
     all_done = True
     # Check if all agents are done
     for i, agent in enumerate(agents):
@@ -215,11 +231,13 @@ def agentsDone(agents, next_boards, done, rewards, replay_queue, max_moves, e, e
         agent_done = done[i] or (next_boards[i].turn/2 > max_moves) or no_path
         if agent_done:
             #pdb.set_trace()
-            print(f'Agent {i+1} done, episode {e+1}/{episodes}, \nname: {agent.name} \ncolour: {agent.colour} \nreward: {rewards[i]}\n')
-            if len(replay_queue[i]) < 101 and not no_path and done[i]:
-                print(f'Agent {i+1} remembering episode {e+1}/{episodes}...')
-                for memory in replay_queue[i]:
-                    agent.remember(*memory)
+            print(f'\nAgent {i+1} done, episode {e+1}/{episodes}, \nname: {agent.name} \ncolour: {agent.colour} \nreward: {rewards[i]}\n')
+            if len(replay_queue[i]) < 101 and not no_path and done[i]: # Remember only if the game was not excessively long indicating many repeated moves
+                if(not remembered[i]):
+                    print(f'Agent {i+1} remembering episode {e+1}/{episodes}...')
+                    for memory in replay_queue[i]:
+                        agent.remember(*memory)
+                    remembered[i] = True # Remember only once
                 replay_queue[i] = []
         all_done = agent_done and all_done
     
@@ -233,7 +251,7 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
         put it in a list
     for all ground truths in the list:
         let the agent determine the bes move and then compare it to the ground truth
-        if it is the same reward the agent else punish it
+        if it is the same reward it
     '''
     boards = []
     pawn_dicts = []
@@ -247,36 +265,24 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
             boards.append(current_board)
             pawn_dicts.append({'white': current_white_pawn, 'black': current_black_pawn})
             game_infos.append(current_info)
-    
-    '''
-    some board positions might be for white to move and some for black to move
-        could handle by checking for agent colour and only giving the agent the boards where it is their turn
-    
-    then for each board, pawn_dict and game_info:
-        need to need to create a state,
-        get the agent to act in that state
-        make a step
-        get the reward
-            copmare to ground truth if the same award idk 1000 else do nothing 
-            since it might have been a good move further down the line
-        save for replay
-        then train all the agent with replay
-        no need to mark as done as only one action is ever taken
-    '''
 
     replay_queue = [[] for _ in range(len(agents))]
     board_state_converter = BoardToStateConverter()
     states = [None for _ in range(len(agents))]
     next_boards = [None for _ in range(len(agents))]
     rewards = [0 for _ in range(len(agents))]
-    
+    print(f"Training with {len(boards)} ground truths...")
     for i, board in enumerate(boards):
+        #start measuring time at the beginning of each ground truth
+        start_time = time.time()
         for j, agent in enumerate(agents):
             if(board.turn % 2 == 0 and agent.colour != 'white'):
                 continue
             elif(board.turn % 2 == 1 and agent.colour != 'black'):
                 continue
             else:
+                #update the pawn positinos to represent the current board
+                agent.pawns = pawn_dicts[j]
                 agent.white_position_memory = []
                 agent.black_position_memory = []
                 agent.rewards_memory = []
@@ -297,6 +303,12 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
 
                 #remember the state
                 replay_queue[j].append((states[j], action, rewards[j], next_state, done))
+        # Calculate and print elapsed time
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        minutes, seconds = divmod(elapsed_time, 60)
+        #print elapsed time and how many agents completed the ground truth
+        print(f'\n\r Elapsed time for ground truth {i+1}/{len(boards)}: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
     
     # Train with replay
     print('Training with replay...')
