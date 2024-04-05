@@ -14,7 +14,6 @@ def loadBoard(file_path = 'src\models\ground_truth\ground_truth_0.txt'):
 
     then need to create the objects from the information
     '''
-    #set ariable to hold file information
     #parse information from file
     with open(file_path, 'r') as file:
             game_info = {}

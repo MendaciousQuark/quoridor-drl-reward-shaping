@@ -63,7 +63,7 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                         print('printing backtrace: ', e)
                 else:
                     state = np.reshape(state, [1, *agent.state_shape])
-                    action = pawn.act(state, board)
+                    action = pawn.act(state)
                     break
             if(hasattr(pawn, 'decideMoveHuman')):
                 board.makeMove(move, board, pawn.colour)

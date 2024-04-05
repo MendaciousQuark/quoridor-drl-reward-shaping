@@ -1,5 +1,6 @@
 
-from models import DQNAgent, trainDQN, Model
+from models import DQNAgent, Model
+from models.train import trainDQN, trainWithGroundTruths
 from logic import playGame
 from game import Board, Pawn
 from utils.save_board import saveBoard
@@ -15,14 +16,14 @@ def initGameObjects():
     black_pawn = Pawn('black', *board.pawn_positions['black'])
     return board, white_pawn, black_pawn
 
-def train(board, pawns):
+def train(board, pawns, with_ground_truths = False):
     
     pawns_copy = {
         'white': pawns['white'].copy(),
         'black': pawns['black'].copy()
     }
     
-    n = 2
+    n = 4
     agents = []
     
     #if n is not even add 1 until even
@@ -36,10 +37,18 @@ def train(board, pawns):
             agent = DQNAgent((9, 9, 6), 330, 'black', pawns_copy)
         agent.trained_model_path = f'src/trained_models/DQNagents/agent_{i}/'
         agents.append(agent)
+    
+    # #train the agents with groundtruth if requested via parameter
+    # if(with_ground_truths):
+    #     for agent in agents:
+    #         trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
+    #         #save the model after training
+    #         agent.save_model(agent.trained_model_path)
+
     # finally:
     agent.find_legal_moves(board.state)
     batch_episodes = 1000
-    batch_length = 25
+    batch_length = 1
     observe = True
     observe_from =  [0, 11, 21, 31, 41, 51, 61, 71, 81, 91]
     observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
@@ -222,19 +231,20 @@ def creatRandomBoard():
     return board.copy(), number_of_walls
 
 def main():
-    # board, white_pawn, black_pawn = initGameObjects()
-    # pawns = {
-    #     'white': white_pawn,
-    #     'black': black_pawn
-    # }
+    board, white_pawn, black_pawn = initGameObjects()
+    pawns = {
+        'white': white_pawn,
+        'black': black_pawn
+    }
     
-    # training = True
-    # if(training):
-    #     train(board, pawns)
-    # else:
-    #     play(board, pawns, 'white', False,)
-    while True:
-        creatGroundTruths()
+    training = True
+    with_ground_truths = True
+    if(training):
+        train(board, pawns, with_ground_truths)
+    else:
+        play(board, pawns, 'white', False,)
+    # while True:
+    #     creatGroundTruths()
 
 if __name__ == '__main__':
     main()

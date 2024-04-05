@@ -43,7 +43,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                         agent.find_legal_moves(next_boards[i].state)
                         if not done[i]:
                             if agent.colour == 'white':
-                                action = agent.act(states[i], next_boards[i], verbose)
+                                action = agent.act(states[i], verbose)
                                 next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i].copy(), action, agent, board_state_converter, max_moves)
                                 next_state = np.reshape(states[i], [1, *agent.state_shape])
                                 states[i] = next_state
@@ -52,7 +52,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                                 next_boards[i+1] = next_boards[i]
                                 done[i+1] = done[i]
                             elif agent.colour == 'black':
-                                action = agent.act(next_state, next_boards[i], verbose)
+                                action = agent.act(next_state, verbose)
                                 next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i].copy(), action, agent, board_state_converter, max_moves)
                                 next_state = np.reshape(next_state, [1, *agent.state_shape])
                                 states[i] = next_state
@@ -248,5 +248,60 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
             pawn_dicts.append({'white': current_white_pawn, 'black': current_black_pawn})
             game_infos.append(current_info)
     
+    '''
+    some board positions might be for white to move and some for black to move
+        could handle by checking for agent colour and only giving the agent the boards where it is their turn
+    
+    then for each board, pawn_dict and game_info:
+        need to need to create a state,
+        get the agent to act in that state
+        make a step
+        get the reward
+            copmare to ground truth if the same award idk 1000 else do nothing 
+            since it might have been a good move further down the line
+        save for replay
+        then train all the agent with replay
+        no need to mark as done as only one action is ever taken
+    '''
 
+    replay_queue = [[] for _ in range(len(agents))]
+    board_state_converter = BoardToStateConverter()
+    states = [None for _ in range(len(agents))]
+    next_boards = [None for _ in range(len(agents))]
+    rewards = [0 for _ in range(len(agents))]
+    
+    for i, board in enumerate(boards):
+        for j, agent in enumerate(agents):
+            if(board.turn % 2 == 0 and agent.colour != 'white'):
+                continue
+            elif(board.turn % 2 == 1 and agent.colour != 'black'):
+                continue
+            else:
+                agent.white_position_memory = []
+                agent.black_position_memory = []
+                agent.rewards_memory = []
+                states[j] = reset(board, pawn_dicts[j], pawn_dicts[j]['white'].walls, pawn_dicts[j]['black'].walls, board_state_converter)
+                states[j] = np.reshape(states[j], [1, *agent.state_shape])
+                agent.find_legal_moves(board.state)
+                rewards[j] = 0
+                next_boards[j] = board.copy()
+                
+                #find the best move
+                action = agent.act(states[j])
+                next_state, rewards[j], next_boards[j], done = step(next_boards[j].copy(), action, agent, board_state_converter)
+                next_state = np.reshape(next_state, [1, *agent.state_shape])
+
+                #get the action id from the ground truth
+                if(action == game_infos[i]['a']):
+                    rewards[j] = 1000
+
+                #remember the state
+                replay_queue[j].append((states[j], action, rewards[j], next_state, done))
+    
+    # Train with replay
+    print('Training with replay...')
+    for i, agent in enumerate(agents):
+        if len(agent.memory) > agent.batch_size:
+            print(f'\rAgent {i} replaying...', end='', flush=True)
+            agent.replay(agent.batch_size)
 
