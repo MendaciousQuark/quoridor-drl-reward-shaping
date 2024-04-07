@@ -104,7 +104,7 @@ class DQNAgent (Model):
         end_time = time.time()  # Stop tracking time
         elapsed_time = end_time - start_time  # Calculate elapsed time in seconds
         minutes, seconds = divmod(elapsed_time, 60)  # Convert elapsed time to minutes and seconds
-        print(f'Replay time: {int(minutes)} minutes {int(seconds)} seconds')  # Print elapsed time
+        print(f'\nReplay time: {int(minutes)} minutes {int(seconds)} seconds')  # Print elapsed time
             
     def save_model(self, directory_path='src/trained_models/DQNagents/agent_0/'):
         # Ensure the directory_path is a Path object for consistency
@@ -149,10 +149,16 @@ def create_q_model(state_shape, action_size=len(action_lookup)):
     inputs = layers.Input(shape=state_shape)
     
     # Example architecture
-    layer1 = layers.Dense(128, activation='relu')(inputs)
-    layer2 = layers.Dense(128, activation='relu')(layer1)
+    layer1 = layers.Dense(1024, activation='relu')(inputs)
+    layer2 = layers.Dense(1024, activation='relu')(layer1)
+    layer3 = layers.Dense(1024, activation='relu')(layer2)
+    layer4 = layers.Dense(1024, activation='relu')(layer3)
+    layer5 = layers.Dense(1024, activation='relu')(layer4)
+    layer6 = layers.Dense(1024, activation='relu')(layer5)
+    layer7 = layers.Dense(1024, activation='relu')(layer6)
+    layer8 = layers.Dense(1024, activation='relu')(layer7)
     #layer2 = layers.Flatten()(layer2)
-    action = layers.Dense(action_size, activation='linear')(layer2)
+    action = layers.Dense(action_size, activation='linear')(layer8)
     model = tf.keras.Model(inputs=inputs, outputs=action)
     print('Model summary:', model.summary())
     return model

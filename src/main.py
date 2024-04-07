@@ -8,6 +8,7 @@ from pathlib import Path
 import os
 import re
 import random
+import pdb
 
 def initGameObjects():
     print("\n\tWelcome to Quoridor!\n")
@@ -19,14 +20,15 @@ def initGameObjects():
 def train(board, pawns, with_ground_truths = False, 
           use_pretrained = False, slow = False, verbose = False, 
           observe = True, observe_from = [0, 11, 21, 31, 41, 51, 61, 71, 81, 91], 
-          observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95], batch_episodes = 1000, batch_length = 15):
+          observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95], batch_episodes = 1000, batch_length = 15,
+          number_of_agents = 10):
 
     pawns_copy = {
         'white': pawns['white'].copy(),
         'black': pawns['black'].copy()
     }
     
-    n = 4
+    n = number_of_agents
     agents = []
     
     #if n is not even add 1 until even
@@ -57,9 +59,13 @@ def train(board, pawns, with_ground_truths = False,
                     # set exploration rate to 0.5
                     agent.epsilon = 0.5
         for agent in agents:
-            trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
+            try:
+                trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
+            except Exception as e:
+                print(e)
+            finally:
             #save the model after training
-            agent.save_model(agent.trained_model_path)
+                agent.save_model(agent.trained_model_path)
 
     index = 0
     for i in range(batch_episodes):
@@ -73,6 +79,9 @@ def train(board, pawns, with_ground_truths = False,
                 'black': pawns['black'].copy()
             }
         try:
+            #every two episodes shuffle the opponents
+            if(i % 2 == 0):
+                agents = shuffle_opponents(agents) #opponents are each pair of agents (i.e. 0 and 1, 2 and 3, etc.)
             if use_pretrained:
                 for agent in agents:
                     agent.pawns = pawns_copy
@@ -88,27 +97,37 @@ def train(board, pawns, with_ground_truths = False,
                         agent.epsilon = 0.5
             else:
                 agents = []
-                agents.append(DQNAgent((9, 9, 6), 330, 'white', pawns_copy, 0.6))
-                agents.append(DQNAgent((9, 9, 6), 330, 'black', pawns_copy, 0.6))
+                for i in range(n):
+                    if(i % 2 == 0):
+                        agent = DQNAgent((9, 9, 6), 330, 'white', pawns_copy, 0.6)
+                    else:
+                        agent = DQNAgent((9, 9, 6), 330, 'black', pawns_copy, 0.6)
         except Exception as e:
             print(e)
             break
         observed = False
-        if observe:
-            if observe_from[index] <= i < observe_until[index]:
-                if(not slow):
-                    trainDQN(agents, batch_length, board, observe)
-                else:
-                    trainDQN(agents, batch_length, board, observe, observe_from[index], observe_until[index])
-                observed = True
-            elif i == observe_until[index]:
-                index += 1
-        if(not observed):
-            trainDQN(agents, batch_length, board, verbose=verbose)
-        for i, agent in enumerate(agents):
-            agent.trained_model_path = f'src/trained_models/DQNagents/agent_{i}/'
-            agent.save_model(agent.trained_model_path)
-        use_pretrained = True
+        try:
+            if observe:
+                if observe_from[index] <= i < observe_until[index]:
+                    if(not slow):
+                        trainDQN(agents, batch_length, board, observe)
+                    else:
+                        trainDQN(agents, batch_length, board, observe, observe_from[index], observe_until[index])
+                    observed = True
+                elif i == observe_until[index]:
+                    index += 1
+            if(not observed):
+                trainDQN(agents, batch_length, board, verbose=verbose)
+        except Exception as e:
+            print(e)
+        finally:
+            for agent in agents:
+                try:
+                    agent.save_model(agent.trained_model_path)
+                except Exception as e:
+                    print(e)
+                    pdb.set_trace()
+            use_pretrained = True
 
 def updateBoardAndPawns(board, pawns):
     board, number_of_walls = creatRandomBoard()
@@ -227,6 +246,19 @@ def creatRandomBoard():
     
     return board.copy(), number_of_walls
 
+def shuffle_opponents(agents):
+    white_agents = [agent for agent in agents if agent.colour == 'white']
+    black_agents = [agent for agent in agents if agent.colour == 'black']
+    
+    random.shuffle(white_agents)
+    random.shuffle(black_agents)
+    
+    paired_agents = []
+    for white_agent, black_agent in zip(white_agents, black_agents):
+        paired_agents.extend([white_agent, black_agent])
+    
+    return paired_agents
+
 def main():
     board, white_pawn, black_pawn = initGameObjects()
     pawns = {
@@ -237,7 +269,8 @@ def main():
     training = True
     with_ground_truths = True
     if(training):
-        train(board, pawns, with_ground_truths=with_ground_truths, use_pretrained=True, observe=False, batch_episodes=1000, batch_length=15)
+        train(board, pawns, with_ground_truths=with_ground_truths, use_pretrained=True, 
+              observe=False, batch_episodes=1000, batch_length=15, number_of_agents=20)
     else:
         play(board, pawns, 'white', False,)
     # while True:

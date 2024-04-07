@@ -182,14 +182,14 @@ class Model:
         white_path, black_path = self.determine_best_paths(state)
         if len(white_path) == 0 or len(black_path) == 0:
             return -10000
-        current_reward = self.distance_difference(state, white_path, black_path) + self.distance_from_goal_row(state) 
-        current_reward += self.defeat_or_victory() - self.wall_difference_penalty() + self.changed_memory_reward(state)
-        past_average_reward = 1
-        if len(self.reward_memory) > 1:
-            past_average_reward = sum(self.reward_memory)/len(self.reward_memory)
+        current_reward = self.distance_difference(state, white_path, black_path) #+ self.distance_from_goal_row(state) 
+        #current_reward += self.defeat_or_victory() - self.wall_difference_penalty() + self.changed_memory_reward(state)
+        #past_average_reward = 1
+        # if len(self.reward_memory) > 1:
+        #     past_average_reward = sum(self.reward_memory)/len(self.reward_memory)
         self.reward_memory.append(current_reward)
         
-        actual_reward = current_reward - past_average_reward
+        actual_reward = current_reward #- past_average_reward
         
         return actual_reward
 

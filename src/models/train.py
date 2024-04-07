@@ -22,7 +22,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
         rewards = [0 for _ in range(len(agents))]
         done = [False for _ in range(len(agents))]
         remembered = [False for _ in range(len(agents))]
-        max_moves = 1000
+        max_moves = 102
         for e in range(episodes):
             start_time = time.time()  # Start tracking time
             for i, agent in enumerate(agents):
@@ -127,7 +127,7 @@ def step(next_board, action, agent, board_state_converter, max_moves=100):
         #if the adjacent pawn is not None and the action is a jump
         if(adjacent_pawn[0] and action in [4, 5, 6]):
             #pdb.set_trace()
-            adjacent_pawn_direction = getCellDirection(next_board.board[start[0]][start[1]], adjacent_pawn[1])
+            adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], next_board.board[start[0]][start[1]])
         else:
             adjacent_pawn_direction = None
         #pdb.set_trace()
@@ -271,6 +271,7 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
     states = [None for _ in range(len(agents))]
     next_boards = [None for _ in range(len(agents))]
     rewards = [0 for _ in range(len(agents))]
+    #the for loops should be the other way round for efficiency #FIXME
     print(f"Training with {len(boards)} ground truths...")
     for i, board in enumerate(boards):
         #start measuring time at the beginning of each ground truth
@@ -282,11 +283,11 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
                 continue
             else:
                 #update the pawn positinos to represent the current board
-                agent.pawns = pawn_dicts[j]
+                agent.pawns = pawn_dicts[i]
                 agent.white_position_memory = []
                 agent.black_position_memory = []
                 agent.rewards_memory = []
-                states[j] = reset(board, pawn_dicts[j], pawn_dicts[j]['white'].walls, pawn_dicts[j]['black'].walls, board_state_converter)
+                states[j] = reset(board, pawn_dicts[i], pawn_dicts[i]['white'].walls, pawn_dicts[i]['black'].walls, board_state_converter)
                 states[j] = np.reshape(states[j], [1, *agent.state_shape])
                 agent.find_legal_moves(board.state)
                 rewards[j] = 0
