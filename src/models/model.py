@@ -4,16 +4,24 @@ from logic.move_validation import validateMove
 from logic.board_to_graph import boardToGraph
 from logic.a_star import aStar
 from game import Move
+import json
+import os
+import random
 import pdb
 
 class Model:
-    def __init__(self, colour, pawns, name='Bot', description='Bot'):
+    def __init__(self, colour, pawns, name='Bot', description='Bot', flags_path='src/trained_models/DQNagents/agent_0/flags.json'):
         self.name = name
         #'black' or 'white'
         self.colour = colour
         self.description = description
         #the pawns representing players [white_pawn, black_pawn]
         self.pawns = pawns
+        #flags representing what rewards to use
+        self.flags_path = flags_path  # Default path for storing flags
+        self.flags = {}
+        self.initialize_flags()
+
         # ... other attributes
         self.action_state = []
         self.action_state_movements = []
@@ -175,8 +183,61 @@ class Model:
         #pdb.set_trace()
         return legal_moves
 
+    def initialize_flags(self, available_flags=None):
+        '''
+            Initialize flags at random if they do not exist. If the flags file does not exist, it initializes the flags
+            with random values based on a mutation factor.
+            
+            :param flags_list: A list of flag names to initialize. If None, uses a default list.
+            :param mutation_factor: Determines the probability of a flag being True. Defaults to 0.5 for equal chances.
+        '''
+        if not os.path.exists(self.flags_path):
+            print(f"No existing flags found at {self.flags_path}. Initializing with a random subset of active flags.")
+            if available_flags is None:
+                available_flags = ['defeat_or_victory', 'wall_difference_penalty', 'changed_memory_reward', 'distance_from_goal_row', 'distance_difference']  #flags represent the names of the functions to be used as rewards
+
+            # Initialize all flags to False initially
+            initial_flags = {flag: False for flag in available_flags}
+
+            # Randomly determine the number of flags to set to True, ensuring at least one is selected
+            active_flag_count = random.randint(1, len(available_flags))
+
+            # Randomly select a subset of flags to activate
+            flags_to_activate = random.sample(available_flags, active_flag_count)
+
+            # Set the chosen flags to True
+            for flag in flags_to_activate:
+                initial_flags[flag] = True
+
+            self.flags = initial_flags
+            self.store_flags()
+        else:
+            # If the file exists, load the existing flags
+            self.load_flags()
+
+    def store_flags(self, file_path=None):
+        path = file_path if file_path else self.flags_path
+        with open(path, 'w') as file:
+            json.dump(self.flags, file)
+
+    def load_flags(self, file_path=None):
+        path = file_path if file_path else self.flags_path
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                self.flags = json.load(file)
+        else:
+            self.flags = {}
+
+    def change_flags(self, key, value):
+        self.flags[key] = value
+
+    def mutate_flags(self, mutation_factor=0.1):
+        for key in self.flags.keys():
+            if random.random() < mutation_factor:
+                self.flags[key] = not self.flags[key]
+
     def calculate_rewards(self, state):
-        
+
         # abs diff sum of distance from goal
         #will need distance for both pawns multiple times, so calculate it once
         white_path, black_path = self.determine_best_paths(state)

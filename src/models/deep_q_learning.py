@@ -14,7 +14,7 @@ import pdb
 
 class DQNAgent (Model):
     def __init__(self, state_shape, action_size, colour, pawns, epsilon=0.5, name='DQNAgent', description='A Deep Q-Learning agent.', trained_model_path=None):
-        super().__init__(colour, pawns, name, description)
+        super().__init__(colour, pawns, name, description, trained_model_path)
         self.state_shape = state_shape
         self.batch_size = 100 #arbitrarilly chosen
         self.action_size = action_size
@@ -22,7 +22,7 @@ class DQNAgent (Model):
         self.gamma = 0.95  # Discount factor
         self.pawns = pawns
         self.trained_model_path = trained_model_path
-        
+
         # Exploration parameters
         self.epsilon = epsilon  # Exploration rate (arbitrarily chosen)
         self.epsilon_min = 0.01
