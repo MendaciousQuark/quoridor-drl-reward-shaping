@@ -124,6 +124,7 @@ def train(board, pawns, with_ground_truths = False,
             for agent in agents:
                 try:
                     agent.save_model(agent.trained_model_path)
+                    agent.store_flags(agent.trained_model_path)
                 except Exception as e:
                     print(e)
                     pdb.set_trace()
