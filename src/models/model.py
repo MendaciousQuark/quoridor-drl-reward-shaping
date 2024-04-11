@@ -217,11 +217,24 @@ class Model:
 
     def store_flags(self, file_path=None):
         path = file_path if file_path else self.flags_path
+        
+        # Ensure 'flags.json' is at the end of the path
+        if not path.endswith('flags.json'):
+            path = os.path.join(path, 'flags.json')
+    
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
         with open(path, 'w') as file:
             json.dump(self.flags, file)
 
     def load_flags(self, file_path=None):
         path = file_path if file_path else self.flags_path
+
+        # Ensure 'flags.json' is at the end of the path
+        if not path.endswith('flags.json'):
+            path = os.path.join(path, 'flags.json')
+
         if os.path.exists(path):
             with open(path, 'r') as file:
                 self.flags = json.load(file)
@@ -237,22 +250,13 @@ class Model:
                 self.flags[key] = not self.flags[key]
 
     def calculate_rewards(self, state):
-
-        # abs diff sum of distance from goal
-        #will need distance for both pawns multiple times, so calculate it once
-        white_path, black_path = self.determine_best_paths(state)
-        if len(white_path) == 0 or len(black_path) == 0:
-            return -10000
-        current_reward = self.distance_difference(state, white_path, black_path) #+ self.distance_from_goal_row(state) 
-        #current_reward += self.defeat_or_victory() - self.wall_difference_penalty() + self.changed_memory_reward(state)
-        #past_average_reward = 1
-        # if len(self.reward_memory) > 1:
-        #     past_average_reward = sum(self.reward_memory)/len(self.reward_memory)
-        self.reward_memory.append(current_reward)
-        
-        actual_reward = current_reward #- past_average_reward
-        
-        return actual_reward
+        reward = 0
+        #for each flag, if it is active, add the reward from the function to the total reward
+        for key in self.flags.keys():
+            if self.flags[key]:
+                #use the value of the key to call the function with the same name (does mean new reward functions need to be added to the flags class)
+                reward += getattr(self, key)(state)
+        return reward
 
     def determine_best_paths(self, state):
         black_end = [cell.position for cell in state['board'][8]]
@@ -266,12 +270,13 @@ class Model:
         
         return white_path, black_path 
 
-    def distance_difference(self, state, white_path, black_path):
+    def distance_difference(self, state):
+        white_path, black_path = self.determine_best_paths(state)
         actual_distance = len(white_path) - 1 if state['turn'] % 2 == 0 else len(black_path) -1
         opponent_distance = len(black_path) - 1 if state['turn'] % 2 == 0 else len(white_path) - 1
         return actual_distance - opponent_distance * 10 #*10 to make it more significant
     
-    def defeat_or_victory(self):
+    def defeat_or_victory(self, _):
         reward = 0
         colour = self.colour
         #if board is in a victory or defeat state, return the reward for that state
@@ -319,7 +324,7 @@ class Model:
                 distance_from_goal_row += 1000
         return distance_from_goal_row
 
-    def wall_difference_penalty(self):
+    def wall_difference_penalty(self, _):
         #determin colour being represented
         difference = 0
         if(self.colour == 'white'):
