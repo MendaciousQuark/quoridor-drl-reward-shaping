@@ -13,7 +13,6 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
         
         
     state = board_state_converter.boardToState(board, pawns)
-    print(state.shape)
     if human:
         while True:
             board.turn = i
@@ -82,7 +81,10 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
                 pawn.remember(state, action, reward,  next_state, done)
                 state = next_state
                 if (90000 <= action <= 98811):
-                    white_pawn.walls -1
+                    if(pawn.colour == 'white'):
+                        white_pawn.walls -= 1
+                    else:
+                        black_pawn.walls -= 1
                 if(non_human_victory(pawn)):
                     print("White Wins!\n" if i % 2 == 0 else "Black Wins!\n")
                     print(board)
