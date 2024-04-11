@@ -62,14 +62,13 @@ def train(board, pawns, with_ground_truths = False,
 
     #train the agents with groundtruth if requested via parameter
     if(with_ground_truths):
-        for agent in agents:
-            try:
-                trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
-            except Exception as e:
-                print(e)
-            finally:
-            #save the model after training
-                agent.save_model(agent.trained_model_path)
+        try:
+            trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
+        except Exception as e:
+            print(e)
+        finally:
+        #save the model after training
+            agent.save_model(agent.trained_model_path)
 
     index = 0
     batches_since_evolution = 0

@@ -277,6 +277,7 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
         #start measuring time at the beginning of each ground truth
         start_time = time.time()
         for j, agent in enumerate(agents):
+            print(f'\rAgent {j+1}/{len(agents)}', end='', flush=True)
             if(board.turn % 2 == 0 and agent.colour != 'white'):
                 continue
             elif(board.turn % 2 == 1 and agent.colour != 'black'):
