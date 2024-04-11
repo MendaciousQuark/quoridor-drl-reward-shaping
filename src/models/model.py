@@ -10,7 +10,7 @@ import random
 import pdb
 
 class Model:
-    def __init__(self, colour, pawns, name='Bot', description='Bot', flags_path='src/trained_models/DQNagents/agent_0/flags.json'):
+    def __init__(self, colour, pawns, name='Bot', description='Bot', flags_path='src/trained_models/DQNagents/gen_0/white_agents/agent_0/flags.json'):
         self.name = name
         #'black' or 'white'
         self.colour = colour

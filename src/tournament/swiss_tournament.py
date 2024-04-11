@@ -15,7 +15,7 @@ class SwissTournament:
         self.scores = {agent: 0 for agent in self.black_competitors + self.white_competitors}
         self.history = {agent: set() for agent in self.black_competitors + self.white_competitors}
 
-    def compete(self, num_rounds):
+    def compete(self, num_rounds, num_survivors_per_colour=1):
         for round_number in range(num_rounds):
             print(f"Starting Round {round_number + 1}")
             pairs = self.swiss_pairings(self.black_competitors, self.white_competitors, self.scores, self.history)
@@ -34,6 +34,19 @@ class SwissTournament:
                     self.scores[white] += 0.5
                     self.scores[black] += 0.5
         self.showResults()
+        survivors = self.determine_survivors(num_survivors_per_colour)
+        return survivors['white'], survivors['black'] # Return top 3 as survivors, adjust `n` as needed
+
+    def determine_survivors(self, top_n_per_color):
+        # Separate competitors by color
+        white_scores = {agent: self.scores[agent] for agent in self.white_competitors}
+        black_scores = {agent: self.scores[agent] for agent in self.black_competitors}
+
+        # Sort competitors within each color by score and select the top N
+        top_white = sorted(white_scores, key=white_scores.get, reverse=True)[:top_n_per_color]
+        top_black = sorted(black_scores, key=black_scores.get, reverse=True)[:top_n_per_color]
+
+        return {'white': top_white, 'black': top_black}
 
     def showResults(self):
         # Sort players by their scores in descending order
