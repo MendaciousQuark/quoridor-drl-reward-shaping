@@ -177,7 +177,7 @@ def create_q_model(state_shape, action_size=len(action_lookup)):
     inputs = layers.Input(shape=state_shape)
     
     x = inputs
-    for _ in range(8):
+    for _ in range(5):
         x = layers.Dense(2048, activation='relu')(x)
     
     action = layers.Dense(action_size, activation='linear')(x)
