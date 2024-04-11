@@ -77,7 +77,7 @@ class Pawn:
                 raise MoveFormatError("action", f"Invalid action: {move}\nAction should be one of 'move', 'place', or 'jump'. Alternatively, type 'help' for a list of commands.")
     
     def copy(self):
-        return Pawn(self.colour, self.position[0], self.position[1])
+        return Pawn(self.colour, *self.position)
     
     def __str__(self):
         return f"Pawn: {'*' if self.colour == 'white' else '@'}, {self.position}, {self.walls}"
