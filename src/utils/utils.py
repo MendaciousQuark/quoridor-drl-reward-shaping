@@ -1,5 +1,6 @@
 from .directions import UP, DOWN, LEFT, RIGHT, getDirectionIndex
-
+import os
+import re
 
 def validLocation(i, j):
         # Return True if the location is on the board, False if it's off the board
@@ -71,3 +72,26 @@ def opposingPawnAdjacent(colour, board, center_cell):
         else:
             continue
     return (False, None)
+
+def get_next_file_number(directory_path, common_name_prefix):
+    file_pattern = re.compile(rf'^{common_name_prefix}(\d+)')
+    max_number = 0
+    for filename in os.listdir(directory_path):
+        match = file_pattern.match(filename)
+        if match:
+            current_number = int(match.group(1))
+            if current_number > max_number:
+                max_number = current_number
+    return max_number + 1
+
+def get_next_directory_number(directory_path, common_name_prefix):
+    dir_pattern = re.compile(rf'^{common_name_prefix}(\d+)$')
+    max_number = 0
+    for entry in os.listdir(directory_path):
+        if os.path.isdir(os.path.join(directory_path, entry)):
+            match = dir_pattern.match(entry)
+            if match:
+                current_number = int(match.group(1))
+                if current_number > max_number:
+                    max_number = current_number
+    return max_number + 1
