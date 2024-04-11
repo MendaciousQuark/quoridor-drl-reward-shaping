@@ -301,6 +301,8 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
                 #get the action id from the ground truth
                 if(action == game_infos[i]['a']):
                     rewards[j] = 1000
+                else:
+                    rewards[j] = -1000
 
                 #remember the state
                 replay_queue[j].append((states[j], action, rewards[j], next_state, done))
