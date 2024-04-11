@@ -37,10 +37,9 @@ def train(board, pawns, with_ground_truths = False,
     
     for i in range(n):
         if(i % 2 == 0):
-            agent = DQNAgent((9, 9, 6), 330, 'white', pawns_copy)
+            agent = DQNAgent((9, 9, 11), 330, 'white', pawns_copy, name=str(i), trained_model_path=f'src/trained_models/DQNagents/agent_{i}/')
         else:
-            agent = DQNAgent((9, 9, 6), 330, 'black', pawns_copy)
-        agent.trained_model_path = f'src/trained_models/DQNagents/agent_{i}/'
+            agent = DQNAgent((9, 9, 11), 330, 'black', pawns_copy, name=str(i), trained_model_path=f'src/trained_models/DQNagents/agent_{i}/')
         agents.append(agent)
     
     #train the agents with groundtruth if requested via parameter
@@ -99,17 +98,22 @@ def train(board, pawns, with_ground_truths = False,
                 agents = []
                 for i in range(n):
                     if(i % 2 == 0):
-                        agent = DQNAgent((9, 9, 6), 330, 'white', pawns_copy, 0.6)
+                        agent = DQNAgent((9, 9, 11), 330, 'white', pawns_copy, 0.6, name=str(i), trained_model_path=f'src/trained_models/DQNagents/agent_{i}/')
+                        agents.append(agent)
                     else:
-                        agent = DQNAgent((9, 9, 6), 330, 'black', pawns_copy, 0.6)
+                        agent = DQNAgent((9, 9, 11), 330, 'black', pawns_copy, 0.6, name=str(i), trained_model_path=f'src/trained_models/DQNagents/agent_{i}/')
+                        agents.append(agent)
         except Exception as e:
             print(e)
+            #print stack trace
+            print(e.with_traceback())
             break
         observed = False
         try:
             if observe:
                 if observe_from[index] <= i < observe_until[index]:
                     if(not slow):
+                        pdb.set_trace()
                         trainDQN(agents, batch_length, board, observe)
                     else:
                         trainDQN(agents, batch_length, board, observe, observe_from[index], observe_until[index])
@@ -127,7 +131,6 @@ def train(board, pawns, with_ground_truths = False,
                     agent.store_flags(agent.trained_model_path)
                 except Exception as e:
                     print(e)
-                    pdb.set_trace()
             use_pretrained = True
 
 def updateBoardAndPawns(board, pawns):
@@ -145,18 +148,16 @@ def updateBoardAndPawns(board, pawns):
     return board, pawns
 
 def play(board, pawns, colour, human=False, agent=None):
-    agent = DQNAgent((9, 9, 6), 330, colour, pawns, 0)
-    agent.find_legal_moves(board.state)
-    model_path = None
     if(colour == 'white'):
-        model_path = 'src/trained_models/DQNagents/agent_0'
+        agent = DQNAgent((9, 9, 11), 330, colour, pawns, epsilon=0, trained_model_path='src/trained_models/DQNagents/agent_0')
     else:
-        model_path = 'src/trained_models/DQNagents/agent_1'
-    agent.load_model(model_path)
+        agent = DQNAgent((9, 9, 11), 330, colour, pawns, epsilon=0, trained_model_path='src/trained_models/DQNagents/agent_1')
+    agent.find_legal_moves(board.state)
+    agent.load_model(agent.trained_model_path)
     playGame(board, pawns['white'], pawns['black'], False, agent)
     
     #save the model after playing with it
-    directory_path = Path(model_path)
+    directory_path = Path(agent.trained_model_path)
     if not directory_path.exists():
         # If it doesn't exist, create it
         directory_path.mkdir(parents=True)
@@ -164,7 +165,7 @@ def play(board, pawns, colour, human=False, agent=None):
     else:
         # If it exists, you can proceed with your operations
         print(f"Directory '{directory_path}' already exists. Using it.")
-    agent.save_model(model_path)
+    agent.save_model(agent.trained_model_path)
 
 def creatGroundTruths():
     action_ID  = None
@@ -270,10 +271,10 @@ def main():
     training = True
     with_ground_truths = True
     if(training):
-        train(board, pawns, with_ground_truths=with_ground_truths, use_pretrained=True, 
-              observe=False, batch_episodes=1000, batch_length=15, number_of_agents=20)
+        train(board, pawns, with_ground_truths=with_ground_truths, use_pretrained=False, 
+              observe=False, batch_episodes=1000, batch_length=15, number_of_agents=1)
     else:
-        play(board, pawns, 'white', False,)
+        play(board, pawns, 'black', False)
     # while True:
     #     creatGroundTruths()
 

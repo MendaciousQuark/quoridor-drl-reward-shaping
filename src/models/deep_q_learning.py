@@ -42,7 +42,7 @@ class DQNAgent (Model):
             # chose a random action but try to move more than placing
             while True:
                 try:
-                    movement_prob = 0.5 if len(self.action_state_movements) > 0 else 0
+                    movement_prob = 0.7 if len(self.action_state_movements) > 0 else 0
                     if np.random.rand() > 1 - movement_prob:
                         #choose a random action from the movement actions
                         random_action_index = random.randint(0, len(self.action_state_movements) - 1)
@@ -148,17 +148,11 @@ def create_q_model(state_shape, action_size=len(action_lookup)):
     """Creates a Deep Q-Learning Model."""
     inputs = layers.Input(shape=state_shape)
     
-    # Example architecture
-    layer1 = layers.Dense(1024, activation='relu')(inputs)
-    layer2 = layers.Dense(1024, activation='relu')(layer1)
-    layer3 = layers.Dense(1024, activation='relu')(layer2)
-    layer4 = layers.Dense(1024, activation='relu')(layer3)
-    layer5 = layers.Dense(1024, activation='relu')(layer4)
-    layer6 = layers.Dense(1024, activation='relu')(layer5)
-    layer7 = layers.Dense(1024, activation='relu')(layer6)
-    layer8 = layers.Dense(1024, activation='relu')(layer7)
-    #layer2 = layers.Flatten()(layer2)
-    action = layers.Dense(action_size, activation='linear')(layer8)
+    x = inputs
+    for _ in range(8):
+        x = layers.Dense(2048, activation='relu')(x)
+    
+    action = layers.Dense(action_size, activation='linear')(x)
     model = tf.keras.Model(inputs=inputs, outputs=action)
     print('Model summary:', model.summary())
     return model
