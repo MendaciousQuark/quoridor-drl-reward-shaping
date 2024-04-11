@@ -143,6 +143,34 @@ class DQNAgent (Model):
         q_index = action_id_to_q_index[action_id]  # Use the mapping
         return all_q_values[0][0][0][q_index]
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __lt__(self, other):
+        #less than comparision between two agents is based on name of save location
+        return self.trained_model_path < other.trained_model_path
+
+    def __gt__(self, other):
+        #greater than comparision between two agents is based on name of save location
+        return self.trained_model_path > other.trained_model_path
+
+    def __le__(self, other):
+        #less than or equal to comparision between two agents is based on name of save location
+        return self.trained_model_path <= other.trained_model_path
+
+    def __ge__(self, other):
+        #greater than or equal to comparision between two agents is based on name of save location
+        return self.trained_model_path >= other.trained_model_path
+
+    def __ne__(self, other):
+        return self.__dict__ != other.__dict__
+
+    def __hash__(self) -> int:
+        return hash(self.trained_model_path)
+
+    def __str__(self):
+        return f"{self.name} - {self.description},\n state_shape: {self.state_shape},\n batch_size: {self.batch_size},\n action_size: {self.action_size},\n memory: {self.memory},\n gamma: {self.gamma},\n pawns: {self.pawns},\n trained_model_path: {self.trained_model_path},\n epsilon: {self.epsilon},\n epsilon_min: {self.epsilon_min},\n epsilon_decay: {self.epsilon_decay},\n learning_rate: {self.learning_rate},\n model: {self.model}"
+
 def create_q_model(state_shape, action_size=len(action_lookup)):
     print('Creating Q model with state shape:', state_shape, 'and action size:', action_size)
     """Creates a Deep Q-Learning Model."""
@@ -156,6 +184,3 @@ def create_q_model(state_shape, action_size=len(action_lookup)):
     model = tf.keras.Model(inputs=inputs, outputs=action)
     print('Model summary:', model.summary())
     return model
-
-def __str__(self):
-    return f"{self.name} - {self.description},\n state_shape: {self.state_shape},\n batch_size: {self.batch_size},\n action_size: {self.action_size},\n memory: {self.memory},\n gamma: {self.gamma},\n pawns: {self.pawns},\n trained_model_path: {self.trained_model_path},\n epsilon: {self.epsilon},\n epsilon_min: {self.epsilon_min},\n epsilon_decay: {self.epsilon_decay},\n learning_rate: {self.learning_rate},\n model: {self.model}"
