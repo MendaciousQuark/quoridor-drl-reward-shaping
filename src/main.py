@@ -90,28 +90,6 @@ def train(board, pawns, with_ground_truths = False,
                 batches_since_evolution = 0
             if(i % 2 == 0):
                 agents = shuffle_opponents(agents) #opponents are each pair of agents (i.e. 0 and 1, 2 and 3, etc.)
-            if use_pretrained:
-                for agent in agents:
-                    agent.pawns = pawns_copy
-                    try:
-                        # Load the model if it exists
-                        agent.load_model(agent.trained_model_path)
-                    except:
-                        # If the model doesn't exist, create it
-                        agent.save_model(agent.trained_model_path)
-                        agent.load_model(agent.trained_model_path)
-                    finally:
-                        # set exploration rate to 0.5
-                        agent.epsilon = 0.5
-            else:
-                agents = []
-                for i in range(n):
-                    if(i % 2 == 0):
-                        agent = DQNAgent((9, 9, 11), 330, 'white', pawns_copy, 0.6, name=str(i), trained_model_path=f'src/trained_models/DQNagents/gen_{highest_gen}/white_agents/agent_{i}/')
-                        agents.append(agent)
-                    else:
-                        agent = DQNAgent((9, 9, 11), 330, 'black', pawns_copy, 0.6, name=str(i), trained_model_path=f'src/trained_models/DQNagents/gen_{highest_gen}/black_agents/agent_{i}/')
-                        agents.append(agent)
         except Exception as e:
             print(e)
             break
