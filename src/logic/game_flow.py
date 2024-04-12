@@ -50,7 +50,10 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
             print(board.printBoard())
             print(f"Round {round}")
             print("White's turn" if i % 2 == 0 else "Black's turn")
-            print(pawn, "\n")
+            if(hasattr(pawns, 'decideMoveHuman')):
+                print(pawn, "\n")
+            else:
+                print(pawn.name)
             while(True):
                 if(hasattr(pawn, 'decideMoveHuman')):
                     try:
