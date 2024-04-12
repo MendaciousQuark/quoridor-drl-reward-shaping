@@ -1,8 +1,9 @@
 from models.train import step
 from game.board import Board
 from models.board_to_state import BoardToStateConverter
-from multiprocessing import Pool
+from utils.utils import get_next_directory_number
 import numpy as np
+import os
 import pdb
 from tabulate import tabulate
 
@@ -51,10 +52,22 @@ class SwissTournament:
     def showResults(self):
         # Sort players by their scores in descending order
         sorted_scores = sorted(self.scores.items(), key=lambda item: item[1], reverse=True)
+        
         # Prepare the leaderboard table
         leaderboard_table = [[agent.name, score] for agent, score in sorted_scores]
+        
         # Print the leaderboard
         print(tabulate(leaderboard_table, headers=['Agent', 'Final Score'], tablefmt='grid'))
+        
+        # Determine the generation directory to save the results
+        base_path = 'src/trained_models/DQNagents'
+        next_gen = get_next_directory_number(base_path, 'gen_') - 1  # Fetching the latest generation folder
+        results_file_path = os.path.join(base_path, f'gen_{next_gen}', 'tournament_results.txt')
+        
+        # Save the leaderboard to a file
+        with open(results_file_path, 'w') as file:
+            file.write(tabulate(leaderboard_table, headers=['Agent', 'Final Score'], tablefmt='grid'))
+        print(f"Results saved to {results_file_path}")
 
 
     def play_game(self, pair):
