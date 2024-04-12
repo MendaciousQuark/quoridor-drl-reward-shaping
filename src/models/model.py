@@ -194,7 +194,14 @@ class Model:
         if not os.path.exists(self.flags_path):
             print(f"No existing flags found at {self.flags_path}. Initializing with a random subset of active flags.")
             if available_flags is None:
-                available_flags = ['defeat_or_victory', 'wall_difference_penalty', 'changed_memory_reward', 'distance_from_goal_row', 'distance_difference']  #flags represent the names of the functions to be used as rewards
+                available_flags = [
+                    'defeat_or_victory', 'wall_difference_penalty', 'changed_memory_reward', 
+                    'distance_from_goal_row', 'distance_difference', 'a_star_distance',
+                    'a_star_distance_opponent', 'distance_from_nearest_edge', 'distance_from_nearest_wall',
+                    'average_distance_from_walls', 'average_oppononent_distance_from_walls', 'average_distance_between_walls',
+                    'furthest_distance_between_walls', 'closest_distance_between_walls', 'enemy_wall_adjacency',
+                    'self_wall_adjacency', 'distance_from_opponent'
+                ]  #flags represent the names of the functions to be used as rewards
 
             # Initialize all flags to False initially
             initial_flags = {flag: False for flag in available_flags}
@@ -221,12 +228,13 @@ class Model:
         # Ensure 'flags.json' is at the end of the path
         if not path.endswith('flags.json'):
             path = os.path.join(path, 'flags.json')
-    
+
         # Ensure the directory exists
         os.makedirs(os.path.dirname(path), exist_ok=True)
 
         with open(path, 'w') as file:
-            json.dump(self.flags, file)
+            # Use indent=4 for pretty printing, sort_keys=True to sort the keys alphabetically
+            json.dump(self.flags, file, indent=4, sort_keys=True)
 
     def load_flags(self, file_path=None):
         path = file_path if file_path else self.flags_path
@@ -277,6 +285,16 @@ class Model:
         opponent_distance = len(black_path) - 1 if state['turn'] % 2 == 0 else len(white_path) - 1
         return actual_distance - opponent_distance * 10 #*10 to make it more significant
     
+    def a_star_distance(self, state):
+        white_path, black_path = self.determine_best_paths(state)
+        actual_distance = len(white_path) - 1 if state['turn'] % 2 == 0 else len(black_path) -1
+        return actual_distance
+    
+    def a_star_distance_opponent(self, state):
+        white_path, black_path = self.determine_best_paths(state)
+        opponent_distance = len(black_path) - 1 if state['turn'] % 2 == 0 else len(white_path) - 1
+        return opponent_distance
+
     def defeat_or_victory(self, _):
         reward = 0
         colour = self.colour
@@ -325,6 +343,12 @@ class Model:
                 distance_from_goal_row += 1000
         return distance_from_goal_row
 
+    def distance_from_nearest_edge(self, state):
+        #current position
+        current_position = state['pieces'][self.colour]
+        #distance from the nearest edge
+        return min(abs(0 - current_position[1]), abs(8 - current_position[1]))
+
     def wall_difference_penalty(self, _):
         #determin colour being represented
         difference = 0
@@ -361,3 +385,76 @@ class Model:
         changed_memory_reward += counter/len(unique_positions)*10
         
         return changed_memory_reward
+    
+    def enemy_wall_adjacency(self, state):
+        walled_cells = state['walled_cells']
+        walls_adjacent = 0
+        #for each wall in walled cells check the adjacent cells for the opponent
+        for walled_cell in walled_cells:
+            if(distance(state['pieces']['black' if self.colour == 'white' else 'white'], walled_cell.position) == 1):
+                walls_adjacent += 1
+        return walls_adjacent
+    
+    def self_wall_adjacency(self, state):
+        walled_cells = state['walled_cells']
+        walls_adjacent = 0
+        #for each wall in walled cells check the adjacent cells for the player
+        for walled_cell in walled_cells:
+            if(distance(state['pieces'][self.colour], walled_cell.position) == 1):
+                walls_adjacent += 1
+        return -1*walls_adjacent #negative as it is a penalty
+    
+    def distance_from_nearest_wall(self, state):
+        walled_cells = state['walled_cells']
+        closest_distance = 100000
+        current_position = state['pieces'][self.colour]
+        for walled_cell in walled_cells:
+            closest_distance = min(closest_distance, distance(current_position, walled_cell.position))
+        return closest_distance
+    
+    def average_distance_from_walls(self, state):
+        walled_cells = state['walled_cells']
+        total_distance = 0
+        current_position = state['pieces'][self.colour]
+        for walled_cell in walled_cells:
+            total_distance += distance(current_position, walled_cell.position)
+        return total_distance/len(walled_cells)
+    
+    def average_oppononent_distance_from_walls(self, state):
+        walled_cells = state['walled_cells']
+        total_distance = 0
+        current_position = state['pieces']['black' if self.colour == 'white' else 'white']
+        for walled_cell in walled_cells:
+            total_distance += distance(current_position, walled_cell.position)
+        return total_distance/len(walled_cells)
+    
+    def average_distance_between_walls(self, state):
+        walled_cells = state['walled_cells']
+        total_distance = 0
+        for i, walled_cell in enumerate(walled_cells):
+            for j, other_walled_cell in enumerate(walled_cells):
+                if i != j:
+                    total_distance += distance(walled_cell.position, other_walled_cell.position)
+        return total_distance/(len(walled_cells)**2)
+    
+    def furthest_distance_between_walls(self, state):
+        walled_cells = state['walled_cells']
+        furthest_distance = 0
+        for i, walled_cell in enumerate(walled_cells):
+            for j, other_walled_cell in enumerate(walled_cells):
+                if i != j:
+                    furthest_distance = max(furthest_distance, distance(walled_cell.position, other_walled_cell.position))
+        return furthest_distance
+    
+    def closest_distance_between_walls(self, state):
+        walled_cells = state['walled_cells']
+        closest_distance = 100000
+        for i, walled_cell in enumerate(walled_cells):
+            for j, other_walled_cell in enumerate(walled_cells):
+                if i != j:
+                    closest_distance = min(closest_distance, distance(walled_cell.position, other_walled_cell.position))
+        return closest_distance
+
+    def distance_from_opponent(self, state):
+        return distance(state['pieces'][self.colour], 
+                           state['pieces']['black' if self.colour == 'white' else 'white'])
