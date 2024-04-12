@@ -152,13 +152,19 @@ def evolveThroughTournament(agents):
             white_child = DQNAgent((9, 9, 11), 330, 'white', white_survivor.pawns, 0.6, name=f'White_Bot_{agent_index}', description=white_child_description, trained_model_path=white_child_path)
             black_child = DQNAgent((9, 9, 11), 330, 'black', black_survivor.pawns, 0.6, name=f'Black_Bot_{agent_index}', description=black_child_description, trained_model_path=black_child_path)
             
+            # load the parent model onto the children
+            white_child.load_model(white_survivor.trained_model_path)
+            black_child.load_model(black_survivor.trained_model_path)
+
             # Mutate and save the white child
+            white_child.flags = white_survivor.flags
             white_child.mutate_flags()
             white_child.store_flags()
             white_child.save_model()
             children.append(white_child)
             
             # Mutate and save the black child
+            black_child.flags = black_survivor.flags
             black_child.mutate_flags()
             black_child.store_flags()
             black_child.save_model()
@@ -300,7 +306,7 @@ def main():
     
     training = True
     if(training):
-        train(board, pawns, with_ground_truths=False, use_pretrained=True, 
+        train(board, pawns, with_ground_truths=True, use_pretrained=False, 
               observe=False, batch_episodes=1000, batch_length=20, number_of_agents=50, batches_per_generation=2)
     else:
         play(board, pawns, 'black', False)
