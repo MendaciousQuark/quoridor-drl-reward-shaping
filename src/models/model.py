@@ -241,13 +241,14 @@ class Model:
         else:
             self.flags = {}
 
-    def change_flags(self, key, value):
-        self.flags[key] = value
-
-    def mutate_flags(self, mutation_factor=0.1):
-        for key in self.flags.keys():
-            if random.random() < mutation_factor:
+    def mutate_flags(self, mutation_factor=0.05, num_mutations=1):
+        mutations_count = 0
+        flags_to_mutate = list(self.flags.keys())  # Get a list of all flag keys
+        random.shuffle(flags_to_mutate)  # Shuffle the list to select flags randomly
+        for key in flags_to_mutate:
+            if random.random() < mutation_factor and mutations_count < num_mutations:
                 self.flags[key] = not self.flags[key]
+            mutations_count += 1
 
     def calculate_rewards(self, state):
         reward = 0
