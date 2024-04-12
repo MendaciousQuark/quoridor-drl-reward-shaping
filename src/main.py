@@ -133,7 +133,6 @@ def train(board, pawns, with_ground_truths = False,
             print(e)
         finally:
             for agent in agents:
-                pdb.set_trace()
                 try:
                     agent.save_model(agent.trained_model_path)
                     agent.store_flags(agent.trained_model_path)
@@ -287,6 +286,12 @@ def creatRandomBoard():
     #white shouldn't be on row 0
     board.pawn_positions['white'] = [random.randint(1, 8), random.randint(0, 8)]
     #black shouldn't be on row 8
+    while True:
+        black_pawn_row = random.randint(0, 7)
+        black_pawn_col = random.randint(0, 8)
+        if (black_pawn_row, black_pawn_col) != tuple(board.pawn_positions['white']):
+            break
+    board.pawn_positions['black'] = [black_pawn_row, black_pawn_col]
     board.pawn_positions['black'] = [random.randint(0, 7), random.randint(0, 8)]
     board.placePawns()
     #chose a random even or odd number betweeen 0 and 11
@@ -317,8 +322,8 @@ def main():
     
     training = True
     if(training):
-        train(board, pawns, with_ground_truths=True, use_pretrained=True, 
-              observe=False, batch_episodes=1000, batch_length=20, number_of_agents=50, batches_per_generation=3)
+        train(board, pawns, with_ground_truths=False, use_pretrained=True, 
+              observe=False, batch_episodes=1000, batch_length=20, number_of_agents=50, batches_per_generation=2)
     else:
         play(board, pawns, 'black', False)
     # while True:
