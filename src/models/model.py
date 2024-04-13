@@ -174,13 +174,10 @@ class Model:
         legal_moves = []
         for move_with_id in moves_to_check:
             try:
-                # if(move_with_id[0].action == 'jump'):
-                #     pdb.set_trace()
                 if validateMove(move_with_id[0], state['board_object'], self.pawns[colour])[0]:
                     legal_moves.append(move_with_id)
             except Exception as e:
                 continue
-        #pdb.set_trace()
         return legal_moves
 
     def initialize_flags(self, available_flags=None):
@@ -382,12 +379,14 @@ class Model:
                 for position in self.black_position_memory:
                     if tuple(position) == unique_position:
                         counter += 1
-        changed_memory_reward += counter/len(unique_positions)*10
+        changed_memory_reward += counter/max(len(unique_positions), 1)*10
         
         return changed_memory_reward
     
     def enemy_wall_adjacency(self, state):
-        walled_cells = state['walled_cells']
+        horizontal_walled_cells = state['walled_cells']['horizontal']
+        vertical_walled_cells = state['walled_cells']['vertical']
+        walled_cells = horizontal_walled_cells + vertical_walled_cells
         walls_adjacent = 0
         #for each wall in walled cells check the adjacent cells for the opponent
         for walled_cell in walled_cells:
@@ -396,7 +395,9 @@ class Model:
         return walls_adjacent
     
     def self_wall_adjacency(self, state):
-        walled_cells = state['walled_cells']
+        horizontal_walled_cells = state['walled_cells']['horizontal']
+        vertical_walled_cells = state['walled_cells']['vertical']
+        walled_cells = horizontal_walled_cells + vertical_walled_cells
         walls_adjacent = 0
         #for each wall in walled cells check the adjacent cells for the player
         for walled_cell in walled_cells:
@@ -405,7 +406,9 @@ class Model:
         return -1*walls_adjacent #negative as it is a penalty
     
     def distance_from_nearest_wall(self, state):
-        walled_cells = state['walled_cells']
+        horizontal_walled_cells = state['walled_cells']['horizontal']
+        vertical_walled_cells = state['walled_cells']['vertical']
+        walled_cells = horizontal_walled_cells + vertical_walled_cells
         closest_distance = 100000
         current_position = state['pieces'][self.colour]
         for walled_cell in walled_cells:
@@ -413,32 +416,40 @@ class Model:
         return closest_distance
     
     def average_distance_from_walls(self, state):
-        walled_cells = state['walled_cells']
+        horizontal_walled_cells = state['walled_cells']['horizontal']
+        vertical_walled_cells = state['walled_cells']['vertical']
+        walled_cells = horizontal_walled_cells + vertical_walled_cells
         total_distance = 0
         current_position = state['pieces'][self.colour]
         for walled_cell in walled_cells:
             total_distance += distance(current_position, walled_cell.position)
-        return total_distance/len(walled_cells)
+        return total_distance/max(len(walled_cells), 1)
     
     def average_oppononent_distance_from_walls(self, state):
-        walled_cells = state['walled_cells']
+        horizontal_walled_cells = state['walled_cells']['horizontal']
+        vertical_walled_cells = state['walled_cells']['vertical']
+        walled_cells = horizontal_walled_cells + vertical_walled_cells
         total_distance = 0
         current_position = state['pieces']['black' if self.colour == 'white' else 'white']
         for walled_cell in walled_cells:
             total_distance += distance(current_position, walled_cell.position)
-        return total_distance/len(walled_cells)
+        return total_distance/max(len(walled_cells), 1)
     
     def average_distance_between_walls(self, state):
-        walled_cells = state['walled_cells']
+        horizontal_walled_cells = state['walled_cells']['horizontal']
+        vertical_walled_cells = state['walled_cells']['vertical']
+        walled_cells = horizontal_walled_cells + vertical_walled_cells
         total_distance = 0
         for i, walled_cell in enumerate(walled_cells):
             for j, other_walled_cell in enumerate(walled_cells):
                 if i != j:
                     total_distance += distance(walled_cell.position, other_walled_cell.position)
-        return total_distance/(len(walled_cells)**2)
+        return total_distance/(max(len(walled_cells), 1)**2)
     
     def furthest_distance_between_walls(self, state):
-        walled_cells = state['walled_cells']
+        horizontal_walled_cells = state['walled_cells']['horizontal']
+        vertical_walled_cells = state['walled_cells']['vertical']
+        walled_cells = horizontal_walled_cells + vertical_walled_cells
         furthest_distance = 0
         for i, walled_cell in enumerate(walled_cells):
             for j, other_walled_cell in enumerate(walled_cells):
@@ -447,7 +458,9 @@ class Model:
         return furthest_distance
     
     def closest_distance_between_walls(self, state):
-        walled_cells = state['walled_cells']
+        horizontal_walled_cells = state['walled_cells']['horizontal']
+        vertical_walled_cells = state['walled_cells']['vertical']
+        walled_cells = horizontal_walled_cells + vertical_walled_cells
         closest_distance = 100000
         for i, walled_cell in enumerate(walled_cells):
             for j, other_walled_cell in enumerate(walled_cells):
