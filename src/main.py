@@ -68,7 +68,8 @@ def train(board, pawns, with_ground_truths = False,
             print(e)
         finally:
         #save the model after training
-            agent.save_model(agent.trained_model_path)
+            for agent in agents:
+                agent.save_model(agent.trained_model_path)
 
     index = 0
     batches_since_evolution = 0
@@ -98,7 +99,6 @@ def train(board, pawns, with_ground_truths = False,
             if observe:
                 if observe_from[index] <= i < observe_until[index]:
                     if(not slow):
-                        pdb.set_trace()
                         trainDQN(agents, batch_length, board, observe)
                     else:
                         trainDQN(agents, batch_length, board, observe, observe_from[index], observe_until[index])
@@ -189,25 +189,64 @@ def updateBoardAndPawns(board, pawns):
     return board, pawns
 
 def play(board, pawns, colour, human=False, agent=None):
-    highest_gen = get_next_directory_number('src/trained_models/DQNagents', 'gen_') - 1 # -1 since we want the highest gen not gen + 1
-    if(colour == 'white'):
-        agent = DQNAgent((9, 9, 11), 330, colour, pawns, epsilon=0, trained_model_path=f"src/trained_models/DQNagents/gen_{highest_gen}/white_agents/agent_0/")
-    else:
-        agent = DQNAgent((9, 9, 11), 330, colour, pawns, epsilon=0, trained_model_path=f"src/trained_models/DQNagents/gen_{highest_gen}/black_agents/agent_0/")
-    agent.find_legal_moves(board.state)
-    agent.load_model(agent.trained_model_path)
-    playGame(board, pawns['white'], pawns['black'], False, agent)
+    agent_path = find_best_agent('src/trained_models/DQNagents', colour)
+    if not agent_path:
+        print(f"No valid agent path found for {colour}. Exiting function.")
+        return
     
-    #save the model after playing with it
+    agent = DQNAgent((9, 9, 11), 330, colour, pawns, epsilon=0, trained_model_path=agent_path)
+    agent.load_model(agent.trained_model_path)
+    agent.find_legal_moves(board.state)
+    playGame(board, pawns['white'], pawns['black'], human, agent)
+    
+    # After playing, check and create the directory if needed, then save the model
     directory_path = Path(agent.trained_model_path)
-    if not directory_path.exists():
-        # If it doesn't exist, create it
-        directory_path.mkdir(parents=True)
-        print(f"Directory '{directory_path}' does not exist. Creating it.")
-    else:
-        # If it exists, you can proceed with your operations
-        print(f"Directory '{directory_path}' already exists. Using it.")
+    directory_path.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+    print(f"Using directory '{directory_path}' for saving the model.")
     agent.save_model(agent.trained_model_path)
+
+def find_best_agent(base_directory, agent_color):
+    # This fetches the last completed generation number
+    highest_gen = get_next_directory_number(base_directory, 'gen_') - 1
+    for gen in range(highest_gen, -1, -1):  # Loop from highest_gen to 0
+        gen_path = os.path.join(base_directory, f'gen_{gen}')
+        results_path = os.path.join(gen_path, 'tournament_results.txt')
+        
+        if os.path.exists(results_path):
+            # Process the file if it exists
+            with open(results_path, 'r') as file:
+                lines = file.readlines()
+
+            agent_scores = []
+            parsing_data = False
+
+            for line in lines:
+                line = line.strip()
+                if line.startswith('+---'):
+                    parsing_data = not parsing_data  # Toggle on border lines
+                    continue
+
+                if parsing_data and '|' in line:
+                    parts = line.split('|')
+                    if len(parts) > 2 and agent_color.capitalize() + '_Bot' in parts[1]:
+                        agent_name = parts[1].strip()
+                        try:
+                            score = int(parts[2].strip())
+                            # Parsing the agent number from the agent name
+                            agent_number = agent_name.split('_')[-1]
+                            agent_scores.append((agent_number, score))
+                        except ValueError:
+                            continue  # Skip malformed lines
+
+            if agent_scores:
+                # Sort and pick the top agent by score
+                agent_scores.sort(key=lambda x: x[1], reverse=True)
+                best_agent_number = agent_scores[0][0]
+                best_agent_path = os.path.join(gen_path, f"{agent_color}_agents", f"agent_{best_agent_number}/")
+                return best_agent_path
+
+    print(f"No results file found for any generation that includes a {agent_color} agent.")
+    return None
 
 def creatGroundTruths():
     action_ID  = None
@@ -304,9 +343,9 @@ def main():
         'black': black_pawn
     }
     
-    training = True
+    training = False
     if(training):
-        train(board, pawns, with_ground_truths=True, use_pretrained=False, 
+        train(board, pawns, with_ground_truths=True, use_pretrained=True, 
               observe=False, batch_episodes=1000, batch_length=20, number_of_agents=50, batches_per_generation=2)
     else:
         play(board, pawns, 'black', False)
