@@ -124,8 +124,8 @@ def evolveThroughTournament(agents):
     white_agents = [agent for agent in agents if agent.colour == 'white']
     black_agents = [agent for agent in agents if agent.colour == 'black']
     
-    number_of_children = 4
-    num_survivors_per_colour = max(len(white_agents) // 4, 1)
+    number_of_children = 2
+    num_survivors_per_colour = max(len(white_agents) // number_of_children, 1)
     rounds = math.ceil(math.log2(len(white_agents)))
     
     # Create a tournament
@@ -160,17 +160,20 @@ def evolveThroughTournament(agents):
             white_child.flags = white_survivor.flags
             white_child.mutate_flags()
             white_child.store_flags()
-            white_child.save_model()
+            white_child.save_model(white_child.trained_model_path)
             children.append(white_child)
             
             # Mutate and save the black child
             black_child.flags = black_survivor.flags
             black_child.mutate_flags()
             black_child.store_flags()
-            black_child.save_model()
+            black_child.save_model(black_child.trained_model_path)
             children.append(black_child)
     # replace the agents with the children
     agents[:] = children
+
+    # train the agents with groundtruths
+    trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
     return agents
             
 
@@ -189,7 +192,7 @@ def updateBoardAndPawns(board, pawns):
     return board, pawns
 
 def play(board, pawns, colour, human=False, agent=None):
-    agent_path = find_best_agent('src/trained_models/DQNagents', colour)
+    agent_path = find_best_agent('src/trained_models/DQNagents', colour)    
     if not agent_path:
         print(f"No valid agent path found for {colour}. Exiting function.")
         return
@@ -343,12 +346,12 @@ def main():
         'black': black_pawn
     }
     
-    training = False
+    training = True
     if(training):
         train(board, pawns, with_ground_truths=True, use_pretrained=True, 
-              observe=False, batch_episodes=1000, batch_length=20, number_of_agents=50, batches_per_generation=2)
+              observe=False, batch_episodes=1000, batch_length=50, number_of_agents=100, batches_per_generation=2)
     else:
-        play(board, pawns, 'black', False)
+        play(board, pawns, 'white', False)
     # while True:
     #     creatGroundTruths()
 if __name__ == '__main__':
