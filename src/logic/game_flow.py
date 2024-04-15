@@ -1,6 +1,7 @@
 from models.train import step
 from models.board_to_state import BoardToStateConverter
 import numpy as np
+import pdb
 
 def playGame(board, white_pawn, black_pawn, human=True, agent=None):
     i = 0
@@ -50,7 +51,7 @@ def playGame(board, white_pawn, black_pawn, human=True, agent=None):
             print(board.printBoard())
             print(f"Round {round}")
             print("White's turn" if i % 2 == 0 else "Black's turn")
-            if(hasattr(pawns, 'decideMoveHuman')):
+            if(hasattr(pawn, 'decideMoveHuman')):
                 print(pawn, "\n")
             else:
                 print(pawn.name)
