@@ -197,7 +197,7 @@ class Model:
                     'a_star_distance_opponent', 'distance_from_nearest_edge', 'distance_from_nearest_wall',
                     'average_distance_from_walls', 'average_oppononent_distance_from_walls', 'average_distance_between_walls',
                     'furthest_distance_between_walls', 'closest_distance_between_walls', 'enemy_wall_adjacency',
-                    'self_wall_adjacency', 'distance_from_opponent'
+                    'self_wall_adjacency', 'distance_from_opponent', 'own_wall_amount', 'opponent_wall_amount',
                 ]  #flags represent the names of the functions to be used as rewards
 
             # Initialize all flags to False initially
@@ -345,17 +345,6 @@ class Model:
         current_position = state['pieces'][self.colour]
         #distance from the nearest edge
         return min(abs(0 - current_position[1]), abs(8 - current_position[1]))
-
-    def wall_difference_penalty(self, _):
-        #determin colour being represented
-        difference = 0
-        if(self.colour == 'white'):
-            #return the difference in walls between the two players or 0 if the player has more walls than the opponent
-            difference =  min(self.pawns['white'].walls - self.pawns['black'].walls, 0)
-        else:
-            #same as above but for black
-            difference =  min(self.pawns['black'].walls - self.pawns['white'].walls, 0)
-        return difference
     
     def changed_memory_reward(self, state):
         #add position to memory
@@ -382,7 +371,24 @@ class Model:
         changed_memory_reward += counter/max(len(unique_positions), 1)*10
         
         return changed_memory_reward
+
+    def wall_difference_penalty(self, _):
+        #determin colour being represented
+        difference = 0
+        if(self.colour == 'white'):
+            #return the difference in walls between the two players or 0 if the player has more walls than the opponent
+            difference =  min(self.pawns['white'].walls - self.pawns['black'].walls, 0)
+        else:
+            #same as above but for black
+            difference =  min(self.pawns['black'].walls - self.pawns['white'].walls, 0)
+        return difference
     
+    def own_wall_amount(self, state):
+        return self.pawns[self.colour].walls
+    
+    def opponent_wall_amount(self, state):
+        return self.pawns['black' if self.colour == 'white' else 'white'].walls
+
     def enemy_wall_adjacency(self, state):
         horizontal_walled_cells = state['walled_cells']['horizontal']
         vertical_walled_cells = state['walled_cells']['vertical']
@@ -467,7 +473,7 @@ class Model:
                 if i != j:
                     closest_distance = min(closest_distance, distance(walled_cell.position, other_walled_cell.position))
         return closest_distance
-
+                    
     def distance_from_opponent(self, state):
         return distance(state['pieces'][self.colour], 
                            state['pieces']['black' if self.colour == 'white' else 'white'])
