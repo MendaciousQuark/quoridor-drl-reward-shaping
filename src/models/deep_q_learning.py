@@ -178,7 +178,7 @@ def create_q_model(state_shape, action_size=len(action_lookup)):
     
     x = inputs
     for _ in range(5):
-        x = layers.Dense(2048, activation='relu')(x)
+        x = layers.Dense(512, activation='relu')(x)
     
     action = layers.Dense(action_size, activation='linear')(x)
     model = tf.keras.Model(inputs=inputs, outputs=action)
