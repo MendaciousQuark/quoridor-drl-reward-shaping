@@ -53,6 +53,8 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                                 next_state, _, next_boards[i], done[i], rewards[i] = multiStep(agent, states[i], next_boards[i], board_state_converter, accumulated_reward=rewards[i], depth=10, gamma=0.95)
                                 next_state = np.reshape(states[i], [1, *agent.state_shape])
                                 states[i] = next_state
+                                #agent colout might be changed in multiStep so force it to be white as it originally was
+                                agent.colour = 'white'
                                 #update the board for black agent
                                 states[i+1] = board_state_converter.copyState(states[i])
                                 next_boards[i+1] = next_boards[i]
@@ -62,6 +64,8 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                                 next_state, _, next_boards[i], done[i], rewards[i] = multiStep(agent, next_state, next_boards[i], board_state_converter, accumulated_reward=rewards[i], depth=10, gamma=0.95)
                                 next_state = np.reshape(next_state, [1, *agent.state_shape])
                                 states[i] = next_state
+                                #agent colout might be changed in multiStep so force it to be black as it originally was
+                                agent.colour = 'black'
                                 #update the board for white agent
                                 states[i-1] = board_state_converter.copyState(states[i])
                                 next_boards[i-1] = next_boards[i]
@@ -110,8 +114,11 @@ def multiStep(agent, next_state, board, board_state_converter, accumulated_rewar
     if depth == 0 or victory(agent.pawns['white']) or victory(agent.pawns['black']):
         return next_state, 0, board.copy(), True, accumulated_reward  # Return the accumulated reward
 
+    agent.colour = 'white' if board.turn % 2 == 0 else 'black'
+    agent.find_legal_moves(board.state)
     action = agent.act(next_state)  # Agent selects action based on the policy
     next_state, immediate_reward, next_board, done = step(board.copy(), action, agent, board_state_converter)
+    next_state = np.reshape(next_state, [1, *agent.state_shape])
 
     if done or victory(agent.pawns['white']) or victory(agent.pawns['black']):
         return next_state, immediate_reward, next_board, done, accumulated_reward + immediate_reward  # Include this step's immediate reward
@@ -125,11 +132,6 @@ def multiStep(agent, next_state, board, board_state_converter, accumulated_rewar
     total_reward = current_accumulated_reward + gamma * future_rewards
 
     return next_state, immediate_reward, next_board, done, total_reward
-
-def possible_moves(agent, state):
-    agent.find_legal_moves(state)
-    return agent.agent_legal_moves
-
     
 def step(next_board, action, agent, board_state_converter, max_moves=100):
     move = action_lookup[action]
