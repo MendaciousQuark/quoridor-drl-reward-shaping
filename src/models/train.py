@@ -50,7 +50,7 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                         if not done[i]:
                             if agent.colour == 'white':
                                 action = agent.act(states[i], verbose)
-                                next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i].copy(), action, agent, board_state_converter, max_moves)
+                                next_state, _, next_boards[i], done[i], rewards[i] = multiStep(agent, states[i], next_boards[i], board_state_converter, accumulated_reward=rewards[i], depth=10, gamma=0.95)
                                 next_state = np.reshape(states[i], [1, *agent.state_shape])
                                 states[i] = next_state
                                 #update the board for black agent
@@ -58,8 +58,8 @@ def trainDQN(agents, episodes, original_board, human=False, observe_from=None, o
                                 next_boards[i+1] = next_boards[i]
                                 done[i+1] = done[i]
                             elif agent.colour == 'black':
-                                action = agent.act(next_state, verbose)
-                                next_state, rewards[i], next_boards[i], done[i] = step(next_boards[i].copy(), action, agent, board_state_converter, max_moves)
+                                action = agent.act(states[i], verbose)
+                                next_state, _, next_boards[i], done[i], rewards[i] = multiStep(agent, next_state, next_boards[i], board_state_converter, accumulated_reward=rewards[i], depth=10, gamma=0.95)
                                 next_state = np.reshape(next_state, [1, *agent.state_shape])
                                 states[i] = next_state
                                 #update the board for white agent
@@ -105,6 +105,31 @@ def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_wal
         pawns['white'].walls = original_numbuer_of_walls_white
         pawns['black'].walls = original_numbuer_of_walls_black
         return board_state_converter.boardToState(board, pawns)
+
+def multiStep(agent, next_state, board, board_state_converter, accumulated_reward=0, depth=10, gamma=0.95):
+    if depth == 0 or victory(agent.pawns['white']) or victory(agent.pawns['black']):
+        return next_state, 0, board.copy(), True, accumulated_reward  # Return the accumulated reward
+
+    action = agent.act(next_state)  # Agent selects action based on the policy
+    next_state, immediate_reward, next_board, done = step(board.copy(), action, agent, board_state_converter)
+
+    if done or victory(agent.pawns['white']) or victory(agent.pawns['black']):
+        return next_state, immediate_reward, next_board, done, accumulated_reward + immediate_reward  # Include this step's immediate reward
+
+    # Update the accumulated reward for this step
+    current_accumulated_reward = accumulated_reward + immediate_reward
+
+    # Recurse to calculate future rewards, NOT modifying gamma
+    _, _, _, _, future_rewards = multiStep(agent, next_state, next_board, board_state_converter, 
+                                           current_accumulated_reward * gamma, depth-1, gamma)
+    total_reward = current_accumulated_reward + gamma * future_rewards
+
+    return next_state, immediate_reward, next_board, done, total_reward
+
+def possible_moves(agent, state):
+    agent.find_legal_moves(state)
+    return agent.agent_legal_moves
+
     
 def step(next_board, action, agent, board_state_converter, max_moves=100):
     move = action_lookup[action]
