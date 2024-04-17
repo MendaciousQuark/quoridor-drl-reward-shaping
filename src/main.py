@@ -19,12 +19,12 @@ def main():
 
 
     #arguments for play mode
-    parser.add_argument('--color', choices=['white', 'black'], default='white', 
+    parser.add_argument('--colour', choices=['white', 'black'], default='white', 
                         help='Color for play mode. Choices are "white" or "black". Default is "white". Note: This argument is only used in play mode.')    
     parser.add_argument('--game-mode', choices=['pve', 'pvp', 'eve'], default='pve', help='Play as a human vs bot. Default is False. Note: This argument is only used in play mode.')
     
     #arguments for ground-truth mode
-    parser.add_argument('--num_ground_truths', type=int, default=1, help='Number of ground truths to create. Default is 1. Note: This argument is only used in ground-truth mode.')
+    parser.add_argument('--num', type=int, default=1, help='Number of ground truths to create. Default is 1. Note: This argument is only used in ground-truth mode.')
     
     args = parser.parse_args()
 
@@ -34,11 +34,12 @@ def main():
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
                args.batches_per_generation, args.number_of_agents)
     elif args.mode == 'play':
-        from game.game import play
-        play(args.color, args.game_mode)
+        from game.game import Game
+        game = Game()
+        game.play(args.colour, args.game_mode)
     elif args.mode == 'ground-truth':
         from utils.create_groundtruth import creatGroundTruth
-        for _ in range(args.num_ground_truths):
+        for _ in range(args.num):
             creatGroundTruth()
 
 if __name__ == '__main__':
