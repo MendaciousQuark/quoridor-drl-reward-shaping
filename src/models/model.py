@@ -262,7 +262,8 @@ class Model:
             if self.flags[key]:
                 #use the value of the key to call the function with the same name (does mean new reward functions need to be added to the flags class)
                 reward += getattr(self, key)(state)
-        return reward
+                
+        return float(format(reward, '.5g'))
 
     def determine_best_paths(self, state):
         black_end = [cell.position for cell in state['board'][8]]
@@ -368,7 +369,7 @@ class Model:
                 for position in self.black_position_memory:
                     if tuple(position) == unique_position:
                         counter += 1
-        changed_memory_reward += counter/max(len(unique_positions), 1)*10
+        changed_memory_reward += counter/max(len(unique_positions), 1)
         
         return changed_memory_reward
 
