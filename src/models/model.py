@@ -3,6 +3,7 @@ from utils import getDirectionIndex, opposingPawnAdjacent, validLocation, locati
 from logic.move_validation import validateMove
 from logic.board_to_graph import boardToGraph
 from logic.a_star import aStar
+from .reward_normalisation import RewardNormalizer  
 from game import Move
 import json
 import os
@@ -12,6 +13,7 @@ import pdb
 class Model:
     def __init__(self, colour, pawns, name='Bot', description='Bot', flags_path='src/trained_models/DQNagents/gen_0/white_agents/agent_0/flags.json'):
         self.name = name
+        self.normalizer = RewardNormalizer()
         #'black' or 'white'
         self.colour = colour
         self.description = description
@@ -256,14 +258,14 @@ class Model:
             mutations_count += 1
 
     def calculate_rewards(self, state):
-        reward = 0
-        #for each flag, if it is active, add the reward from the function to the total reward
+        total_reward = 0
         for key in self.flags.keys():
             if self.flags[key]:
-                #use the value of the key to call the function with the same name (does mean new reward functions need to be added to the flags class)
-                reward += getattr(self, key)(state)
-                
-        return float(format(reward, '.5g'))
+                # Assuming methods named after keys exist and calculate partial rewards
+                component_reward = getattr(self, key)(state)
+                total_reward += self.normalizer.normalize(component_reward)
+
+        return float(format(total_reward, '.5g'))
 
     def determine_best_paths(self, state):
         black_end = [cell.position for cell in state['board'][8]]
