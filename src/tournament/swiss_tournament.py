@@ -83,6 +83,7 @@ class SwissTournament:
         board.updateState()
         board_state_converter = BoardToStateConverter()
         state = board_state_converter.boardToState(board, white_competitor.pawns)
+        
         while board.turn < self.max_turns:
             agent = white_competitor if board.turn % 2 == 0 else black_competitor
             agent.find_legal_moves(board.state)

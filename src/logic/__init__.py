@@ -6,9 +6,6 @@ from .move_validation import validateMove, validateMoveAction, validateJumpActio
 #specifics from node.py
 from .node import Node
 
-#specifics from game_flow.py
-from .game_flow import playGame, victory
-
 #specifics from board_to_graph.py
 from .board_to_graph import boardToGraph, cellToNode
 
