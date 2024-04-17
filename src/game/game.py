@@ -126,7 +126,7 @@ class Game:
         
         board_state_converter = BoardToStateConverter()
         done = False
-        while done:
+        while not done:
             if board.turn % 2 == 0:
                 board, done = self.make_move_agent(board.copy(), white_agent, board_state_converter)
             else:
@@ -135,7 +135,7 @@ class Game:
                 print("White Wins!\n" if board.turn % 2 == 0 else "Black Wins!\n")
                 print(board)
             print(board)
-            time.sleep(2)
+            time.sleep(1)
         
     def make_move_human(self, board, pawn):
         #display the board
