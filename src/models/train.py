@@ -112,26 +112,36 @@ def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_wal
 
 def multiStep(agent, next_state, board, board_state_converter, accumulated_reward=0, depth=10, gamma=0.95):
     if depth == 0 or victory(agent.pawns['white']) or victory(agent.pawns['black']):
-        return next_state, 0, board.copy(), True, accumulated_reward  # Return the accumulated reward
+        # Base case: simply return the current state and the total accumulated reward
+        return next_state, 0, board.copy(), True, accumulated_reward
 
+    # Set agent color based on current turn
     agent.colour = 'white' if board.turn % 2 == 0 else 'black'
+    
+    # Agent finds legal moves and selects an action
     agent.find_legal_moves(board.state)
-    action = agent.act(next_state)  # Agent selects action based on the policy
+    action = agent.act(next_state)
+    
+    # Perform the action to get the new state and rewards
     next_state, immediate_reward, next_board, done = step(board.copy(), action, agent, board_state_converter)
     next_state = np.reshape(next_state, [1, *agent.state_shape])
 
     if done or victory(agent.pawns['white']) or victory(agent.pawns['black']):
-        return next_state, immediate_reward, next_board, done, accumulated_reward + immediate_reward  # Include this step's immediate reward
+        # If game ends, return the state and total rewards including the immediate reward
+        return next_state, immediate_reward, next_board, done, accumulated_reward + immediate_reward
 
-    # Update the accumulated reward for this step
+    # Update accumulated reward
     current_accumulated_reward = accumulated_reward + immediate_reward
 
-    # Recurse to calculate future rewards, NOT modifying gamma
+    # Recursive call without prematurely scaling by gamma
     _, _, _, _, future_rewards = multiStep(agent, next_state, next_board, board_state_converter, 
-                                           current_accumulated_reward * gamma, depth-1, gamma)
-    total_reward = current_accumulated_reward + gamma * future_rewards
+                                           current_accumulated_reward, depth-1, gamma)
+
+    # Calculate total reward using gamma only for future rewards
+    total_reward = accumulated_reward + immediate_reward + gamma * future_rewards
 
     return next_state, immediate_reward, next_board, done, total_reward
+
     
 def step(next_board, action, agent, board_state_converter, max_moves=100):
     move = action_lookup[action]
