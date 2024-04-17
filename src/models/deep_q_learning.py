@@ -77,9 +77,10 @@ class DQNAgent (Model):
                     best_q_value = q_value
         if best_action == None:
             print('\nNo legal moves found. Attempting random action.')
-            pdb.set_trace()
             self.last_action = random.choice(self.action_state)[1]
-            return random.choice(self.action_state)[1]
+            if(self.last_action == None):
+                pdb.set_trace()
+            return self.last_action
         if verbose:
             print('Decided on best action:', best_action)
         self.last_action = best_action
