@@ -2,12 +2,10 @@ import numpy as np
 import random
 from collections import deque
 import tensorflow as tf
-from tensorflow.keras import layers
-from tensorflow.keras.models import load_model
+from tensorflow.keras import layers # type: ignore
+from tensorflow.keras.models import load_model # type: ignore
 from .action_lookup import action_lookup, action_id_to_q_index
 from .model import Model
-from game import Move
-from logic import validateMove
 from pathlib import Path
 import time
 import pdb
