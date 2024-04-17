@@ -38,6 +38,17 @@ def init_training(with_ground_truths = False,
     #train the agents with groundtruth if requested via parameter
     if(with_ground_truths):
         pre_train(agents)
+    
+    #learn only movement actions
+    print(f'\rLearning movement actions\n', end='', flush=True)
+    for agent in agents:
+        agent.pawns['white'].walls = 0
+        agent.pawns['black'].walls = 0
+    trainDQN(agents, batch_length, Board())
+    #reset the walls
+    for agent in agents:
+        agent.pawns['white'].walls = 10
+        agent.pawns['black'].walls = 10
 
     index = 0
     batches_since_evolution = 0
@@ -149,7 +160,6 @@ def prepare_batch(pawns, board, episode):
     else:
         board = Board()
     return board, pawns_copy
-
 
 def updateBoardAndPawns(board, pawns):
     board, number_of_walls = creatRandomBoard()
