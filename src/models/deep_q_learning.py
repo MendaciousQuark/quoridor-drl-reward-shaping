@@ -28,59 +28,45 @@ class DQNAgent (Model):
         
         self.learning_rate = 0.001
         self.model = create_q_model(state_shape, action_size)
-        self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
+        self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate, clipvalue=1.0))
 
     def remember(self, state, action_id, reward, next_state, done):
         self.memory.append((state, action_id, reward, next_state, done))
 
     def act(self, state, verbose=False):
-        if np.random.rand() <= self.epsilon:
-            if(self.action_state == None):
-                pdb.set_trace()
-            # chose a random action but try to move more than placing
-            while True:
-                try:
-                    movement_prob = 0.7 if len(self.action_state_movements) > 0 else 0
-                    if np.random.rand() > 1 - movement_prob:
-                        #choose a random action from the movement actions
-                        random_action_index = random.randint(0, len(self.action_state_movements) - 1)
-                        random_action = self.action_state_movements[random_action_index]
-                    else:
-                        #choose a random action from the placement and movement actions
-                        random_action_index = random.randint(0, len(self.action_state) - 1)
-                        random_action = self.action_state[random_action_index]
-                except Exception as e:
-                    if(len(self.action_state) > 0):
-                        continue
-                    else:
-                        print('No legal moves found. Attempting random action.')
-                        pdb.set_trace()
-                        break
-                if verbose:
-                    print('Random action:', random_action[1])
-                if random_action[1] == None:
-                    pdb.set_trace()
-                else:
-                    break
-            self.last_action = random_action[1]
-            return random_action[1] #return the action id
-        # Predict Q-values for all actions
-        all_q_values = self.model.predict(state)
+        # Check if there are no legal moves
+        if not self.action_state:
+            print("No legal moves available.")
+            pdb.set_trace()  # Debugging state
+            return None  # Appropriate error handling or default action
 
-        # Initialize variables to keep track of the best legal action and its Q-value
+        # Epsilon-greedy policy decision
+        if np.random.rand() <= self.epsilon:
+            # Prefer movement actions if available with a 70% probability
+            actions = self.action_state_movements if np.random.rand() < 0.7 and self.action_state_movements else self.action_state
+            random_action = random.choice(actions)
+            
+            if verbose:
+                print('Random action:', random_action[1])
+            self.last_action = random_action[1]
+            return random_action[1]
+
+        # Predict Q-values for all actions and find the best legal action
+        all_q_values = self.model.predict(state)
         best_action = None
-        best_q_value = -np.inf  # Start with a very low Q-value
+        best_q_value = -np.inf  # Initialize with a very low Q-value
+        
         for action in self.action_state:
-                q_value = self.get_q_value_for_action(all_q_values, action[1])
-                if q_value > best_q_value:
-                    best_action = action[1]
-                    best_q_value = q_value
-        if best_action == None:
-            print('\nNo legal moves found. Attempting random action.')
+            q_value = self.get_q_value_for_action(all_q_values, action[1])
+            if q_value > best_q_value:
+                best_action = action[1]
+                best_q_value = q_value
+
+        if best_action is None:
+            print("\nNo legal moves found. Attempting random action.")
             self.last_action = random.choice(self.action_state)[1]
-            if(self.last_action == None):
-                pdb.set_trace()
-            return self.last_action
+            return self.last_action  # Return a random legal action
+
         if verbose:
             print('Decided on best action:', best_action)
         self.last_action = best_action
@@ -139,8 +125,15 @@ class DQNAgent (Model):
         print(f"Model loaded from {directory_path}")
     
     def get_q_value_for_action(self ,all_q_values, action_id):
-        q_index = action_id_to_q_index[action_id]  # Use the mapping
-        return all_q_values[0][0][0][q_index]
+        try:
+            q_index = action_id_to_q_index[action_id]  # Mapping from action ID to Q-value index
+            return all_q_values[0][0][0][q_index]
+        except KeyError:
+            print(f"Error: Action ID {action_id} not found in index mapping.")
+            return None
+        except IndexError:
+            print(f"Error: Index {q_index} out of bounds for Q-values array.")
+            return None
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
