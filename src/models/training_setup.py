@@ -44,7 +44,7 @@ def init_training(with_ground_truths = False,
     #main training loop
     for i in range(batch_episodes):
         print(f'Batch Episode {i+1}')
-        board, pawns_copy = prepare_batch(pawns, i)
+        board, pawns_copy = prepare_batch(pawns, board, i)
         try:
             #every two episodes shuffle the opponents
             if(batches_since_evolution == batches_per_generation):
@@ -102,21 +102,6 @@ def  train_batch(agents, observe, observe_from, observe_until, batch_length, boa
         trainDQN(agents, batch_length, board, verbose=verbose)
     return index
 
-
-def updateBoardAndPawns(board, pawns):
-    board, number_of_walls = creatRandomBoard()
-    #creat a black pawn and a white pawn
-    pawns['white'] = Pawn('white', *board.pawn_positions['white'])
-    pawns['black'] = Pawn('black', *board.pawn_positions['black'])
-    
-    #randomly assign 'walls used' to the pawns
-    white_walls_used = random.randint(0, number_of_walls)
-    black_walls_used = number_of_walls - white_walls_used
-    pawns['white'].walls = max(10 - white_walls_used, 0)
-    pawns['black'].walls = max(10 - black_walls_used, 0)
-    
-    return board, pawns
-
 def shuffle_opponents(agents):
     white_agents = [agent for agent in agents if agent.colour == 'white']
     black_agents = [agent for agent in agents if agent.colour == 'black']
@@ -153,14 +138,29 @@ def load_pretrained(agents):
             # set exploration rate to 0.5
             agent.epsilon = 0.5
 
-def prepare_batch(pawns, episode):
+def prepare_batch(pawns, board, episode):
+    pawns_copy = {
+        'white': pawns['white'].copy(),
+        'black': pawns['black'].copy()
+    }
     if(episode > 0):
         board, pawns_copy = updateBoardAndPawns(board, pawns_copy)
         board.updateState()
     else:
-        pawns_copy = {
-            'white': pawns['white'].copy(),
-            'black': pawns['black'].copy()
-        }
         board = Board()
     return board, pawns_copy
+
+
+def updateBoardAndPawns(board, pawns):
+    board, number_of_walls = creatRandomBoard()
+    #creat a black pawn and a white pawn
+    pawns['white'] = Pawn('white', *board.pawn_positions['white'])
+    pawns['black'] = Pawn('black', *board.pawn_positions['black'])
+    
+    #randomly assign 'walls used' to the pawns
+    white_walls_used = random.randint(0, number_of_walls)
+    black_walls_used = number_of_walls - white_walls_used
+    pawns['white'].walls = max(10 - white_walls_used, 0)
+    pawns['black'].walls = max(10 - black_walls_used, 0)
+    
+    return board, pawns
