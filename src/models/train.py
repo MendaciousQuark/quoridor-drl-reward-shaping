@@ -112,35 +112,39 @@ def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_wal
 
 def multiStep(agent, next_state, board, board_state_converter, accumulated_reward=0, depth=10, gamma=0.95):
     if depth == 0 or victory(agent.pawns['white']) or victory(agent.pawns['black']):
-        # Base case: simply return the current state and the total accumulated reward
+        # Return the current state and the total accumulated reward
         return next_state, 0, board.copy(), True, accumulated_reward
 
-    # Set agent color based on current turn
+    # Determine agent color based on current turn
     agent.colour = 'white' if board.turn % 2 == 0 else 'black'
     
-    # Agent finds legal moves and selects an action
+    # Find legal moves and select an action
     agent.find_legal_moves(board.state)
     action = agent.act(next_state)
     
-    # Perform the action to get the new state and rewards
+    # Perform the action to get the new state and immediate rewards
     next_state, immediate_reward, next_board, done = step(board.copy(), action, agent, board_state_converter)
     next_state = np.reshape(next_state, [1, *agent.state_shape])
 
+    # If the game ends, or a victory condition is met
     if done or victory(agent.pawns['white']) or victory(agent.pawns['black']):
-        # If game ends, return the state and total rewards including the immediate reward
-        return next_state, immediate_reward, next_board, done, accumulated_reward + immediate_reward
+        final_reward = accumulated_reward + immediate_reward
+        return next_state, immediate_reward, next_board, done, final_reward
 
-    # Update accumulated reward
-    current_accumulated_reward = accumulated_reward + immediate_reward
-
-    # Recursive call without prematurely scaling by gamma
+    # Recursive call to calculate future rewards, note only immediate_reward is added here
     _, _, _, _, future_rewards = multiStep(agent, next_state, next_board, board_state_converter, 
-                                           current_accumulated_reward, depth-1, gamma)
+                                           0, depth-1, gamma)  # Start fresh from zero for recursion
 
-    # Calculate total reward using gamma only for future rewards
-    total_reward = accumulated_reward + immediate_reward + gamma * future_rewards
+    # Apply discount factor gamma to future rewards only and add the immediate reward to accumulated
+    total_reward = immediate_reward + gamma * future_rewards  # Apply discounting correctly
 
-    return next_state, immediate_reward, next_board, done, total_reward
+    # print(f"Depth: {depth}, Immediate: {immediate_reward}, Accumulated: {accumulated_reward}, Future Rewards: {future_rewards}, Total: {total_reward}")
+
+
+    # Return the total accumulated reward so far plus the total from this step
+    return next_state, immediate_reward, next_board, done, accumulated_reward + total_reward
+
+
 
     
 def step(next_board, action, agent, board_state_converter, max_moves=100):
