@@ -5,36 +5,39 @@ from models.train import step
 from models.board_to_state import BoardToStateConverter
 import numpy as np
 import time
-from pathlib import Path
+import pdb
 import os
 
 class Game:
     def __init__(self):
         print("\n\tWelcome to Quoridor!\n")
-        board = Board()
-        pawns = {
-            'white': Pawn('white', *board.pawn_positions['white']),
-            'black': Pawn('black', *board.pawn_positions['black'])
+        self.board = Board()
+        self.pawns = {
+            'white': Pawn('white', *self.board.pawn_positions['white']),
+            'black': Pawn('black', *self.board.pawn_positions['black'])
         }
-        return board, pawns
 
-    def play(self, colour, human=False, agent=None):
-        board, pawns = self.initGameObjects()
-        agent_path = self.find_best_agent('src/trained_models/DQNagents', colour)    
-        if not agent_path:
-            print(f"No valid agent path found for {colour}. Exiting function.")
+    def play(self, colour, mode):
+        board = self.board
+        pawns = self.pawns
+        white_agent_path = self.find_best_agent('src/trained_models/DQNagents', 'white')
+        black_agent_path = self.find_best_agent('src/trained_models/DQNagents', 'black')    
+        if not white_agent_path:
+            print(f"No valid agent path found for {'white'}. Exiting function.")
+            return
+        if not black_agent_path:
+            print(f"No valid agent path found for {'black'}. Exiting function.")
             return
         
-        agent = DQNAgent((9, 9, 11), 330, colour, pawns, epsilon=0, trained_model_path=agent_path)
-        agent.load_model(agent.trained_model_path)
-        agent.find_legal_moves(board.state)
-        self.playGame(board, pawns['white'], pawns['black'], human, agent)
+        white_agent = DQNAgent((9, 9, 11), 330, 'white', pawns, epsilon=0, trained_model_path=white_agent_path)
+        white_agent.load_model(white_agent.trained_model_path)
+        white_agent.find_legal_moves(board.state)
+
+        black_agent = DQNAgent((9, 9, 11), 330, 'black', pawns, epsilon=0, trained_model_path=black_agent_path)
+        black_agent.load_model(black_agent.trained_model_path)
+        black_agent.find_legal_moves(board.state)
         
-        # After playing, check and create the directory if needed, then save the model
-        directory_path = Path(agent.trained_model_path)
-        directory_path.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
-        print(f"Using directory '{directory_path}' for saving the model.")
-        agent.save_model(agent.trained_model_path)
+        self.playGame(board, pawns['white'].copy(), pawns['black'].copy(), mode, white_agent, black_agent, colour)
 
     def playGame(self, board, white_pawn, black_pawn, mode, white_agent=None, black_agent=None, colour = 'white'):
         pawns = {
@@ -61,7 +64,7 @@ class Game:
                 print(pawn, "\n")
 
                 #make a human move
-                self.make_move_human(board, pawns, board.turn)
+                self.make_move_human(board, pawn, board.turn)
 
                 #if the move lead to a victory exit
                 if(self.victory(pawn)):
@@ -76,6 +79,7 @@ class Game:
 
         # Determine the human player's pawn based on the agent's colour
         human_pawn = pawns['black'] if agent.colour == 'white' else pawns['white']
+        # pdb.set_trace()
         while True:
             # Determine whose turn it is and assign the appropriate pawn
             if(board.turn % 2 == 0):
@@ -89,9 +93,9 @@ class Game:
             print("White's turn" if board.turn % 2 == 0 else "Black's turn")
             
             # Check if it's the human player's turn
-            if(hasattr(pawn, 'decidMoveHuman')):
+            if(hasattr(pawn, 'decideMoveHuman')):
                 # If it is, let the human make a move
-                self.make_move_human(board, pawns, board.turn)
+                self.make_move_human(board, pawn)
             else:
                 # If it's the agent's turn, find the legal moves and make a move
                 agent.find_legal_moves(board.state)
@@ -105,13 +109,12 @@ class Game:
                 break
             
             # Check if the human player has won
+            # pdb.set_trace()
             if(self.victory(human_pawn)):
                 # If the human player has won, print the winning message and the final state of the board
                 print(f"Congrats, You Won!")
                 print(board)
                 break
-        # After the game is over, use the game as training data for the agent
-        self.replayGame(agent)
 
     def agent_vs_agent(self, board, white_agent, black_agent):
         
@@ -133,13 +136,8 @@ class Game:
                 print(board)
             print(board)
             time.sleep(2)
-        # use played game as training
-        self.replayGame(white_agent)
-        self.replayGame(black_agent)
         
-    def make_move_human(self, board, pawns):
-        #determine the pawn to move
-        pawn = pawns['white'] if board.turn % 2 == 0 else pawns['black']
+    def make_move_human(self, board, pawn):
         #display the board
         print(board.printBoard())
         
@@ -162,7 +160,7 @@ class Game:
             pawn.walls -= 1
 
         #update the pawn's position
-        pawn.position = board.pawn_positions['white' if board.turn % 2 == 0 else 'black']
+        pawn.position = board.pawn_positions[pawn.colour]
 
     def make_move_agent(self, board, agent, board_state_converter):
         state = board_state_converter.boardToState(board, agent.pawns)
@@ -176,7 +174,7 @@ class Game:
         if (90000 <= action <= 98811):
             agent.pawns[agent.colour].walls -= 1 
         
-        return board.coopy(), done
+        return board.copy(), done
 
     def replayGame(self, agent):
         agent.batach_size = len(agent.memory)
