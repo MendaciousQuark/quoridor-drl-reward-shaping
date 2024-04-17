@@ -2,7 +2,7 @@ from game.board import Board
 from game.pawn import Pawn
 import ast
 
-def loadBoard(file_path = 'src\models\ground_truth\ground_truth_0.txt'):
+def loadBoard(file_path):
     '''
     now need to reverse the saving process
     so the first 9 rows are the board
