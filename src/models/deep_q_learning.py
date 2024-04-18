@@ -48,29 +48,41 @@ class DQNAgent (Model):
             
             if verbose:
                 print('Random action:', random_action[1])
-            self.last_action = random_action[1]
+            self.random_action = random_action[1]
             return random_action[1]
 
-        # Predict Q-values for all actions and find the best legal action
-        all_q_values = self.model.predict(state)
-        best_action = None
-        best_q_value = -np.inf  # Initialize with a very low Q-value
-        
-        for action in self.action_state:
-            q_value = self.get_q_value_for_action(all_q_values, action[1])
-            if q_value > best_q_value:
-                best_action = action[1]
-                best_q_value = q_value
+        try:
+            # Predict Q-values for all potential actions
+            all_q_values = self.model.predict(state)  # Assume shape is (1, num_possible_actions)
+            q_values = all_q_values.flatten()  # Flatten the array for easier indexing
+            
+            # Prepare a list of valid action indices from action_state and their corresponding Q-indices
+            valid_actions = [(act[1], action_id_to_q_index[act[1]]) for act in self.action_state if act[1] in action_id_to_q_index]
+            action_ids, indices = zip(*valid_actions)  # Unzip into separate lists
 
-        if best_action is None:
-            print("\nNo legal moves found. Attempting random action.")
-            self.last_action = random.choice(self.action_state)[1]
-            return self.last_action  # Return a random legal action
+            # Fetch the Q-values for the indexed actions
+            relevant_q_values = q_values[list(indices)]
 
-        if verbose:
-            print('Decided on best action:', best_action)
-        self.last_action = best_action
-        return best_action
+            # Find the index of the best Q-value in the filtered list
+            best_index = np.argmax(relevant_q_values)
+            best_action_id = action_ids[best_index]  # Correctly map back to the action ID
+
+            if best_action_id is None:
+                print("\nNo legal moves found. Attempting random action.")
+                self.random_action = random.choice(self.action_state)[1]
+                return self.random_action  # Return a random legal action
+
+            if verbose:
+                print(f"Decided on best action: {best_action_id} with Q-value: {relevant_q_values[best_index]}")
+
+            return best_action_id
+
+        except KeyError as e:
+            print(f"Error: Action ID mapping issue - {str(e)}")
+            return None
+        except IndexError as e:
+            print(f"Error: Index out of bounds - {str(e)}")
+            return None
 
     def replay(self, batch_size):
         start_time = time.time()  # Start tracking time
