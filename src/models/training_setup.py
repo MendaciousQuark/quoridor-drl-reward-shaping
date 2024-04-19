@@ -9,7 +9,7 @@ import random
 import pdb
 
 def init_training(with_ground_truths = False, 
-          use_pretrained = False, slow = False, verbose = False, 
+          use_pretrained = False, learn_movement = False, slow = False, verbose = False, 
           observe = False, observe_from = [0, 11, 21, 31, 41, 51, 61, 71, 81, 91], 
           observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95], batch_episodes = 1000, batch_length = 25,
           batches_per_generation = 2, number_of_agents = 10):
@@ -40,15 +40,16 @@ def init_training(with_ground_truths = False,
         pre_train(agents)
     
     #learn only movement actions
-    print(f'\rLearning movement actions\n', end='', flush=True)
-    for agent in agents:
-        agent.pawns['white'].walls = 0
-        agent.pawns['black'].walls = 0
-    trainDQN(agents, batch_length, Board())
-    #reset the walls
-    for agent in agents:
-        agent.pawns['white'].walls = 10
-        agent.pawns['black'].walls = 10
+    if(learn_movement):
+        print(f'\rLearning movement actions\n', end='', flush=True)
+        for agent in agents:
+            agent.pawns['white'].walls = 0
+            agent.pawns['black'].walls = 0
+        trainDQN(agents, batch_length, Board())
+        #reset the walls
+        for agent in agents:
+            agent.pawns['white'].walls = 10
+            agent.pawns['black'].walls = 10
 
     index = 0
     batches_since_evolution = 0
@@ -64,19 +65,21 @@ def init_training(with_ground_truths = False,
             if(i % 2 == 0):
                 agents = shuffle_opponents(agents) #opponents are each pair of agents (i.e. 0 and 1, 2 and 3, etc.)
         
-            index = train_batch(agents, observe, observe_from, observe_until, 
-                                batch_length, board, verbose, slow, index, i)
+            
         except Exception as e:
             print(e)
-        finally:
-            for agent in agents:
-                try:
-                    agent.save_model(agent.trained_model_path)
-                    agent.store_flags(agent.trained_model_path)
-                except Exception as e:  
-                    print(e)
-            use_pretrained = True
-            batches_since_evolution += 1
+
+        index = train_batch(agents, observe, observe_from, observe_until, 
+                                batch_length, board, verbose, slow, index, i)
+        # finally:
+        #     for agent in agents:
+        #         try:
+        #             agent.save_model(agent.trained_model_path)
+        #             agent.store_flags(agent.trained_model_path)
+        #         except Exception as e:  
+        #             print(e)
+        #     use_pretrained = True
+        #     batches_since_evolution += 1
 
 def init_agents(pawns_copy, agents, number_of_agents):
     #if n is not even add 1 until even
@@ -123,7 +126,6 @@ def shuffle_opponents(agents):
     paired_agents = []
     for white_agent, black_agent in zip(white_agents, black_agents):
         paired_agents.extend([white_agent, black_agent])
-    
     return paired_agents
 
 def pre_train(agents):
