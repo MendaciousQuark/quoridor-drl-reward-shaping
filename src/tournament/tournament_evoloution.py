@@ -2,7 +2,7 @@
 from models import DQNAgent, Model
 from tournament.swiss_tournament import SwissTournament
 from utils.utils import get_next_directory_number
-from models.train import trainWithGroundTruths
+from models.train_ground_truths import trainWithGroundTruths
 import math
 import os
 
@@ -13,7 +13,7 @@ def evolveThroughTournament(agents):
     
     number_of_children = 2
     num_survivors_per_colour = max(len(white_agents) // number_of_children, 1)
-    rounds = math.ceil(math.log2(len(white_agents)))
+    rounds = max(math.ceil(math.log2(len(white_agents))), 1)
     
     # Create a tournament
     tournament = SwissTournament(white_agents, black_agents, max_turns=100)
