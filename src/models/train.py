@@ -12,229 +12,296 @@ import re
 import pdb
 import random
 
-def trainDQN(agents, episodes, original_board, human=False, observe_from=None, observe_until=None, verbose=False):
-        original_numbuer_of_walls_white = [agent.pawns['white'].walls for _, agent in enumerate(agents)]
-        original_numbuer_of_walls_black = [agent.pawns['black'].walls for _, agent in enumerate(agents)]
-        replay_queue = [[] for _ in range(len(agents))]
-        board_state_converter = BoardToStateConverter()
-        states = [None for _ in range(len(agents))]
-        next_boards = [original_board.copy() for _ in range(len(agents))]
-        rewards = [0 for _ in range(len(agents))]
-        done = [False for _ in range(len(agents))]
-        remembered = [False for _ in range(len(agents))]
-        max_moves = 102
-        for e in range(episodes):
-            start_time = time.time()  # Start tracking time
-            for i, agent in enumerate(agents):
-                agent.white_position_memory = []
-                agent.black_position_memory = []
-                agent.rewards_memory = []
-                states[i] = reset(original_board, agent.pawns, original_numbuer_of_walls_white[i], original_numbuer_of_walls_black[i], board_state_converter)
-                states[i] = np.reshape(states[i], [1, *agent.state_shape])
-                agent.find_legal_moves(original_board.state)
-                rewards[i] = 0
-                next_boards[i] = original_board.copy()
-                done[i] = False
-            while True:
-                #print(f'\rEpisode {e+1}/{episodes}, turn {next_boards[0].turn}', end='', flush=True)
-                #every two agents play on one board
-                if(len(agents) > 1):
-                    for i, agent in enumerate(agents):
-                        #find legal moves:
-                        agent.find_legal_moves(next_boards[i].state)
+def trainDQN(agents, episodes, original_board, human=False, observe_from=0, observe_until=1, verbose=False, slow=False):
+    num_agents = len(agents)
+    original_walls_white = np.array([agent.pawns['white'].walls for agent in agents])
+    original_walls_black = np.array([agent.pawns['black'].walls for agent in agents])
+    replay_queue = [[] for _ in range(num_agents)]
+    board_state_converter = BoardToStateConverter()
+    
+    # Initialize states, next_boards, rewards, done using list comprehensions or numpy arrays
+    states = [None] * num_agents
+    next_boards = [original_board.copy() for _ in range(num_agents)]
+    rewards = np.zeros(num_agents, dtype=np.float32)
+    done = np.full(num_agents, False, dtype=bool)
+    max_moves = 102
 
-                        #ensure pawns for agent are the same as the pawns on the board
-                        agent.pawns['white'].position = next_boards[i].pawn_positions['white']
-                        agent.pawns['black'].position = next_boards[i].pawn_positions['black']
+    for e in range(episodes):
+        start_time = time.time()  # Start tracking time
+        
+        # Reset memories and states at the start of each episode
+        for i, agent in enumerate(agents):
+            agent.white_position_memory = []
+            agent.black_position_memory = []
+            agent.rewards_memory = []
 
-                        if not done[i]:
-                            if agent.colour == 'white':
-                                action = agent.act(states[i], verbose)
-                                next_state, _, next_boards[i], done[i], rewards[i] = multiStep(agent, states[i], next_boards[i], board_state_converter, accumulated_reward=rewards[i], depth=10, gamma=0.95)
-                                next_state = np.reshape(states[i], [1, *agent.state_shape])
-                                states[i] = next_state
-                                #agent colout might be changed in multiStep so force it to be white as it originally was
-                                agent.colour = 'white'
-                                #update the board for black agent
-                                states[i+1] = board_state_converter.copyState(states[i])
-                                next_boards[i+1] = next_boards[i]
-                                done[i+1] = done[i]
-                            elif agent.colour == 'black':
-                                action = agent.act(states[i], verbose)
-                                next_state, _, next_boards[i], done[i], rewards[i] = multiStep(agent, next_state, next_boards[i], board_state_converter, accumulated_reward=rewards[i], depth=10, gamma=0.95)
-                                next_state = np.reshape(next_state, [1, *agent.state_shape])
-                                states[i] = next_state
-                                #agent colout might be changed in multiStep so force it to be black as it originally was
-                                agent.colour = 'black'
-                                #update the board for white agent
-                                states[i-1] = board_state_converter.copyState(states[i])
-                                next_boards[i-1] = next_boards[i]
-                                done[i-1] = done[i]
-                            #remember the state
-                            replay_queue[i].append((states[i], action, rewards[i], next_state, done[i]))
-                if(human):
-                    if(observe_from is not None and observe_until is not None and observe_from <= e <= observe_until):
-                        print(next_boards[0])
-                        print('reward:', rewards[0])
-                        print('turn:', next_boards[0].turn)
-                        time.sleep(1)
-                    else:
-                        print(next_boards[0])
-                        print('reward:', rewards[0])
-                        print('turn:', next_boards[0].turn)
+        next_boards = [original_board.copy() for _ in range(num_agents)]
+        states = batch_reset(next_boards, agents, original_walls_white, original_walls_black, board_state_converter)
+        remembered = [False] * num_agents
+        done = np.full(num_agents, False, dtype=bool)
+        rewards = np.zeros(num_agents, dtype=np.float32)
+        active_index = 0
+        while not all(done):
+            active_agents = [(agent, index) for index, agent in enumerate(agents) if agent.colour == ('white' if active_index % 2 == 0 else 'black') and not done[index]]
+            if not active_agents:
+                break
+            print(f'\nActive agents: {len(active_agents)}', end='', flush=True)
+            active_agent_list, active_indicies = zip(*active_agents) if active_agents else ([], [])
+            active_states = [states[index] for index in active_indicies]
+            active_boards = [next_boards[index] for index in active_indicies]
+            for i, agent in enumerate(active_agent_list):
+                try:
+                    agent.find_legal_moves(active_boards[i].state)
+                except Exception as e:
+                    pdb.set_trace()
+                    print(f'Error in find_legal_moves: {e}')
 
-                # Calculate and print elapsed time
-                # Calculate and print elapsed time
-                end_time = time.time()  # Stop tracking time
-                elapsed_time = end_time - start_time  # Calculate elapsed time in seconds
-                minutes, seconds = divmod(elapsed_time, 60)  # Convert elapsed time to minutes and seconds
-                print(f'\rElapsed time: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
+            actions = [agent.act(state, verbose) for agent, state in zip(active_agent_list, active_states)]
+            new_states, new_rewards, new_boards, new_dones = multiAgentMultiStep(active_agent_list, active_boards, board_state_converter, max_moves=max_moves)
 
-                if agentsDone(agents, next_boards, done, rewards, replay_queue, remembered, max_moves, e, episodes):
-                    print(f'\n Time taken for episode {e+1}/{episodes}: {int(minutes)} minutes {int(seconds)} seconds')
-                    print(f'\nEpisode {e+1}/{episodes}')
-                    break
+            for j, (agent_index, new_state, reward, new_board, is_done) in enumerate(zip(active_indicies, new_states, new_rewards, new_boards, new_dones)):
+                opposite_index = agent_index + 1 if agent_index % 2 == 0 else agent_index - 1  # Assumes agents are paired consecutively
+                states[agent_index] = np.reshape(new_state, [1, *agents[agent_index].state_shape])
+                next_boards[agent_index] = new_board
+                next_boards[opposite_index] = new_board  # Update the paired agent's board as well
+                rewards[agent_index] = reward
+                done[agent_index] = is_done
+                done[opposite_index] = is_done  # Synchronize done status with paired agent
+                if not remembered[agent_index]:
+                    remembered[agent_index] = True
+                    replay_queue[agent_index].append((states[agent_index], actions[j], rewards[agent_index], new_state, is_done))
+                #reset agent colours to the right colour
+                agents[agent_index].colour = 'white' if agent_index % 2 == 0 else 'black'
+            active_index += 1  # Ensure this index is correctly initialized and incremented
 
-            # Train with replay
-            print('Training with replay...')
-            for i, agent in enumerate(agents):
-                if len(agent.memory) > agent.batch_size:
-                    print(f'\rAgent {i} replaying...', end='', flush=True)
-                    agent.replay(agent.batch_size)
-            print('\nDone training with replay')
+            if human and observe_from <= e <= observe_until:
+                #show the board between agents 0 an 1
+                print(next_boards[0])
+                if(slow):
+                    time.sleep(1)
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        minutes, seconds = divmod(elapsed_time, 60)
+        print(f'\rEpisode {e+1}/{episodes} - Elapsed time: {int(minutes)} minutes {int(seconds)} seconds')
+
+        print('Training with replay...')
+        for index, agent in enumerate(agents):
+            if len(replay_queue[index]) > agent.batch_size:
+                agent.replay(replay_queue[index])
+                replay_queue[index] = []  # Clear the queue after training
+        print('Done training with replay.\n')
+
+    print('Training complete.')
+
                     
-def reset(board, pawns, original_numbuer_of_walls_white, original_numbuer_of_walls_black, board_state_converter):
-        pawns['white'].position = board.pawn_positions['white']
-        pawns['black'].position = board.pawn_positions['black']
-        pawns['white'].walls = original_numbuer_of_walls_white
-        pawns['black'].walls = original_numbuer_of_walls_black
-        return board_state_converter.boardToState(board, pawns)
+def batch_reset(boards, agents, original_walls_white, original_walls_black, board_state_converter):
+        states = []
+        for board, agent, walls_white, walls_black in zip(boards, agents, original_walls_white, original_walls_black):
+            agent.pawns['white'].position = board.pawn_positions['white']
+            agent.pawns['black'].position = board.pawn_positions['black']
+            agent.pawns['white'].walls = walls_white
+            agent.pawns['black'].walls = walls_black
+            state = board_state_converter.boardToState(board, agent.pawns)
+            states.append(state)
+        return [state.reshape(1, *agents[0].state_shape) for state in states]
 
-def multiStep(agent, next_state, board, board_state_converter, accumulated_reward=0, depth=10, gamma=0.95):
-    if depth == 0 or victory(agent.pawns['white']) or victory(agent.pawns['black']):
-        # Return the current state and the total accumulated reward
-        return next_state, 0, board.copy(), True, accumulated_reward
 
-    # Determine agent color based on current turn
-    agent.colour = 'white' if board.turn % 2 == 0 else 'black'
+def multiAgentMultiStep(agents, boards, board_state_converter, max_moves=100, depth=10, gamma=0.95):
+    # Initialize rewards structure: Rows for agents, Columns for depth levels
+    accumulated_rewards = np.zeros((len(agents), depth + 1))
     
-    # Find legal moves and select an action
-    agent.find_legal_moves(board.state)
-    action = agent.act(next_state)
+    # Initial states and done flags
+    states = [board_state_converter.boardToState(board, agent.pawns) for board, agent in zip(boards, agents)]
+    states = [state.reshape(1, *agent.state_shape) for state, agent in zip(states, agents)]  # Proper reshaping
+    dones = [False] * len(agents)
+
+    # Containers for states, boards, and dones after the first move
+    first_step_states = []
+    first_step_boards = []
+    first_step_dones = []
+
+    # Process each depth level
+    for d in range(depth):
+        if all(dones):  # Early exit if all agents are done
+            break
+        
+        # Get actions for only active agents
+        active_indices = [index for index, done in enumerate(dones) if not done]
+        active_agents = [agents[index] for index in active_indices]
+        active_states = [states[index] for index in active_indices]
+        active_boards = [boards[index] for index in active_indices]
+
+        actions = [agent.act(state) for agent, state in zip(active_agents, active_states)]
+        next_states, rewards, next_boards, new_dones = multiAgentStep(active_boards, actions, active_agents, board_state_converter, max_moves)
+        
+        # Save first step results separately
+        if d == 0:
+            first_step_boards = [board.copy() for board in next_boards]
+            first_step_states = [board_state_converter.copyState(state) for state in next_states]
+            first_step_dones = [True if done else False for done in new_dones]
+
+        # Update global lists
+        for index, (ns, nb, r, nd) in zip(active_indices, zip(next_states, next_boards, rewards, new_dones)):
+            states[index] = ns.reshape(1, *agents[index].state_shape)
+            boards[index] = nb
+            if not dones[index]:  # Update rewards and dones if not done previously
+                accumulated_rewards[index, d + 1] = accumulated_rewards[index, d] + r * (gamma ** d)
+                dones[index] = nd or dones[index]
+
+        # Flip colours and find legal moves for the next round
+        for index in active_indices:
+            agents[index].colour = 'white' if agents[index].colour == 'black' else 'black'
+            agents[index].find_legal_moves(boards[index].state)
+            #update the pawn positions for each agent
+            agents[index].pawns['white'].position = boards[index].pawn_positions['white']
+            agents[index].pawns['black'].position = boards[index].pawn_positions['black']
+
+    # Final rewards considering depth and gamma
+    final_rewards = accumulated_rewards[:, -1]  # Take the last column for final rewards
+    return first_step_states, final_rewards, first_step_boards, first_step_dones
+
+def multiAgentStep(next_boards, actions, agents, board_state_converter, max_moves=100):
+    # Process actions into moves
+    moves = vectorized_move_processing(actions, agents, next_boards)
     
-    # Perform the action to get the new state and immediate rewards
-    next_state, immediate_reward, next_board, done = step(board.copy(), action, agent, board_state_converter)
-    next_state = np.reshape(next_state, [1, *agent.state_shape])
+    # Apply moves and get updated states, rewards, and game completion status
+    next_boards, rewards, dones = apply_moves(agents, moves, next_boards, max_moves)
+    
+    # Convert the board states to a format suitable for neural network processing or further game logic
+    states = [board_state_converter.boardToState(board, agent.pawns) for board, agent in zip(next_boards, agents)]
+    for i, agent in enumerate(agents):
+        next_board = next_boards[i]
+        next_board.updateState()
+        agent.pawns['white'].position = next_board.pawn_positions['white']
+        agent.pawns['black'].position = next_board.pawn_positions['black']
+    return states, rewards, next_boards, dones
 
-    # If the game ends, or a victory condition is met
-    if done or victory(agent.pawns['white']) or victory(agent.pawns['black']):
-        final_reward = accumulated_reward + immediate_reward
-        return next_state, immediate_reward, next_board, done, final_reward
+def apply_moves(agents, moves, boards, max_moves):
+    # Assume boards and moves are lists of board states and Move objects respectively
+    for i, (agent, move, board) in enumerate(zip(agents, moves, boards)):
+        # Apply each move to the corresponding board
+        board.makeMove(move, board, move.colour)
 
-    # Recursive call to calculate future rewards, note only immediate_reward is added here
-    _, _, _, _, future_rewards = multiStep(agent, next_state, next_board, board_state_converter, 
-                                           0, depth-1, gamma)  # Start fresh from zero for recursion
+        # Update pawn positions based on the new board state
+        agent.pawns[move.colour].position = board.pawn_positions[move.colour]
+        agent.pawns['white'].position = board.pawn_positions['white']
+        agent.pawns['black'].position = board.pawn_positions['black']
 
-    # Apply discount factor gamma to future rewards only and add the immediate reward to accumulated
-    total_reward = immediate_reward + gamma * future_rewards  # Apply discounting correctly
+        # Update the board state after all moves are applied
+        board.updateState()
 
-    # print(f"Depth: {depth}, Immediate: {immediate_reward}, Accumulated: {accumulated_reward}, Future Rewards: {future_rewards}, Total: {total_reward}")
+    # Calculate rewards and check game completion status in a batch/vectorized manner if possible
+    rewards = np.array([agent.calculate_rewards(board.state) for agent, board in zip(agents, boards)])
+    dones = np.array([check_victory(agent, board, max_moves) for agent, board in zip(agents, boards)])
 
+    return boards, rewards, dones
 
-    # Return the total accumulated reward so far plus the total from this step
-    return next_state, immediate_reward, next_board, done, accumulated_reward + total_reward
+def check_victory(agent, board, max_moves):
+    colour = agent.colour
+    passive_colour = 'black' if colour == 'white' else 'white'
+    is_victory = victory(agent.pawns[colour]) or victory(agent.pawns[passive_colour])
+    is_max_moves_exceeded = (board.turn / 2 > max_moves)
+    return is_victory or is_max_moves_exceeded
 
+def vectorized_move_processing(actions, agents, boards):
+    actions = np.array(actions)
+    place_mask = (actions >= 90000) & (actions <= 98811)  # Mask for place actions
+    jump_mask = (actions >= 4) & (actions <= 6)          # Mask for jump actions
+    normal_move_mask = (actions >= 0) & (actions <= 3)   # Mask for normal movement actions
 
+    moves = np.empty(actions.shape[0], dtype=object)
 
+    # Process place moves
+    if np.any(place_mask):
+        indices = np.where(place_mask)[0]
+        for index in indices:
+            action = actions[index]
+            agent = agents[index]
+            board = boards[index]
+            move_details = action_lookup[action]
+            colour, start, orientation = move_details[0], move_details[1], move_details[2]
+            agent.pawns[colour].walls -= 1
+            moves[index] = Move(colour, start, None, 'place', None, None, orientation)
+
+    # Process normal moves
+    if np.any(normal_move_mask):
+        direction_map = {0: ('up', UP), 1: ('down', DOWN), 2: ('left', LEFT), 3: ('right', RIGHT)}
+        indices = np.where(normal_move_mask)[0]
+        for index in indices:
+            agent = agents[index]
+            board = boards[index]
+            colour = agent.colour
+            start = board.pawn_positions[colour]
+            move_code = actions[index]
+            direction = direction_map.get(move_code, ('up', UP))  # Default to 'up' if not found
+            end = getDirectionIndex(start, direction[1])
+            try:
+                start_formatted = moveNumberToLetter(start[1]) + str(9 - start[0])
+                end_formatted = moveNumberToLetter(end[1]) + str(9 - end[0])
+                moves[index] = Move(colour, start_formatted, end_formatted, 'move', direction[0], None, None)
+            except Exception as e:
+                pdb.set_trace()
+                print(f'Error in move processing: {e}')
+    # Process jump moves
+    if np.any(jump_mask):
+        indices = np.where(jump_mask)[0]
+        for index in indices:
+            agent = agents[index]
+            board = boards[index]
+            start = board.pawn_positions[colour]
+            jump_information = action_lookup[actions[index]]  # Decode jump information
+            jump_direction, end = determine_jump_direction_and_end(jump_information, colour, start, board)
+            try:
+                start_formatted = moveNumberToLetter(start[1]) + str(9 - start[0])
+                end_formatted = moveNumberToLetter(end[1]) + str(9 - end[0])
+                moves[index] = Move(colour, start_formatted, end_formatted, 'jump', None, jump_direction, None)
+            except Exception as e:
+                pdb.set_trace()
+                print(f'Error in jump move processing: {e}')
+
+    return moves
+
+def determine_jump_direction_and_end(jump_information, colour, start, board):
+    adjacent_pawn = opposingPawnAdjacent(colour, board.board, board.board[start[0]][start[1]])
+    adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], board.board[start[0]][start[1]])
+    if(jump_information == 'jump left'):
+        step_towards_opponet = getDirectionIndex(start, adjacent_pawn_direction)
+        #left can me up and down too if the pawn is to the left or right of start
+        if(adjacent_pawn_direction == LEFT):
+            end = getDirectionIndex(step_towards_opponet, DOWN)
+        elif(adjacent_pawn_direction == RIGHT):
+            end = getDirectionIndex(step_towards_opponet, UP)
+        #if the pawn is above or below the start then left is left
+        else:
+            end = getDirectionIndex(step_towards_opponet, LEFT)
+        jump_direction = 'left'
+    elif(jump_information == 'jump right'):
+        step_towards_opponet = getDirectionIndex(start, adjacent_pawn_direction)
+        #right can me up and down too if the pawn is to the left or right of start
+        if(adjacent_pawn_direction == LEFT):
+            end = getDirectionIndex(step_towards_opponet, UP)
+        elif(adjacent_pawn_direction == RIGHT):
+            end = getDirectionIndex(step_towards_opponet, DOWN)
+        #if the pawn is above or below the start then right is right
+        else:
+            end = getDirectionIndex(step_towards_opponet, RIGHT)
+        jump_direction = 'right'
+    elif(jump_information == 'jump straight'):
+        #if the jump is sttraight end is two steps in the direction of the adjacent pawn
+        end = getDirectionIndex(adjacent_pawn[1].position, adjacent_pawn_direction)
+        if(adjacent_pawn_direction == UP):
+            jump_direction = 'up'
+        elif(adjacent_pawn_direction == DOWN):
+            jump_direction = 'down'
+        elif(adjacent_pawn_direction == LEFT):
+            jump_direction = 'left'
+        elif(adjacent_pawn_direction == RIGHT):
+            jump_direction = 'right'
+    return jump_direction, end
     
 def step(next_board, action, agent, board_state_converter, max_moves=100):
-    move = action_lookup[action]
-    #if the action is mapped to a place move
-    if((90000 <= action <= 98811)):
-        colour = move[0]
-        start = move[1]
-        orientation = move[2]
-        move = Move(colour, start, None, 'place', None, None, orientation)
-        agent.pawns[colour].walls -= 1
-    #if the action is mapped to a movement
-    else:
-        #pdb.set_trace()
-        colour = agent.colour
-        start = agent.pawns[colour].position
-        #e1 e = j i = 1
-        start_formatted = moveNumberToLetter(agent.pawns[colour].position[1]) + str(9 - agent.pawns[colour].position[0])
-        adjacent_pawn = opposingPawnAdjacent(colour, next_board.board, next_board.board[start[0]][start[1]])
-        jump_direction = None
-        #if the adjacent pawn is not None and the action is a jump
-        if(adjacent_pawn[0] and action in [4, 5, 6]):
-            #pdb.set_trace()
-            adjacent_pawn_direction = getCellDirection(adjacent_pawn[1], next_board.board[start[0]][start[1]])
-        else:
-            adjacent_pawn_direction = None
-        #pdb.set_trace()
-        #def __init__(self, colour, start, end, action, direction, jumpDirection=None, orientation=None):
-        if(move == 'up'):
-            end = getDirectionIndex(start, UP)
-            direction = 'up'
-            action = 'move'
-        elif(move == 'down'):
-            end = getDirectionIndex(start, DOWN)
-            direction = 'down'
-            action = 'move'
-        elif(move == 'left'):
-            end = getDirectionIndex(start, LEFT)
-            direction = 'left'
-            action = 'move'
-        elif(move == 'right'):
-            end = getDirectionIndex(start, RIGHT)
-            direction = 'right'
-            action = 'move'
-        elif(move == 'jump left'):
-            step_towards_opponet = getDirectionIndex(start, adjacent_pawn_direction)
-            #left can me up and down too if the pawn is to the left or right of start
-            if(adjacent_pawn_direction == LEFT):
-                end = getDirectionIndex(step_towards_opponet, DOWN)
-            elif(adjacent_pawn_direction == RIGHT):
-                end = getDirectionIndex(step_towards_opponet, UP)
-            #if the pawn is above or below the start then left is left
-            else:
-                end = getDirectionIndex(step_towards_opponet, LEFT)
-            jump_direction = 'left'
-        elif(move == 'jump right'):
-            step_towards_opponet = getDirectionIndex(start, adjacent_pawn_direction)
-            #right can me up and down too if the pawn is to the left or right of start
-            if(adjacent_pawn_direction == LEFT):
-                end = getDirectionIndex(step_towards_opponet, UP)
-            elif(adjacent_pawn_direction == RIGHT):
-                end = getDirectionIndex(step_towards_opponet, DOWN)
-            #if the pawn is above or below the start then right is right
-            else:
-                end = getDirectionIndex(step_towards_opponet, RIGHT)
-            jump_direction = 'right'
-        elif(move == 'jump straight'):
-            #if the jump is sttraight end is two steps in the direction of the adjacent pawn
-            end = getDirectionIndex(adjacent_pawn[1].position, adjacent_pawn_direction)
-            if(adjacent_pawn_direction == UP):
-                jump_direction = 'up'
-            elif(adjacent_pawn_direction == DOWN):
-                jump_direction = 'down'
-            elif(adjacent_pawn_direction == LEFT):
-                jump_direction = 'left'
-            elif(adjacent_pawn_direction == RIGHT):
-                jump_direction = 'right'
-        try:        
-            end_formatted = moveNumberToLetter(end[1]) + str(9 - end[0])
-        except:
-            pdb.set_trace()
-        if(action == 'move'):
-            try:
-                move = Move(colour, start_formatted, end_formatted, action, direction, None, None)
-            except:
-                pdb.set_trace()
-        else:
-            action = 'jump'
-            #pdb.set_trace()
-            move = Move(colour, start_formatted, end_formatted, action, None, jump_direction, None)
+    
         
     #finally make the move
     next_board.makeMove(move, next_board, move.colour)
@@ -329,7 +396,7 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
                 agent.white_position_memory = []
                 agent.black_position_memory = []
                 agent.rewards_memory = []
-                states[j] = reset(board, pawn_dicts[i], pawn_dicts[i]['white'].walls, pawn_dicts[i]['black'].walls, board_state_converter)
+                states[j] = batch_reset(board, pawn_dicts[i], pawn_dicts[i]['white'].walls, pawn_dicts[i]['black'].walls, board_state_converter)
                 states[j] = np.reshape(states[j], [1, *agent.state_shape])
                 agent.find_legal_moves(board.state)
                 rewards[j] = 0
