@@ -43,6 +43,7 @@ class Model:
         if len(movement) > 0:
             self.action_state.extend(movement)
         self.action_state_movements = movement
+        return self.action_state
 
     def add_id_to_place(self, place, i, j):
         id =  None
