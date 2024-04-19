@@ -28,10 +28,16 @@ class DQNAgent (Model):
         
         self.learning_rate = 0.001
         self.model = create_q_model(state_shape, action_size)
-        self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate, clipvalue=1.0))
+        #make sure no progress bar is shown
+        self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
 
     def remember(self, state, action_id, reward, next_state, done):
         self.memory.append((state, action_id, reward, next_state, done))
+
+    def predict(self, state):
+        # Explicit conversion to tensor
+        state_tensor = tf.convert_to_tensor(state, dtype=tf.float32)
+        return self.model.predict(state_tensor, batch_size=1)
 
     def act(self, state, verbose=False):
         # Check if there are no legal moves
@@ -53,7 +59,7 @@ class DQNAgent (Model):
 
         try:
             # Predict Q-values for all potential actions
-            all_q_values = self.model.predict(state)  # Assume shape is (1, num_possible_actions)
+            all_q_values = self.predict(state)  # Assume shape is (1, num_possible_actions)
             q_values = all_q_values.flatten()  # Flatten the array for easier indexing
             
             # Prepare a list of valid action indices from action_state and their corresponding Q-indices
@@ -86,15 +92,33 @@ class DQNAgent (Model):
 
     def replay(self, batch_size):
         start_time = time.time()  # Start tracking time
-
+        
         minibatch = random.sample(self.memory, int(batch_size/100))
-        for state, action_id, reward, next_state, done in minibatch:
-            target = reward
-            if not done:
-                target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
-            target_f = self.model.predict(state)
-            target_f[0][0][0][action_id_to_q_index[action_id]] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
+        if not minibatch:
+            return
+        
+        states = np.array([x[0] for x in minibatch])
+        actions = [x[1] for x in minibatch]
+        rewards = np.array([x[2] for x in minibatch])
+        next_states = np.array([x[3] for x in minibatch])
+        dones = np.array([x[4] for x in minibatch])
+        
+        # Predict the Q-values for current states and next states
+        current_q = self.model.predict(states)
+        next_q = self.model.predict(next_states)
+        
+        # Calculate the target Q-values
+        max_next_q = np.amax(next_q, axis=1)
+        target_q = rewards + (1 - dones) * self.gamma * max_next_q
+        
+        # Update the Q-values for actions taken
+        indices = np.array([action_id_to_q_index[act] for act in actions])
+        current_q[np.arange(len(minibatch)), indices] = target_q
+        
+        # Perform a batch update of model weights
+        self.model.fit(states, current_q, epochs=1, verbose=0, batch_size=len(minibatch))
+        
+        # Adjust epsilon
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
