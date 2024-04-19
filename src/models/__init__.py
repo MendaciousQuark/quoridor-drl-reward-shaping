@@ -5,7 +5,7 @@ from .model import Model
 from .deep_q_learning import DQNAgent, create_q_model
 from .action_lookup import action_lookup, action_id_to_q_index
 from .board_to_state import BoardToStateConverter
-from .train import trainDQN, step, reset
+from .train import trainDQN, step, batch_reset
 #import all
 __all__ = [
     #model.py imports
@@ -17,5 +17,5 @@ __all__ = [
     #board_to_state
     'boardToState',
     #from train.py
-    'trainDQN', 'step', 'reset'
+    'trainDQN', 'step', 'batch_reset'
 ]
