@@ -37,7 +37,7 @@ class DQNAgent (Model):
     def predict(self, state):
         # Explicit conversion to tensor
         state_tensor = tf.convert_to_tensor(state, dtype=tf.float32)
-        return self.model.predict(state_tensor, batch_size=1)
+        return self.model.predict(state_tensor, batch_size=1, verbose=0)
 
     def act(self, state, verbose=False):
         # Check if there are no legal moves
@@ -104,8 +104,8 @@ class DQNAgent (Model):
         dones = np.array([x[4] for x in minibatch])
         
         # Predict the Q-values for current states and next states
-        current_q = self.model.predict(states)
-        next_q = self.model.predict(next_states)
+        current_q = self.predict(states)
+        next_q = self.predict(next_states)
         
         # Calculate the target Q-values
         max_next_q = np.amax(next_q, axis=1)
