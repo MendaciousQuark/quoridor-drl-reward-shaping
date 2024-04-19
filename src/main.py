@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--batch_length', type=int, default=25, help='Number of moves per batch. Default is 25. Note: This argument is only used in train mode.')
     parser.add_argument('--batches_per_generation', type=int, default=2, help='Number of batches per generation. Default is 2. Note: This argument is only used in train mode.')
     parser.add_argument('--number_of_agents', type=int, default=10, help='Number of agents to train. Default is 10. Note: This argument is only used in train mode.')
-
+    parser.add_argument('--learn_movement', action='store_true', help='Learn only movement actions. Default is False. Note: This argument is only used in train mode.')
 
     #arguments for play mode
     parser.add_argument('--colour', choices=['white', 'black'], default='white', 
@@ -30,7 +30,7 @@ def main():
 
     if args.mode == 'train':
         from models.training_setup import init_training
-        init_training(args.with_ground_truths, args.use_pretrained, args.slow, args.verbose, args.observe,
+        init_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
                args.batches_per_generation, args.number_of_agents)
     elif args.mode == 'play':
