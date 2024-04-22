@@ -64,22 +64,19 @@ def init_training(with_ground_truths = False,
                 batches_since_evolution = 0
             if(i % 2 == 0):
                 agents = shuffle_opponents(agents) #opponents are each pair of agents (i.e. 0 and 1, 2 and 3, etc.)
-        
-            
+            index = train_batch(agents, observe, observe_from, observe_until, 
+                                batch_length, board, verbose, slow, index, i)
         except Exception as e:
             print(e)
-
-        index = train_batch(agents, observe, observe_from, observe_until, 
-                                batch_length, board, verbose, slow, index, i)
-        # finally:
-        #     for agent in agents:
-        #         try:
-        #             agent.save_model(agent.trained_model_path)
-        #             agent.store_flags(agent.trained_model_path)
-        #         except Exception as e:  
-        #             print(e)
-        #     use_pretrained = True
-        #     batches_since_evolution += 1
+        finally:
+            for agent in agents:
+                try:
+                    agent.save_model(agent.trained_model_path)
+                    agent.store_flags(agent.trained_model_path)
+                except Exception as e:  
+                    print(e)
+            use_pretrained = True
+            batches_since_evolution += 1
 
 def init_agents(pawns_copy, agents, number_of_agents):
     #if n is not even add 1 until even

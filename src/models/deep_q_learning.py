@@ -53,7 +53,7 @@ class DQNAgent (Model):
 
         try:
             # Predict Q-values for all potential actions
-            all_q_values = self.model.predict(state)  # Assume shape is (1, num_possible_actions)
+            all_q_values = self.model.predict(state, verbose=0)  # Assume shape is (1, num_possible_actions)
             q_values = all_q_values.flatten()  # Flatten the array for easier indexing
             
             # Prepare a list of valid action indices from action_state and their corresponding Q-indices
@@ -91,8 +91,8 @@ class DQNAgent (Model):
         for state, action_id, reward, next_state, done in minibatch:
             target = reward
             if not done:
-                target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
-            target_f = self.model.predict(state)
+                target = reward + self.gamma * np.amax(self.model.predict(next_state, verbose=0)[0])
+            target_f = self.model.predict(state, verbose=0)
             target_f[0][0][0][action_id_to_q_index[action_id]] = target
             self.model.fit(state, target_f, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
