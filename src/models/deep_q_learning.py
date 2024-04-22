@@ -2,7 +2,7 @@ import numpy as np
 import random
 from collections import deque
 import tensorflow as tf
-from tensorflow.keras import layers # type: ignore
+from tensorflow.keras import layers, models, regularizers # type: ignore
 from tensorflow.keras.models import load_model # type: ignore
 from .action_lookup import action_lookup, action_id_to_q_index
 from .model import Model
@@ -26,7 +26,7 @@ class DQNAgent (Model):
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.5
         
-        self.learning_rate = 0.001
+        self.learning_rate = 0.01
         self.model = create_q_model(state_shape, action_size)
         self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate, clipvalue=1.0))
 
@@ -175,16 +175,18 @@ class DQNAgent (Model):
     def __str__(self):
         return f"{self.name} - {self.description},\n state_shape: {self.state_shape},\n batch_size: {self.batch_size},\n action_size: {self.action_size},\n memory: {self.memory},\n gamma: {self.gamma},\n pawns: {self.pawns},\n trained_model_path: {self.trained_model_path},\n epsilon: {self.epsilon},\n epsilon_min: {self.epsilon_min},\n epsilon_decay: {self.epsilon_decay},\n learning_rate: {self.learning_rate},\n model: {self.model}"
 
-def create_q_model(state_shape, action_size=len(action_lookup)):
+def create_q_model(state_shape, action_size=len(action_lookup), dropout_rate=0.2):
     print('Creating Q model with state shape:', state_shape, 'and action size:', action_size)
-    """Creates a Deep Q-Learning Model."""
+    """Creates a Deep Q-Learning Model with regularizations."""
     inputs = layers.Input(shape=state_shape)
     
     x = inputs
-    for _ in range(5):
-        x = layers.Dense(512, activation='relu')(x)
+    for _ in range(3):
+        x = layers.Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.01))(x)  # L2 Regularization
+        x = layers.Dropout(dropout_rate)(x)  # Dropout
+        x = layers.BatchNormalization()(x)  # Batch Normalization
     
     action = layers.Dense(action_size, activation='linear')(x)
-    model = tf.keras.Model(inputs=inputs, outputs=action)
-    print('Model summary:', model.summary())
+    model = models.Model(inputs=inputs, outputs=action)
+    model.summary()
     return model
