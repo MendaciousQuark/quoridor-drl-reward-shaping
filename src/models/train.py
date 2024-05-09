@@ -314,6 +314,7 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
     rewards = [0 for _ in range(len(agents))]
     #the for loops should be the other way round for efficiency #FIXME
     print(f"Training with {len(boards)} ground truths...")
+    start_time = time.time()
     for i, board in enumerate(boards):
         #start measuring time at the beginning of each ground truth
         start_time = time.time()
@@ -348,6 +349,11 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
 
                 #remember the state
                 replay_queue[j].append((states[j], action, rewards[j], next_state, done))
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            minutes, seconds = divmod(elapsed_time, 60)
+            #print elapsed time and how many agents completed the ground truth
+            print(f'\n\r Elapsed time for ground truth {i+1}/{len(boards)}: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
         # Calculate and print elapsed time
         end_time = time.time()
         elapsed_time = end_time - start_time
