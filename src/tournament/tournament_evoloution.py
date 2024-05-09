@@ -44,21 +44,35 @@ def evolveThroughTournament(agents):
             black_child.load_model(black_survivor.trained_model_path)
 
             # Mutate and save the white child
-            white_child.flags = white_survivor.flags
-            white_child.mutate_flags()
+            if j < (number_of_children // 2):
+                white_child.flags = white_survivor.flags
+                white_child.mutate_flags()
+                
             white_child.store_flags()
             white_child.save_model(white_child.trained_model_path)
             children.append(white_child)
             
             # Mutate and save the black child
-            black_child.flags = black_survivor.flags
-            black_child.mutate_flags()
+            if j < (number_of_children // 2):
+                black_child.flags = black_survivor.flags
+                black_child.mutate_flags()
+                
             black_child.store_flags()
             black_child.save_model(black_child.trained_model_path)
             children.append(black_child)
+            
+            #write the description of both children to a file
+            write_description_to_file(white_child_path, white_child_description)
+            write_description_to_file(black_child_path, black_child_description)
+        
     # replace the agents with the children
+    
     agents[:] = children
 
     # train the agents with groundtruths
     trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
     return agents
+
+def write_description_to_file(file_path, description):
+    with open(file_path, 'a') as file:  # Open the file in append mode
+        file.write(description + "\n")
