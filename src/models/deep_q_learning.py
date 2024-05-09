@@ -98,9 +98,10 @@ class DQNAgent (Model):
             target_f = self.model.predict(state, verbose=0)
             target_f[0][0][0][action_id_to_q_index[action_id]] = target
             
-            tensorboard_callback = TensorBoard(log_dir="./logs")
+            #tensorboard_callback = TensorBoard(log_dir="./logs")
             
-            self.model.fit(state, target_f, epochs=1, verbose=0, callbacks=[tensorboard_callback])
+            #self.model.fit(state, target_f, epochs=1, verbose=0, callbacks=[tensorboard_callback])
+            self.model.fit(state, target_f, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= 1-self.epsilon_decay
 
@@ -156,7 +157,7 @@ class DQNAgent (Model):
     def visualise_model(self, model = None):
         model = self.model if model == None else model
         file_path = f"Model_Visualisation/plots/{self.name}_model_plot.png"
-        plot_model(model, to_file=file_path, show_shapes=True, show_layer_names=True)
+        plot_model(model, to_file=file_path, show_shapes=True, show_layer_names=False)
         
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
