@@ -2,7 +2,7 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(description='Train or play the game.')
-    parser.add_argument('--mode', choices=['train', 'play', 'ground-truth'], default='train', help='Mode to run the game. Choices are "train", "play" or "ground-truth". Default is "train".')
+    parser.add_argument('--mode', choices=['train', 'play', 'ground_truth', 'train_baseline'], default='train', help='Mode to run the game. Choices are "train", "play" or "ground_truth", "train_baseline". Default is "train".')
     
     #arguments for train mode
     parser.add_argument('--with_ground_truths', action='store_true', help='Train with ground truths. Default is False. Note: This argument is only used in train mode.')
@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--batches_per_generation', type=int, default=2, help='Number of batches per generation. Default is 2. Note: This argument is only used in train mode.')
     parser.add_argument('--number_of_agents', type=int, default=10, help='Number of agents to train. Default is 10. Note: This argument is only used in train mode.')
     parser.add_argument('--learn_movement', action='store_true', help='Learn only movement actions. Default is False. Note: This argument is only used in train mode.')
-
+    parser.add_argument('--delete_after', type=int, default=0, help='Delete models after a certain number of generations. Default is 0. Set as 0 for no deletion. Note: This argument is only used in train mode.')
     #arguments for play mode
     parser.add_argument('--colour', choices=['white', 'black'], default='white', 
                         help='Color for play mode. Choices are "white" or "black". Default is "white". Note: This argument is only used in play mode.')    
@@ -32,12 +32,12 @@ def main():
         from models.training_setup import init_training
         init_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
-               args.batches_per_generation, args.number_of_agents)
+               args.batches_per_generation, args.number_of_agents, args.delete_after)
     elif args.mode == 'play':
         from game.game import Game
         game = Game()
         game.play(args.colour, args.game_mode)
-    elif args.mode == 'ground-truth':
+    elif args.mode == 'ground_truth':
         from utils.create_groundtruth import creatGroundTruth
         for _ in range(args.num):
             creatGroundTruth()
