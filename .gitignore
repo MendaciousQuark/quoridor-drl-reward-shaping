@@ -16,3 +16,6 @@ trained_models/
 .vscode/
 
 description.txt
+
+logs/
+Model_Visualisation/
