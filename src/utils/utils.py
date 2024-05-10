@@ -1,6 +1,7 @@
 from .directions import UP, DOWN, LEFT, RIGHT, getDirectionIndex
 import os
 import re
+import shutil
 
 def validLocation(i, j):
         # Return True if the location is on the board, False if it's off the board
@@ -95,3 +96,26 @@ def get_next_directory_number(directory_path, common_name_prefix):
                 if current_number > max_number:
                     max_number = current_number
     return max_number + 1
+
+def delete_previous_generations(directory_path):
+    # Assuming the common prefix for directories is 'gen_'
+    common_name_prefix = 'gen_'
+    
+    # Find out the next directory number, then calculate the latest generation number
+    next_gen_number = get_next_directory_number(directory_path, common_name_prefix)
+    latest_gen_number = next_gen_number - 2 #keep the last two generations
+    
+    # Compile the directory pattern for matching
+    dir_pattern = re.compile(rf'^{common_name_prefix}(\d+)$')
+    
+    # List and filter directories in the specified path
+    for entry in os.listdir(directory_path):
+        if os.path.isdir(os.path.join(directory_path, entry)):
+            match = dir_pattern.match(entry)
+            if match:
+                current_gen_number = int(match.group(1))
+                # Delete the directory if it's not the latest generation
+                if current_gen_number < latest_gen_number:
+                    dir_to_delete = os.path.join(directory_path, entry)
+                    shutil.rmtree(dir_to_delete)
+                    print(f"Deleted: {dir_to_delete}")

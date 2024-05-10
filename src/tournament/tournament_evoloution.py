@@ -7,6 +7,7 @@ from models.board_to_state import BoardToStateConverter
 from utils.random_board import creatRandomBoard
 import math
 import os
+import pdb
 
 def evolveThroughTournament(agents):
     # Split agents into white and black agents
@@ -47,29 +48,41 @@ def evolveThroughTournament(agents):
 
             # Mutate and save the white child
             # if it is the first hal of children keep the flags of the parent
-            if j < number_of_children // 2:
+            if j < (number_of_children // 2):
                 white_child.flags = white_survivor.flags
                 white_child.mutate_flags()
+                
             white_child.store_flags()
             white_child.save_model(white_child.trained_model_path)
             children.append(white_child)
             
             # Mutate and save the black child
             # if it is the first hal of children keep the flags of the parent
-            if j < number_of_children // 2:
+            if j < (number_of_children // 2):
                 black_child.flags = black_survivor.flags
                 black_child.mutate_flags()
+
             black_child.store_flags()
             black_child.save_model(black_child.trained_model_path)
             children.append(black_child)
+            
+            #write the description of both children to a file
+            write_description_to_file(white_child_path, white_child_description)
+            write_description_to_file(black_child_path, black_child_description)
+        
     # replace the agents with the children
+    
     agents[:] = children
 
     # train the agents with groundtruths
     trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
     return agents
-
-                
-
-
-
+ 
+def write_description_to_file(file_path, description):
+    # Check if the file_path is not a file
+    if not os.path.isfile(file_path):
+        file_path = os.path.join(file_path, 'description.txt')
+    
+    # Write the description to the file
+    with open(file_path, 'w') as file:
+        file.write(description + "\n")

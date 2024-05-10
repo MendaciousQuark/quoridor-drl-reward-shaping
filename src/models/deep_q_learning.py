@@ -1,9 +1,12 @@
 import numpy as np
 import random
 from collections import deque
-import tensorflow as tf
+import tensorflow as tf # type: ignore
 from tensorflow.keras import layers, models, regularizers # type: ignore
 from tensorflow.keras.models import load_model # type: ignore
+from tensorflow.keras.utils import plot_model # type: ignore
+from tensorflow.keras.callbacks import TensorBoard
+
 from .action_lookup import action_lookup, action_id_to_q_index
 from .model import Model
 from pathlib import Path
@@ -24,9 +27,9 @@ class DQNAgent (Model):
         # Exploration parameters
         self.epsilon = epsilon  # Exploration rate (arbitrarily chosen)
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.5
+        self.epsilon_decay = 0.05
         
-        self.learning_rate = 0.01
+        self.learning_rate = 0.001
         self.model = create_q_model(state_shape, action_size)
         self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate, clipvalue=1.0))
 
@@ -94,9 +97,13 @@ class DQNAgent (Model):
                 target = reward + self.gamma * np.amax(self.model.predict(next_state, verbose=0)[0])
             target_f = self.model.predict(state, verbose=0)
             target_f[0][0][0][action_id_to_q_index[action_id]] = target
+            
+            #tensorboard_callback = TensorBoard(log_dir="./logs")
+            
+            #self.model.fit(state, target_f, epochs=1, verbose=0, callbacks=[tensorboard_callback])
             self.model.fit(state, target_f, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
+            self.epsilon *= 1-self.epsilon_decay
 
         end_time = time.time()  # Stop tracking time
         elapsed_time = end_time - start_time  # Calculate elapsed time in seconds
@@ -147,6 +154,11 @@ class DQNAgent (Model):
             print(f"Error: Index {q_index} out of bounds for Q-values array.")
             return None
 
+    def visualise_model(self, model = None):
+        model = self.model if model == None else model
+        file_path = f"Model_Visualisation/plots/{self.name}_model_plot.png"
+        plot_model(model, to_file=file_path, show_shapes=True, show_layer_names=False)
+        
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
@@ -175,9 +187,9 @@ class DQNAgent (Model):
     def __str__(self):
         return f"{self.name} - {self.description},\n state_shape: {self.state_shape},\n batch_size: {self.batch_size},\n action_size: {self.action_size},\n memory: {self.memory},\n gamma: {self.gamma},\n pawns: {self.pawns},\n trained_model_path: {self.trained_model_path},\n epsilon: {self.epsilon},\n epsilon_min: {self.epsilon_min},\n epsilon_decay: {self.epsilon_decay},\n learning_rate: {self.learning_rate},\n model: {self.model}"
 
-def create_q_model(state_shape, action_size=len(action_lookup), dropout_rate=0.2):
+def create_q_model(state_shape, action_size=len(action_lookup), dropout_rate=0.3):
     print('Creating Q model with state shape:', state_shape, 'and action size:', action_size)
-    """Creates a Deep Q-Learning Model with regularizations."""
+    
     inputs = layers.Input(shape=state_shape)
     
     x = inputs

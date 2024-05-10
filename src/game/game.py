@@ -117,7 +117,7 @@ class Game:
                 break
 
     def agent_vs_agent(self, board, white_agent, black_agent):
-        
+        white_agent.visualise_model()
         #set the pawn positions for the agents
         white_agent.pawns['white'].position = board.pawn_positions['white']
         white_agent.pawns['black'].position = board.pawn_positions['black']

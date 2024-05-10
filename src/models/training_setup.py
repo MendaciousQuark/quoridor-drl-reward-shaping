@@ -1,4 +1,4 @@
-from utils.utils import get_next_directory_number
+from utils.utils import get_next_directory_number, delete_previous_generations
 from models.deep_q_learning import DQNAgent
 from models.train import trainWithGroundTruths, trainDQN
 from tournament.tournament_evoloution import evolveThroughTournament
@@ -12,7 +12,7 @@ def init_training(with_ground_truths = False,
           use_pretrained = False, learn_movement = False, slow = False, verbose = False, 
           observe = False, observe_from = [0, 11, 21, 31, 41, 51, 61, 71, 81, 91], 
           observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95], batch_episodes = 1000, batch_length = 25,
-          batches_per_generation = 2, number_of_agents = 10):
+          batches_per_generation = 2, number_of_agents = 10, delete_after = 0):
 
     board = Board()
 
@@ -53,6 +53,7 @@ def init_training(with_ground_truths = False,
 
     index = 0
     batches_since_evolution = 0
+    generations_since_deletion = 0
     #main training loop
     for i in range(batch_episodes):
         print(f'Batch Episode {i+1}')
@@ -62,6 +63,10 @@ def init_training(with_ground_truths = False,
             if(batches_since_evolution == batches_per_generation):
                 agents = evolveThroughTournament(agents)
                 batches_since_evolution = 0
+                generations_since_deletion += 1
+                if(delete_after > 0 and generations_since_deletion == delete_after):
+                    delete_previous_generations('src/trained_models/DQNagents')
+                    generations_since_deletion = 0
             if(i % 2 == 0):
                 agents = shuffle_opponents(agents) #opponents are each pair of agents (i.e. 0 and 1, 2 and 3, etc.)
             index = train_batch(agents, observe, observe_from, observe_until, 
