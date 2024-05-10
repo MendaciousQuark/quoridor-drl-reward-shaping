@@ -353,7 +353,7 @@ def trainWithGroundTruths(directory_path, common_name_prefix, agents):
         elapsed_time = end_time - start_time
         minutes, seconds = divmod(elapsed_time, 60)
         #print elapsed time and how many agents completed the ground truth
-        print(f'\n\r Elapsed time for ground truth {i+1}/{len(boards)}: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
+        print(f'\n Elapsed time for ground truth {i+1}/{len(boards)}: {int(minutes)} minutes {int(seconds)} seconds', end='', flush=True)
     
     # Train with replay
     print('Training with replay...')
