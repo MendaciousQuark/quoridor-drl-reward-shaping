@@ -1,7 +1,39 @@
 import argparse
 
+def graphing(args):
+    from graphing.read_current_diversity import read_agent_data, plot_genetic_diversity 
+    attributes = read_agent_data(args.base_path, args.gen)
+    plot_genetic_diversity(attributes)
+
+    from graphing.read_generational_diversity import read_all_generations, calculate_differences, plot_differences
+    generation_data = read_all_generations(args.base_path, args.common_name_prefix)
+    differences = calculate_differences(generation_data)
+    #plot_differences(differences)
+
+    from graphing.read_generational_diversity import plot_differences_line_graph
+    plot_differences_line_graph(generation_data)
+
+    from graphing.shared_flags import count_shared_flags, plot_common_flags, read_all_generations_shared_flags
+    generation_data_shared_flags = read_all_generations_shared_flags(args.base_path, args.common_name_prefix)
+    common_counts = count_shared_flags(generation_data_shared_flags)
+    plot_common_flags(common_counts)
+
+    from graphing.cummulative_line_graph import read_all_generations_cummulative_line, plot_cumulative_configs
+    generation_data_cummulative = read_all_generations_cummulative_line(args.base_path, args.common_name_prefix)
+    plot_cumulative_configs(generation_data_cummulative)
+
+    from graphing.compare_best_agents import compare_generation_winners, plot_flag_trends
+    winning_flags = compare_generation_winners(args.base_path, args.common_name_prefix, range(1, 24))
+    plot_flag_trends(winning_flags)
+    
+    from graphing.compare_best_agents import aggregate_flags_and_scores, plot_flags_vs_scores
+    df = aggregate_flags_and_scores(args.base_path, args.common_name_prefix, range(1, 24))
+    plot_flags_vs_scores(df)
+
 def main():
     parser = argparse.ArgumentParser(description='Train or play the game.')
+    parser.add_argument('--mode', choices=['train', 'play', 'ground-truth', 'baseline', 'diversity'], default='train', help='Mode to run the game. Choices are "train", "play", "baseline", "diversity" or "ground-truth". Default is "train".')
+
     parser.add_argument('--mode', choices=['train', 'play', 'ground_truth', 'train_baseline'], default='train', help='Mode to run the game. Choices are "train", "play" or "ground_truth", "train_baseline". Default is "train".')
     
     #arguments for train mode
@@ -18,6 +50,7 @@ def main():
     parser.add_argument('--number_of_agents', type=int, default=10, help='Number of agents to train. Default is 10. Note: This argument is only used in train mode.')
     parser.add_argument('--learn_movement', action='store_true', help='Learn only movement actions. Default is False. Note: This argument is only used in train mode.')
     parser.add_argument('--delete_after', type=int, default=0, help='Delete models after a certain number of generations. Default is 0. Set as 0 for no deletion. Note: This argument is only used in train mode.')
+
     #arguments for play mode
     parser.add_argument('--colour', choices=['white', 'black'], default='white', 
                         help='Color for play mode. Choices are "white" or "black". Default is "white". Note: This argument is only used in play mode.')    
@@ -26,6 +59,11 @@ def main():
     #arguments for ground-truth mode
     parser.add_argument('--num', type=int, default=1, help='Number of ground truths to create. Default is 1. Note: This argument is only used in ground-truth mode.')
     
+    #arguments for diversity mode
+    parser.add_argument('--gen', type=int, default=0, help='Generation to calculate diversity. Default is 0. Note: This argument is only used in diversity mode.')
+    parser.add_argument('--base_path', type=str, default='src/trained_models/DQNagents', help='Base path for the data. Default is "data". Note: This argument is only used in diversity mode.')
+    parser.add_argument('--common_name_prefix', type=str, default='gen_', help='Common name prefix for the data. Default is "gen_". Note: This argument is only used in diversity mode.')
+
     args = parser.parse_args()
 
     if args.mode == 'train':
@@ -33,6 +71,11 @@ def main():
         init_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
                args.batches_per_generation, args.number_of_agents, args.delete_after)
+    elif args.mode == 'baseline':
+        from models.train_base_line import init_baseline_training
+        init_baseline_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
+               args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
+               args.batches_per_generation, args.number_of_agents)
     elif args.mode == 'play':
         from game.game import Game
         game = Game()
@@ -41,6 +84,8 @@ def main():
         from utils.create_groundtruth import creatGroundTruth
         for _ in range(args.num):
             creatGroundTruth()
+    elif args.mode == 'diversity':
+        graphing(args)
 
 if __name__ == '__main__':
     main()

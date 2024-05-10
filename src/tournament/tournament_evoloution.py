@@ -2,7 +2,9 @@
 from models import DQNAgent, Model
 from tournament.swiss_tournament import SwissTournament
 from utils.utils import get_next_directory_number
-from models.train import trainWithGroundTruths
+from models.train import trainWithGroundTruths, step
+from models.board_to_state import BoardToStateConverter
+from utils.random_board import creatRandomBoard
 import math
 import os
 import pdb
@@ -45,6 +47,7 @@ def evolveThroughTournament(agents):
             black_child.load_model(black_survivor.trained_model_path)
 
             # Mutate and save the white child
+            # if it is the first hal of children keep the flags of the parent
             if j < (number_of_children // 2):
                 white_child.flags = white_survivor.flags
                 white_child.mutate_flags()
@@ -54,10 +57,11 @@ def evolveThroughTournament(agents):
             children.append(white_child)
             
             # Mutate and save the black child
+            # if it is the first hal of children keep the flags of the parent
             if j < (number_of_children // 2):
                 black_child.flags = black_survivor.flags
                 black_child.mutate_flags()
-                
+
             black_child.store_flags()
             black_child.save_model(black_child.trained_model_path)
             children.append(black_child)
@@ -73,7 +77,7 @@ def evolveThroughTournament(agents):
     # train the agents with groundtruths
     trainWithGroundTruths('src/models/ground_truths', 'ground_truth_', agents)
     return agents
-
+ 
 def write_description_to_file(file_path, description):
     # Check if the file_path is not a file
     if not os.path.isfile(file_path):
