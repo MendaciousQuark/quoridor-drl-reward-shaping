@@ -12,7 +12,7 @@ def init_training(with_ground_truths = False,
           use_pretrained = False, learn_movement = False, slow = False, verbose = False, 
           observe = False, observe_from = [0, 11, 21, 31, 41, 51, 61, 71, 81, 91], 
           observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95], batch_episodes = 1000, batch_length = 25,
-          batches_per_generation = 2, number_of_agents = 10, delete_after = 0):
+          batches_per_generation = 2, number_of_agents = 10, delete_after = 0, base_path='src/trained_models/DQNagents'):
 
     board = Board()
 
@@ -83,7 +83,7 @@ def init_training(with_ground_truths = False,
             use_pretrained = True
             batches_since_evolution += 1
 
-def init_agents(pawns_copy, agents, number_of_agents, base_path='src/trained_models/DQNagents'):
+def init_agents(pawns_copy, agents, number_of_agents, base_path):
     #if n is not even add 1 until even
     while(number_of_agents % 2 != 0):
         number_of_agents += 1

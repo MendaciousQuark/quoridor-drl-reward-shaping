@@ -72,10 +72,10 @@ def main():
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
                args.batches_per_generation, args.number_of_agents, args.delete_after)
     elif args.mode == 'baseline':
-        from models.train_base_line import init_baseline_training
-        init_baseline_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
+        from models.training_setup import init_training
+        init_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
-               args.batches_per_generation, args.number_of_agents)
+               args.batches_per_generation, args.number_of_agents, args.base_path)
     elif args.mode == 'play':
         from game.game import Game
         game = Game()
