@@ -78,18 +78,18 @@ def init_training(with_ground_truths = False,
             use_pretrained = True
             batches_since_evolution += 1
 
-def init_agents(pawns_copy, agents, number_of_agents):
+def init_agents(pawns_copy, agents, number_of_agents, base_path='src/trained_models/DQNagents'):
     #if n is not even add 1 until even
     while(number_of_agents % 2 != 0):
         number_of_agents += 1
     
-    highest_gen = get_next_directory_number('src/trained_models/DQNagents', 'gen_') - 1 # -1 since we want the highest gen not gen + 1
+    highest_gen = get_next_directory_number(base_path, 'gen_') - 1 # -1 since we want the highest gen not gen + 1
 
     for i in range(number_of_agents):
         if(i % 2 == 0):
-            agent = DQNAgent((9, 9, 11), 330, 'white', pawns_copy, name=f"white_bot_{i}", trained_model_path=f'src/trained_models/DQNagents/gen_{highest_gen}/white_agents/agent_{i}/')
+            agent = DQNAgent((9, 9, 11), 330, 'white', pawns_copy, name=f"white_bot_{i}", trained_model_path=f'{base_path}/gen_{highest_gen}/white_agents/agent_{i}/')
         else:
-            agent = DQNAgent((9, 9, 11), 330, 'black', pawns_copy, name=f"black_bot_{i-1}", trained_model_path=f'src/trained_models/DQNagents/gen_{highest_gen}/black_agents/agent_{i}/')
+            agent = DQNAgent((9, 9, 11), 330, 'black', pawns_copy, name=f"black_bot_{i-1}", trained_model_path=f'{base_path}/gen_{highest_gen}/black_agents/agent_{i}/')
         agents.append(agent)
     return agents
 
