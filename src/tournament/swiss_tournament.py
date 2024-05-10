@@ -2,6 +2,7 @@ from models.train import step
 from game.board import Board
 from models.board_to_state import BoardToStateConverter
 from utils.utils import get_next_directory_number
+from game.pawn import Pawn
 import numpy as np
 import os
 import pdb
@@ -74,10 +75,7 @@ class SwissTournament:
         board = Board()
         white_competitor, black_competitor = pair
         
-        white_competitor.pawns['white'].position = board.pawn_positions['white']
-        white_competitor.pawns['black'].position = board.pawn_positions['black']
-        black_competitor.pawns['white'].position = board.pawn_positions['white']
-        black_competitor.pawns['black'].position = board.pawn_positions['black']
+        self.update_pawns(board, white_competitor, black_competitor)
 
         board.turn = 0
         board.updateState()
@@ -85,6 +83,7 @@ class SwissTournament:
         state = board_state_converter.boardToState(board, white_competitor.pawns)
         
         while board.turn < self.max_turns:
+            self.update_pawns(board, white_competitor, black_competitor)
             agent = white_competitor if board.turn % 2 == 0 else black_competitor
             agent.find_legal_moves(board.state)
             state = np.reshape(state, [1, *agent.state_shape])
@@ -99,6 +98,11 @@ class SwissTournament:
                 return agent #return the winner
         return 'draw'
         
+    def update_pawns(self, board, white_competitor, black_competitor):
+        white_competitor.pawns['white'] = Pawn('white', *board.pawn_positions['white'])
+        white_competitor.pawns['black'] = Pawn('black', *board.pawn_positions['black'])
+        black_competitor.pawns['white'] = Pawn('white', *board.pawn_positions['white'])
+        black_competitor.pawns['black'] = Pawn('black', *board.pawn_positions['black'])
 
     def swiss_pairings(self, black_competitors, white_competitors, scores, history):
         # Sort both groups by scores in descending order and stabilize sorting by name
@@ -127,7 +131,7 @@ class SwissTournament:
                     break
             
             if not paired:
-                print(f"No pairing found for {black}. This agent will wait for the next round.")
+                print(f"No pairing found for {black.name}. This agent will wait for the next round.")
             
             i += 1
 
