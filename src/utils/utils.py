@@ -2,6 +2,7 @@ from .directions import UP, DOWN, LEFT, RIGHT, getDirectionIndex
 import os
 import re
 import shutil
+import glob
 
 def validLocation(i, j):
         # Return True if the location is on the board, False if it's off the board
@@ -119,3 +120,18 @@ def delete_previous_generations(directory_path):
                     dir_to_delete = os.path.join(directory_path, entry)
                     shutil.rmtree(dir_to_delete)
                     print(f"Deleted: {dir_to_delete}")
+                    
+def find_agent_paths(base_path, agent_color):
+    """
+    Finds all agent directories of a given color in the trained_models directory.
+
+    Args:
+    base_path (str): The base directory containing trained_models.
+    agent_color (str): The color of the agents ('black_agents' or 'white_agents').
+
+    Returns:
+    list: A list of paths to the agent directories.
+    """
+    pattern = f"{base_path}/trained_models/*/gen_*/{agent_color}/agent*"
+    agent_paths = glob.glob(pattern)
+    return agent_paths
