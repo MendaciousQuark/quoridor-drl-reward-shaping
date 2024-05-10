@@ -5,6 +5,7 @@ from utils.utils import get_next_directory_number
 from models.train import trainWithGroundTruths
 import math
 import os
+import pdb
 
 def evolveThroughTournament(agents):
     # Split agents into white and black agents
@@ -74,5 +75,10 @@ def evolveThroughTournament(agents):
     return agents
 
 def write_description_to_file(file_path, description):
-    with open(file_path, 'a') as file:  # Open the file in append mode
+    # Check if the file_path is not a file
+    if not os.path.isfile(file_path):
+        file_path = os.path.join(file_path, 'description.txt')
+    
+    # Write the description to the file
+    with open(file_path, 'w') as file:
         file.write(description + "\n")
