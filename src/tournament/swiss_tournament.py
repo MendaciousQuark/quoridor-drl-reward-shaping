@@ -15,6 +15,9 @@ class SwissTournament:
         self.black_competitors = black_competitors
         self.max_turns = max_turns
         self.scores = {agent: 0 for agent in self.black_competitors + self.white_competitors}
+        self.rounds_played = {agent: 0 for agent in self.black_competitors + self.white_competitors}
+        self.wins = {agent: 0 for agent in self.black_competitors + self.white_competitors}
+        self.draws = {agent: 0 for agent in self.black_competitors + self.white_competitors}
         self.history = {agent: set() for agent in self.black_competitors + self.white_competitors}
 
     def compete(self, num_rounds, num_survivors_per_colour=1):
@@ -25,16 +28,26 @@ class SwissTournament:
             results = []
             for i, pair in enumerate(pairs):
                 print(f"Playing game between pair {i+1}")
-                result = self.play_game(pair)
+                try:
+                    result, turns_played = self.play_game(pair)
+                except Exception as e:
+                    print(f"An error occurred while playing game between pair {i+1}. Defaulting to draw.")
+                    print(e)
+                    result = 'draw'
                 results.append(result)
             for index, result in enumerate(results):
                 if not isinstance(result, str):
                     self.scores[result] += 1  # Increment score for the winning agent
+                    self.wins[result] += 1
                 else:
                     # Distribute 0.5 points each for a draw
                     white, black = pairs[index]
                     self.scores[white] += 0.5
                     self.scores[black] += 0.5
+                    self.draws[white] += 1
+                    self.draws[black] += 1
+                self.rounds_played[white] += turns_played
+                self.rounds_played[black] += turns_played
         self.showResults()
         survivors = self.determine_survivors(num_survivors_per_colour)
         return survivors['white'], survivors['black'] # Return top 3 as survivors, adjust `n` as needed
@@ -52,13 +65,18 @@ class SwissTournament:
 
     def showResults(self):
         # Sort players by their scores in descending order
-        sorted_scores = sorted(self.scores.items(), key=lambda item: item[1], reverse=True)
+        sorted_scores = sorted(self.scores.items(), key=lambda item: (item[1], -self.rounds_played[item[0]]), reverse=True)
         
         # Prepare the leaderboard table
-        leaderboard_table = [[agent.name, score] for agent, score in sorted_scores]
+        leaderboard_table = []
+        for agent, score in sorted_scores:
+            total_rounds = self.rounds_played[agent]
+            total_wins = self.wins[agent]
+            total_draws = self.draws[agent]
+            leaderboard_table.append([agent.name, score, total_rounds, total_wins, total_draws])
         
         # Print the leaderboard
-        print(tabulate(leaderboard_table, headers=['Agent', 'Final Score'], tablefmt='grid'))
+        print(tabulate(leaderboard_table, headers=['Agent', 'Final Score', 'Rounds Played' 'Wins', 'Draws'], tablefmt='grid'))
         
         # Determine the generation directory to save the results
         base_path = 'src/trained_models/DQNagents'
@@ -67,7 +85,7 @@ class SwissTournament:
         
         # Save the leaderboard to a file
         with open(results_file_path, 'w') as file:
-            file.write(tabulate(leaderboard_table, headers=['Agent', 'Final Score'], tablefmt='grid'))
+            file.write(tabulate(leaderboard_table, headers=['Agent', 'Final Score', 'Rounds Played' 'Wins', 'Draws'], tablefmt='grid'))
         print(f"Results saved to {results_file_path}")
 
 
@@ -95,8 +113,8 @@ class SwissTournament:
             if (90000 <= action <= 98811):
                 agent.pawns[agent.colour].walls -= 1      
             if done:
-                return agent #return the winner
-        return 'draw'
+                return agent, board.turn #return the winner
+        return 'draw', board.turn
         
     def update_pawns(self, board, white_competitor, black_competitor):
         white_competitor.pawns['white'] = Pawn('white', *board.pawn_positions['white'])
