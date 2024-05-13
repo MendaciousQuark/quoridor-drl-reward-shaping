@@ -76,7 +76,7 @@ class SwissTournament:
             leaderboard_table.append([agent.name, score, total_rounds, total_wins, total_draws])
         
         # Print the leaderboard
-        print(tabulate(leaderboard_table, headers=['Agent', 'Final Score', 'Rounds Played' 'Wins', 'Draws'], tablefmt='grid'))
+        print(tabulate(leaderboard_table, headers=['Agent', 'Final Score', 'Rounds Played', 'Wins', 'Draws'], tablefmt='grid'))
         
         # Determine the generation directory to save the results
         base_path = 'src/trained_models/DQNagents'
@@ -85,7 +85,7 @@ class SwissTournament:
         
         # Save the leaderboard to a file
         with open(results_file_path, 'w') as file:
-            file.write(tabulate(leaderboard_table, headers=['Agent', 'Final Score', 'Rounds Played' 'Wins', 'Draws'], tablefmt='grid'))
+            file.write(tabulate(leaderboard_table, headers=['Agent', 'Final Score', 'Rounds Played', 'Wins', 'Draws'], tablefmt='grid'))
         print(f"Results saved to {results_file_path}")
 
 
