@@ -26,7 +26,7 @@ def creatRandomBoard():
     while True:
         black_pawn_row = random.randint(0, 7)
         black_pawn_col = random.randint(0, 8)
-        if (black_pawn_row, black_pawn_col) != tuple(board.pawn_positions['white']):
+        if [black_pawn_row, black_pawn_col] != board.pawn_positions['white']:
             break
     board.pawn_positions['black'] = [black_pawn_row, black_pawn_col]
     board.pawn_positions['black'] = [random.randint(0, 7), random.randint(0, 8)]
