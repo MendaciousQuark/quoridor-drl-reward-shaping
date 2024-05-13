@@ -132,6 +132,6 @@ def find_agent_paths(base_path, agent_color):
     Returns:
     list: A list of paths to the agent directories.
     """
-    pattern = f"{base_path}/trained_models/*/gen_*/{agent_color}/agent*"
+    pattern = f"{base_path}/comparison_models/*/gen_*/{agent_color}/agent*"
     agent_paths = glob.glob(pattern)
     return agent_paths
