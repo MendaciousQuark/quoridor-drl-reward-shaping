@@ -28,8 +28,7 @@ class Game:
         if not black_agent_path:
             print(f"No valid agent path found for {'black'}. Exiting function.")
             return
-        white_agent_path = 'src/comparison_models/DQNagents/gen_0/black_agents/agent_3'
-        black_agent_path = 'src/comparison_models/BaselineAgents/gen_0/white_agents/agent_0'
+        
         white_agent = DQNAgent((9, 9, 11), 330, 'white', pawns, epsilon=0, trained_model_path=white_agent_path)
         white_agent.load_model(white_agent.trained_model_path)
         white_agent.find_legal_moves(board.state)
