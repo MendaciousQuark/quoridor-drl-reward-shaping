@@ -68,19 +68,18 @@ def main():
         from models.training_setup import init_training
         init_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
-               args.batches_per_generation, args.number_of_agents, args.delete_after)
+               args.batches_per_generation, args.number_of_agents, args.delete_after, args.base_path)
     elif args.mode == 'baseline':
         from models.training_setup import init_training
         init_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
-               args.batches_per_generation, args.number_of_agents, args.base_path)
+               args.batches_per_generation, args.number_of_agents, args.delete_after, args.base_path, base_line=True)
     elif args.mode == 'play':
         from game.game import Game
         game = Game()
         game.play(args.colour, args.game_mode)
     elif args.mode == 'compete-all':
         from utils.utils import find_agent_paths
-        from models.training_setup import init_agents
         from tournament.swiss_tournament import SwissTournament
         from utils.create_agents import create_agents
         import math
@@ -90,7 +89,10 @@ def main():
         
         white_agents = create_agents(white_agent_paths, "white")
         black_agents = create_agents(black_agent_paths, "white")
-        tournament = SwissTournament(white_competitors=white_agents, black_competitors=black_agents)
+
+        print(len(white_agents), len(black_agents))
+
+        tournament = SwissTournament(white_competitors=white_agents, black_competitors=black_agents, max_turns=100)
         tournament.compete(num_rounds = math.ceil(math.log2(len(white_agents))))
 
     elif args.mode == 'ground_truth':
