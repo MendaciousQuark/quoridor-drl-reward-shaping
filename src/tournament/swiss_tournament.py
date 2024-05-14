@@ -10,9 +10,10 @@ from tabulate import tabulate
 
 
 class SwissTournament:
-    def __init__(self, white_competitors, black_competitors, max_turns=200):
+    def __init__(self, white_competitors, black_competitors, max_turns=200, base_path='src/trained_models/DQNagents'):
         self.white_competitors = white_competitors
         self.black_competitors = black_competitors
+        self.base_path = base_path
         self.max_turns = max_turns
         self.scores = {agent: 0 for agent in self.black_competitors + self.white_competitors}
         self.rounds_played = {agent: 0 for agent in self.black_competitors + self.white_competitors}
@@ -79,9 +80,8 @@ class SwissTournament:
         print(tabulate(leaderboard_table, headers=['Agent', 'Final Score', 'Rounds Played', 'Wins', 'Draws'], tablefmt='grid'))
         
         # Determine the generation directory to save the results
-        base_path = 'src/trained_models/DQNagents'
-        next_gen = get_next_directory_number(base_path, 'gen_') - 1  # Fetching the latest generation folder
-        results_file_path = os.path.join(base_path, f'gen_{next_gen}', 'tournament_results.txt')
+        next_gen = get_next_directory_number(self.base_path, 'gen_') - 1  # Fetching the latest generation folder
+        results_file_path = os.path.join(self.base_path, f'gen_{next_gen}', 'tournament_results.txt')
         
         # Save the leaderboard to a file
         with open(results_file_path, 'w') as file:
