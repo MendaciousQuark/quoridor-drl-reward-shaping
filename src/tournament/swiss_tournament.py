@@ -99,8 +99,9 @@ class SwissTournament:
         board.updateState()
         board_state_converter = BoardToStateConverter()
         state = board_state_converter.boardToState(board, white_competitor.pawns)
-        
+        rounds_played = 0
         while board.turn < self.max_turns:
+            rounds_played += 1
             self.update_pawns(board, white_competitor, black_competitor)
             agent = white_competitor if board.turn % 2 == 0 else black_competitor
             agent.find_legal_moves(board.state)
@@ -113,8 +114,8 @@ class SwissTournament:
             if (90000 <= action <= 98811):
                 agent.pawns[agent.colour].walls -= 1      
             if done:
-                return agent, board.turn #return the winner
-        return 'draw', board.turn
+                return agent, rounds_played #return the winner
+        return 'draw', rounds_played
         
     def update_pawns(self, board, white_competitor, black_competitor):
         white_competitor.pawns['white'] = Pawn('white', *board.pawn_positions['white'])
