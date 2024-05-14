@@ -37,12 +37,12 @@ class SwissTournament:
                     result = 'draw'
                 results.append(result)
             for index, result in enumerate(results):
+                white, black = pairs[index]
                 if not isinstance(result, str):
                     self.scores[result] += 1  # Increment score for the winning agent
                     self.wins[result] += 1
                 else:
                     # Distribute 0.5 points each for a draw
-                    white, black = pairs[index]
                     self.scores[white] += 0.5
                     self.scores[black] += 0.5
                     self.draws[white] += 1
