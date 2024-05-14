@@ -12,7 +12,8 @@ def init_training(with_ground_truths = False,
           use_pretrained = False, learn_movement = False, slow = False, verbose = False, 
           observe = False, observe_from = [0, 11, 21, 31, 41, 51, 61, 71, 81, 91], 
           observe_until = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95], batch_episodes = 1000, batch_length = 25,
-          batches_per_generation = 2, number_of_agents = 10, delete_after = 0):
+          batches_per_generation = 2, number_of_agents = 10, delete_after = 0,
+          base_path='src/trained_models/DQNagents', base_line = False):
 
     board = Board()
 
@@ -29,18 +30,18 @@ def init_training(with_ground_truths = False,
     number_of_agents
     agents = []
     
-    agents = init_agents(pawns_copy, agents, number_of_agents)
+    agents = init_agents(pawns_copy, agents, number_of_agents, base_path)
     
     #if we are using pre-trained models, load them before training
     if use_pretrained:
         load_pretrained(agents)
 
     #train the agents with groundtruth if requested via parameter
-    if(with_ground_truths):
+    if(with_ground_truths and not base_line):
         pre_train(agents)
     
     #learn only movement actions
-    if(learn_movement):
+    if(learn_movement and not base_line):
         print(f'\rLearning movement actions\n', end='', flush=True)
         for agent in agents:
             agent.pawns['white'].walls = 0
@@ -60,12 +61,12 @@ def init_training(with_ground_truths = False,
         board, pawns_copy = prepare_batch(pawns, board, i)
         try:
             #every two episodes shuffle the opponents
-            if(batches_since_evolution == batches_per_generation):
-                agents = evolveThroughTournament(agents)
+            if(batches_since_evolution == batches_per_generation and not base_line):
+                agents = evolveThroughTournament(agents, base_path)
                 batches_since_evolution = 0
                 generations_since_deletion += 1
                 if(delete_after > 0 and generations_since_deletion == delete_after):
-                    delete_previous_generations('src/trained_models/DQNagents')
+                    delete_previous_generations(base_path)
                     generations_since_deletion = 0
             if(i % 2 == 0):
                 agents = shuffle_opponents(agents) #opponents are each pair of agents (i.e. 0 and 1, 2 and 3, etc.)
@@ -82,8 +83,18 @@ def init_training(with_ground_truths = False,
                     print(e)
             use_pretrained = True
             batches_since_evolution += 1
+        if(learn_movement and not base_line):
+            print(f'\rLearning movement actions\n', end='', flush=True)
+            for agent in agents:
+                agent.pawns['white'].walls = 0
+                agent.pawns['black'].walls = 0
+            trainDQN(agents, batch_length, Board())
+            #reset the walls
+            for agent in agents:
+                agent.pawns['white'].walls = 10
+                agent.pawns['black'].walls = 10
 
-def init_agents(pawns_copy, agents, number_of_agents, base_path='src/trained_models/DQNagents'):
+def init_agents(pawns_copy, agents, number_of_agents, base_path):
     #if n is not even add 1 until even
     while(number_of_agents % 2 != 0):
         number_of_agents += 1
@@ -94,7 +105,7 @@ def init_agents(pawns_copy, agents, number_of_agents, base_path='src/trained_mod
         if(i % 2 == 0):
             agent = DQNAgent((9, 9, 11), 330, 'white', pawns_copy, name=f"white_bot_{i}", trained_model_path=f'{base_path}/gen_{highest_gen}/white_agents/agent_{i}/')
         else:
-            agent = DQNAgent((9, 9, 11), 330, 'black', pawns_copy, name=f"black_bot_{i-1}", trained_model_path=f'{base_path}/gen_{highest_gen}/black_agents/agent_{i}/')
+            agent = DQNAgent((9, 9, 11), 330, 'black', pawns_copy, name=f"black_bot_{i-1}", trained_model_path=f'{base_path}/gen_{highest_gen}/black_agents/agent_{i-1}/')
         agents.append(agent)
     return agents
 

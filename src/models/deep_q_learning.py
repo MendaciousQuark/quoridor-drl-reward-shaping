@@ -41,7 +41,7 @@ class DQNAgent (Model):
         if not self.action_state:
             print("No legal moves available.")
             pdb.set_trace()  # Debugging state
-            return None  # Appropriate error handling or default action
+            return None
 
         # Epsilon-greedy policy decision
         if np.random.rand() <= self.epsilon:

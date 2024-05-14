@@ -32,9 +32,7 @@ def graphing(args):
 
 def main():
     parser = argparse.ArgumentParser(description='Train or play the game.')
-    parser.add_argument('--mode', choices=['train', 'play', 'ground-truth', 'baseline', 'diversity'], default='train', help='Mode to run the game. Choices are "train", "play", "baseline", "diversity" or "ground-truth". Default is "train".')
-
-    parser.add_argument('--mode', choices=['train', 'play', 'ground_truth', 'train_baseline'], default='train', help='Mode to run the game. Choices are "train", "play" or "ground_truth", "train_baseline". Default is "train".')
+    parser.add_argument('--mode', choices=['train', 'play', 'ground-truth', 'baseline', 'diversity', "compete-all"], default='train', help='Mode to run the game. Choices are "train", "play", "baseline", "compete-all", "diversity" or "ground-truth". Default is "train".')
     
     #arguments for train mode
     parser.add_argument('--with_ground_truths', action='store_true', help='Train with ground truths. Default is False. Note: This argument is only used in train mode.')
@@ -70,16 +68,33 @@ def main():
         from models.training_setup import init_training
         init_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
-               args.batches_per_generation, args.number_of_agents, args.delete_after)
+               args.batches_per_generation, args.number_of_agents, args.delete_after, args.base_path)
     elif args.mode == 'baseline':
-        from models.train_base_line import init_baseline_training
-        init_baseline_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
+        from models.training_setup import init_training
+        init_training(args.with_ground_truths, args.use_pretrained, args.learn_movement, args.slow, args.verbose, args.observe,
                args.observe_from, args.observe_until, args.batch_episodes, args.batch_length,
-               args.batches_per_generation, args.number_of_agents)
+               args.batches_per_generation, args.number_of_agents, args.delete_after, args.base_path, base_line=True)
     elif args.mode == 'play':
         from game.game import Game
         game = Game()
         game.play(args.colour, args.game_mode)
+    elif args.mode == 'compete-all':
+        from utils.utils import find_agent_paths
+        from tournament.swiss_tournament import SwissTournament
+        from utils.create_agents import create_agents
+        import math
+        
+        white_agent_paths = find_agent_paths("src", "white_agents")
+        black_agent_paths = find_agent_paths("src", "black_agents")
+        
+        white_agents = create_agents(white_agent_paths, "white")
+        black_agents = create_agents(black_agent_paths, "white")
+
+        print(len(white_agents), len(black_agents))
+
+        tournament = SwissTournament(white_competitors=white_agents, black_competitors=black_agents, max_turns=100)
+        tournament.compete(num_rounds = math.ceil(math.log2(len(white_agents))))
+
     elif args.mode == 'ground_truth':
         from utils.create_groundtruth import creatGroundTruth
         for _ in range(args.num):
