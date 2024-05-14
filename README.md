@@ -22,7 +22,6 @@ This project aims to develop and evaluate an unsupervised adversarial training s
 2. Install the required dependencies:
     pip install -r requirements.txt
 
-
 ## Usage
 ### Training and Evaluation
 
@@ -61,14 +60,12 @@ The main script for training and evaluating the agents is `main.py`. This script
 - `--mode`: Mode to run the script.
 - `--num`: Number of ground truths to create.
 
-
 #### Example Usage
 **Train Mode**
 python main.py --mode train --with_ground_truths --verbose
 
 **Play Mode**
 python main.py --mode play --colour white --game-mode pve
-
 
 ### Playing Commands
 
@@ -82,7 +79,6 @@ python main.py --mode play --colour white --game-mode pve
 
 The move action is used to move a pawn to an adjacent cell. The start and end locations, as well as the direction of movement, must be provided. The start and end locations should be in the format `a1` or `i9`.
 Example: move up a1 a2
-
 
 **Place**
 
@@ -99,7 +95,6 @@ Example: jump a1 a3 up
 To get more information on a specific action, use the help command followed by the action (`move`, `place`, `jump`).
 Example: help move
 
-
 ## Graphing Functionality
 
 The graphing functionality generates various graphs to visualize the diversity and performance of the agents across generations (NOTE: this requires existing models). It includes the following steps:
@@ -109,6 +104,35 @@ The graphing functionality generates various graphs to visualize the diversity a
 - Count and plot shared flags.
 - Read and plot cumulative line graphs.
 - Compare and plot trends of the best agents.
+
+## Getting Started with the Codebase
+
+To effectively understand and navigate the codebase, it is recommended to follow a specific order of study. This structured approach will help you grasp the fundamental concepts and how they interact within the framework.
+
+### Foundation Classes
+1. **Board Class**: Start with the Board class to understand the layout and basic functioning of the Quoridor game board.
+2. **Cell Class**: Next, explore the Cell class to get acquainted with the properties of individual cells on the board.
+3. **Pawn Class**: The Pawn class will help you understand the attributes and actions of the pawns used in the game.
+
+### Game State to Model State Conversion
+- **BoardToStateConverter Class**: This class is crucial for learning how the game state is converted into a model state that the neural network can process. Understanding this class is key for bridging the game mechanics with the learning algorithms.
+
+### Reinforcement Learning Agent
+- **DQNAgent in deep_q_learning.py**: Before moving on to training, familiarize yourself with the `DQNAgent` class in `deep_q_learning.py`. This class is essential for understanding the reinforcement learning algorithms that drive agent behavior.
+
+### Training Flow
+- **training_setup.py**: Begin understanding the training flow by reading this script. This script handles the control flow going through the IL, DRL and GA steps iteratively.
+- **train.py**: Follow up with the train.py script to understand actual training process of the agents.
+
+### Deep Learning Model and Adaptation
+- **model.py**: This file is critical for understanding how the rewards are structured and how mutations in the learning process occur. It contains the definitions and functionalities related to the neural network model.
+
+### Main Program Control
+- **main.py**: This script integrates all components and shows how to control the overall program flow. It is essential for seeing how all parts of the project come together in operation.
+
+### Additional Information
+While other files in the repository provide more detailed functionalities and enhancements, the files listed above are sufficient to gain a basic understanding of the core operations of the project.
+
 
 ## Development and Testing
 - **Programming Language**: Python
