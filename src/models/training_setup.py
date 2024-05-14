@@ -62,7 +62,7 @@ def init_training(with_ground_truths = False,
         try:
             #every two episodes shuffle the opponents
             if(batches_since_evolution == batches_per_generation and not base_line):
-                agents = evolveThroughTournament(agents)
+                agents = evolveThroughTournament(agents, base_path)
                 batches_since_evolution = 0
                 generations_since_deletion += 1
                 if(delete_after > 0 and generations_since_deletion == delete_after):

@@ -9,7 +9,7 @@ import math
 import os
 import pdb
 
-def evolveThroughTournament(agents):
+def evolveThroughTournament(agents, base_path='src/trained_models/DQNagents'):
     # Split agents into white and black agents
     white_agents = [agent for agent in agents if agent.colour == 'white']
     black_agents = [agent for agent in agents if agent.colour == 'black']
@@ -19,13 +19,12 @@ def evolveThroughTournament(agents):
     rounds = math.ceil(math.log2(len(white_agents)))
     
     # Create a tournament
-    tournament = SwissTournament(white_agents, black_agents, max_turns=100)
+    tournament = SwissTournament(white_agents, black_agents, max_turns=100, base_path=base_path)
     
     # Compete in the tournament and get the top quarter of the agents
     white_survivors, black_survivors = tournament.compete(rounds, num_survivors_per_colour)
     
     # Calculate next generation directory
-    base_path = 'src/trained_models/DQNagents'
     next_gen = get_next_directory_number(base_path, 'gen_')
     next_gen_dir = f"gen_{next_gen}"
     
@@ -38,7 +37,6 @@ def evolveThroughTournament(agents):
             
             white_child_description = f"Child {j}/{number_of_children} of parent {white_survivor.name} from generation {next_gen-1}. \nPart of generation {next_gen_dir}."
             black_child_description = f"Child {j}/{number_of_children} of parent {black_survivor.name} from generation {next_gen-1}. \nPart of generation {next_gen_dir}."
-
             white_child = DQNAgent((9, 9, 11), 330, 'white', white_survivor.pawns, 0.6, name=f'White_Bot_{agent_index}', description=white_child_description, trained_model_path=white_child_path)
             black_child = DQNAgent((9, 9, 11), 330, 'black', black_survivor.pawns, 0.6, name=f'Black_Bot_{agent_index}', description=black_child_description, trained_model_path=black_child_path)
             
