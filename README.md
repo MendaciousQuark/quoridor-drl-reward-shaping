@@ -46,6 +46,7 @@ The main script for training and evaluating the agents is `main.py`. This script
 - `--delete_after`: Delete models after a certain number of generations.
 
 #### Play Mode
+(Note: Due to an unhandled bug you will need to train multiple generations of agents before playing works. Alternatively, set the file path diretly within the game.py file.)
 - `--mode`: Mode to run the script.
 - `--colour`: Color for play mode (white or black).
 - `--game-mode`: Play as a human vs bot (`pve`, `pvp`, `eve`).
